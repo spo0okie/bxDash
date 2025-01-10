@@ -1,0 +1,239 @@
+import 'reflect-metadata';
+import {observable, when, makeObservable, keys , get, set, action, has, remove} from 'mobx';
+import TaskItem from 'Data/Items/TaskItem';
+import JobItem from 'Data/Items/JobItem';
+import DashItem from 'Data/Items/DashItem';
+import PlanItem from 'Data/Items/PlanItem';
+import TicketItem from 'Data/Items/TicketItem';
+import MemoItem from 'Data/Items/MemoItem';
+
+class ItemsStore {
+    items = new observable.map([],{deep:true});
+	type = 'dash';
+	isLoading=true;		//пока ничего не загрузили, считаем что еще загружаем
+
+	master;
+    periods;
+    time;
+    users;
+    main;
+	ws;
+
+    newTaskTemplate={};
+
+	classMap={
+		'dash':	DashItem,
+		'task':	TaskItem,
+		'job': JobItem,
+		'plan': PlanItem,
+		'ticket': TicketItem,
+		'memo': MemoItem
+	}
+
+	setLoading(value) {
+		this.isLoading=value;
+	}
+
+	//отправить произвольное сообщение
+	broadcast = (msg) => { if (this.master.ws !== undefined) this.master.ws.sendMessage(msg);}
+
+	//обновить таймер активности пользователя
+	activityUpdate = () => { if (this.master.ws !== undefined) this.master.ws.activityUpdate();}
+
+	//отправить сообщение об обновлении элемента
+	broadcastUpdate = (id) => {
+		this.broadcast({
+			event: this.type + 'Update',
+			[this.type + 'Id']: id,
+			id: id
+		})
+	}
+
+	//отправить сообщение об обновлении элемента
+	broadcastRemove = (id) => {
+		this.broadcast({
+			event: this.type + 'Remove',
+			[this.type + 'Id']: id,
+			id: id
+		})
+	}
+
+	/**
+	 * Контекст для элементов
+	 * @returns 
+	 */
+	getContext(){
+		return {
+			time: this.time,
+			main: this.main,
+			items: this,
+			users: this.users,
+			periods: this.periods,
+		};
+	}
+
+    //создать/обновить элемент из JSON данных объекта из битрикс
+    initData(data){
+		const id = Number(data.ID);		
+		const className = this.classMap[this.type];
+        if (!has(this.items,id)) {
+			//console.log('creating new '+ this.type);
+			const Item = new className({}, data, this);
+			this.setItem(Item);
+			this.master.buildReveseLinks(Item);
+        } else {
+			//console.log('updating '+id);
+			const Item = get(this.items, id)
+			Item.loadData(data);			
+			this.master.buildReveseLinks(Item);
+        }
+        //console.log(this.tasks[id]);
+    }    
+
+	/**
+	 * Ищем среди наших элементов родителя для переданного элемента
+	 * @param {*} item 
+	 *
+	findParentFor(child) {
+		this.items.forEach(item => child.checkParent(item));
+	}
+
+
+	/**
+	 * Ищем среди наших элементов потомков для переданного элемента
+	 * @param {*} item 
+	 *
+	findChildrenFor(parent) {
+		this.items.forEach(item => item.checkParent(parent));
+	}
+
+
+	findRelativesFor(item) {
+		this.findParentFor(item);
+		this.findChildrenFor(item);
+	}/** */
+
+	buildReveseLinks(item) {
+		this.items.forEach(test => test.reverseLinksCheck(item));
+	}
+
+
+
+    //загрузить задачи из битрикс с отметки времени from и до отметки to
+    loadItems(from,to,onComplete=null) {
+		console.log('loading ' + this.type + 's');
+        let url=this.main.apiUrl+this.type+'/load/'+from+'/'+to+'/'+keys(this.users.items).join(',')
+        let store=this;
+        console.log(url);
+		this.setLoading(true);
+		when(()=>this.main.bxAuth,()=>{
+			fetch(url)
+			.then((response) => response.json())
+			.then((data) => {
+				console.log('got ' +data.length+' '+ this.type + 's');
+				data.forEach(function(item){store.initData(item)});
+				if (onComplete) onComplete();
+				this.setLoading(false);
+			})
+			.catch(error=>console.error(error));	
+		})
+    }
+    
+    //загрузить одну задачку по ID
+    loadItem(id,onComplete=null) {
+        let store=this;
+		console.log('loading ' + this.type + ' ID '+id);
+		when(()=>this.main.bxAuth,()=>{
+			fetch(this.main.apiUrl + this.type + '/get/'+id)
+				.then((response) => response.json())
+				.then((data) => {
+					console.log('got ' + data.length + ' ' + this.type + 's');
+					data.forEach(function (item) { store.initData(item) });
+					if (onComplete) onComplete();
+				})
+				.catch(error => {
+					if (has(this.items, id)) {
+						const Item = get(this.items,id);
+						console.log(Item);
+						Item.setUpdating(false);
+						Item.alertItem();
+					}
+					console.error(error);     
+				});
+		});
+    }
+
+	updateItem(item) {
+		if (has(this.items, item.id)) {
+			//console.log(get(this.items, item.id));
+			//если такой элемент есть - обновляем его поля (поштучно)
+			Object.keys(item).forEach((key) => {
+				console.log('Updating ' + this.type + ' ' + item.id + ': ' + key + ' => ' + item[key]);
+				get(this.items, item.id)[key] = item[key];
+			});
+		} else {
+			//иначе просто создаем новый
+			this.setItem(item);
+		}
+
+	}
+
+    setItem(item){
+		set(this.items, item.id, item);
+	}
+
+	deleteItem(item) { 
+		item.unsetPeriod();
+		item.unsetInterval();
+		item.detachLinks();
+		remove(this.items, item.id);
+	}
+
+    init() {
+		console.log(this.type + 's init');
+        const users=this.users.items;
+        when(()=>users.size,()=>{
+            this.loadItems(this.time.firstWeekStart()/1000,null);
+			let reloadInterval=0;
+			//перегружаем время от времени задачи и заявки, т.к. их обновления могут проскакивать мимо WS канала
+			if (this.type==='task') reloadInterval=5*60*1000;
+			if (this.type==='ticket') reloadInterval=2*60*1000;
+			if (reloadInterval) {
+				setInterval(()=>{
+					console.log(this.type + 's reload');
+					this.loadItems(this.time.firstWeekStart()/1000,null);
+				},reloadInterval)
+			}
+        });
+    }
+
+	getMaxId() {
+		let max=0;
+		keys(this.items).forEach(i=>max=Math.max(max,i));		
+		return max;
+	}
+
+    constructor(type,master) {
+        console.log('Items construct');
+		this.type=type;
+		this.master = master;
+		this.main = master.main;
+		this.time = master.time;
+		this.users = master.users;
+		this.periods = master.periods;
+        makeObservable(this,{
+			items:observable,
+			isLoading:observable,
+			initData:action,
+			setItem: action,
+			updateItem: action,
+			deleteItem:action,
+			setLoading:action,
+		});
+        this.init();
+    }
+
+
+}
+
+export default ItemsStore;

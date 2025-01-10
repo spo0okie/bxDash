@@ -1,0 +1,21 @@
+html, div#root {margin: 0; padding: 0; height: 100%; display: block;}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  color: #333;
+  background-color: #666;
+  padding: 20px 0 0;
+  display: block;
+  height: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+
+.clickable {cursor: pointer;}

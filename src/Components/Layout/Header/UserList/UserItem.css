@@ -1,0 +1,20 @@
+td.UserItem.hovered {
+    background-color: lime;
+}
+
+div.AppUserList div.PeriodData table.UserCells {
+	min-height: 0 !important;
+}
+
+td.UserItem span.userStatus {
+    width: 6px;
+    height: 6px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-bottom: 1px;
+    margin-right: 1px;
+}
+td.UserItem span.userStatus.online {background-color: lime;}
+td.UserItem span.userStatus.away {background-color: orange;}
+td.UserItem span.userStatus.unavail {background-color: red;}
+td.UserItem span.userStatus.offline {background-color: gray;}

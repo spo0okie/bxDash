@@ -1,0 +1,33 @@
+td.userCell ul li.userPlan {
+    color:white;
+    border-color:#457b9d;
+    background:#457b9d;
+}
+
+td.userCell ul li.userPlan.denied {
+	text-decoration: line-through;
+}
+
+td.userCell ul li.userPlan.authorized {
+	background: #1d3557;
+}
+
+td.userCell ul li.userPlan.authorized.unknown {
+	border-left: whitesmoke solid 8px;
+}
+
+td.userCell ul li.userPlan.authorized.partial {
+	border-left: yellow solid 8px;
+}
+
+td.userCell ul li.userPlan.authorized.failed {
+	border-left: red solid 8px;
+}
+
+td.userCell ul li.userPlan.authorized.complete {
+	border-left: green solid 8px;
+}
+
+span.plan-comments {
+	font-style: italic;
+}

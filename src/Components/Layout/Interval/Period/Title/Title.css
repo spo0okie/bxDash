@@ -1,0 +1,32 @@
+div.AppUserList div.PeriodTitle,
+div.Period.row div.PeriodTitle {
+    width: 20px;
+    position: relative;
+    vertical-align: middle;
+    text-align: center;
+    display: table-cell;
+}
+
+div.Period.row div.PeriodTitle h3 {
+    writing-mode: vertical-rl;
+    transform: rotate(-180deg);
+}
+
+div.Period.column div.PeriodTitle {
+    width: auto;
+    position: relative;
+    vertical-align: middle;
+    text-align: center;
+    display: block;
+}
+
+div.Period.column div.PeriodTitle h3 {
+    transform: none;
+}
+
+
+div.PeriodTitle h3 {
+    font-size: larger;
+    margin: 0;
+}
+

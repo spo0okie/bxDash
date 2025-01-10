@@ -1,0 +1,127 @@
+table.UserCells,
+table.UserCells tbody,
+table.UserCells tr {
+    height:100%;
+}
+
+td.userCell {
+	vertical-align: top;
+    height: 100%;
+    border-radius: 4px;
+	padding: 0;
+}
+
+div.userCellContent {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+div.userCellContent ul.droppableBlock {
+    flex-grow: 1;
+}
+
+td.userCell.draggedOver {
+	background-color: rgb(103, 176, 248);
+}
+
+/* список элементов внутри колонки пользователя*/
+div.userCellContent ul {list-style-type: none; margin: 0; padding: 0;}
+div.userCellContent ul li.userItem {
+    display: block;
+    margin: 2px;
+    text-align: left;
+    font-size: 11px;
+    padding: 0;
+    border-radius: 5px;
+    color: #333;
+    position: relative;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    cursor: default;
+}
+
+li.userItem .content {
+	padding: 2px;
+}
+
+
+li.userItem .content ul {
+	list-style-type: initial;
+	/*list-style-position: inside;*/
+	padding-left: 8pt;
+}
+
+li.userItem .content p {
+	margin: 2pt 0;
+}
+
+li.userItem.favorite .content {background: url("/public/fav48.png") 50% 50% no-repeat;}
+
+td.userCell ul
+
+/* Drag-n-drop */
+li.userItem.dragging   {opacity: 30%;}
+
+
+/* ЗАГРУЗКА */
+li.userItem.updating div.content {
+    opacity: 40%;
+}
+
+/* спиннер (https://loading.io/css/) */
+li.userItem.updating:before {
+    content: " ";
+    display: block;
+    width: 12px;
+    height: 12px;
+    margin: 4px;
+    position:absolute;
+    top: 0;
+    right: 0;
+    
+    border-radius: 50%;
+    border: 3px solid;
+    border-color: rgba(0, 0, 0, 0.4) rgba(0, 0, 0, 0.4) rgba(0, 0, 0, 0.4) transparent;
+    animation: lds-dual-ring 1.2s linear infinite;
+}
+@keyframes lds-dual-ring {
+    0% {transform: rotate(0deg);}
+    100% {transform: rotate(360deg);}
+}
+
+/* ОШИБКА */
+li.userItem.alert div.content {
+    background-color: rgba(255, 0, 0, 0.4);
+}
+
+li.userItem.alert{
+    animation: shake 0.3s infinite;
+}
+@keyframes shake {
+  0%  { transform: translate(2px, 1px)   rotate(0deg);  }
+  10% { transform: translate(-1px, -2px) rotate(-2deg); }
+  20% { transform: translate(-3px, 0px)  rotate(3deg);  }
+  30% { transform: translate(0px, 2px)   rotate(0deg);  }
+  40% { transform: translate(1px, -1px)  rotate(1deg);  }
+  50% { transform: translate(-1px, 2px)  rotate(-1deg); }
+  60% { transform: translate(-3px, 1px)  rotate(0deg);  }
+  70% { transform: translate(2px, 1px)   rotate(-2deg); }
+  80% { transform: translate(-1px, -1px) rotate(4deg);  }
+  90% { transform: translate(2px, 2px)   rotate(0deg);  }
+  100%{ transform: translate(1px, -2px)  rotate(-1deg); }
+}
+
+li.userItem.flash div.content{
+    animation: flash 0.1s infinite;
+}
+@keyframes flash {
+	0% {background: lime;}
+	50% {background: green; color: white}
+}
+/* подсветка (задача под курсором, родительская, дочерние) */
+li.userItem.hovered            {border-color: lime !important; background: palegreen !important; color:#333 !important; text-shadow: none!important}
+li.userItem.parentTask         {border-color: orange !important; background: darkgoldenrod !important; color:#333 !important; text-shadow: none!important}
+li.userItem.childTask          {border-color: dodgerblue !important; background: deepskyblue !important; color:#333!important; text-shadow: none!important}

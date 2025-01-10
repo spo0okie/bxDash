@@ -1,0 +1,49 @@
+div.Period {
+    width: 100%;
+    padding: 0;
+    border-style: solid;
+    display: table; /*min-height: 160px;*/box-sizing: border-box;
+}
+
+div.Period.row {
+	border-width: 1px 2px 1px 0; 
+}
+
+div.Period.column {
+	border-width: 0 1px 2px 1px; 
+    display: table-cell;
+    width: 14%;
+	height: 100%;
+}
+
+
+div.Period.column div.periodContent {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+div.Period.row div.periodContent {
+	display: table-row;
+}
+
+
+div.Period.period0 {border-color: yellow;}
+div.Period.period0 div.rowTitleCell,div.Period.period0 div.PeriodTitle {background-color: yellow}
+
+div.Period.period1 {border-color: greenyellow;}
+div.Period.period1 div.rowTitleCell, div.Period.period1 div.PeriodTitle {background-color: greenyellow}
+div.Period.period2 {border-color: limegreen}
+div.Period.period2 div.rowTitleCell, div.Period.period2 div.PeriodTitle {background-color: limegreen}
+div.Period.period3 {border-color: deepskyblue}
+div.Period.period3 div.rowTitleCell, div.Period.period3 div.PeriodTitle {background-color: deepskyblue}
+div.Period.period4 {border-color: royalblue}
+div.Period.period4 div.rowTitleCell, div.Period.period4 div.PeriodTitle {background-color: royalblue; color: white}
+div.Period.period5 {border-color: blueviolet}
+div.Period.period5 div.rowTitleCell, div.Period.period5 div.PeriodTitle {background-color: blueviolet; color: white}
+div.Period.period6 {border-color: darkslateblue}
+div.Period.period6 div.rowTitleCell, div.Period.period6 div.PeriodTitle {background-color: darkslateblue; color: white}
+div.Period.period7 {border-color: #333333}
+div.Period.period7 div.rowTitleCell, div.Period.period6 div.PeriodTitle {background-color: #333333; color: white}

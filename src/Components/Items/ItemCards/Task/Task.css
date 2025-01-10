@@ -1,0 +1,109 @@
+/*просто задача*/
+li.userTask { border: solid 1px #999999; background: linear-gradient(to bottom,#f9f9f9,#e9e9e9); box-shadow:inset 0 1px 0 0 #ffffff;}
+
+/* ожидает закрытия */
+li.userTask.closeMe {border: 2px solid limegreen;}
+
+/* задача в работе*/
+li.userTask.activeNow {border-left: 4px solid limegreen;}
+li.userTask.activeNow .content {
+	background: url("/public/cog.webp") 50% 50% no-repeat;
+}
+
+span.userTaskLink {
+	border: solid 1px #999999;
+	background: linear-gradient(to bottom, #f9f9f9, #e9e9e9);
+	box-shadow: inset 0 1px 0 0 #ffffff;
+	border-radius: 4px;
+	color: black;
+}
+
+span.userTaskLink.activeNow {
+	border-left: 4px solid limegreen;
+}
+
+span.userTaskLink.closed {
+	color: #fff;
+	border-color: #124d77;
+	box-shadow: inset 0 1px 0 0 #54a3f7;
+	text-shadow: 0 1px 0 #154682;
+	background: linear-gradient(#007dc1, #0061a7);
+}
+
+/* чужая задача (пользователь - соисполнитель) */
+li.userItem.userTask.dimmedOut   {opacity: 60%;}
+
+li.userItem.userTask.closed {
+    color:#fff;
+    border-color:#124d77;
+    box-shadow:inset 0 1px 0 0 #54a3f7;
+    text-shadow:0 1px 0 #154682;
+    background:linear-gradient(#007dc1, #0061a7);
+}
+
+li.userItem.userTask .task-item-updates-inner {
+    display: inline-block;
+    height: 9px;
+    color: white;
+    background: #acacac url(/public/task-sprite_8.png) no-repeat right -119px;
+    margin-left: 2px;
+    padding: 0 2px 0 0;
+    font-size: 12px;
+    line-height: 9px;
+    vertical-align: baseline;
+}
+
+li.userItem.userTask .task-title-comments {
+    display: inline-block;
+    height: 11px;
+    padding-left: 12px;
+    background: url(/public/task-sprite_8.png) no-repeat -14px -103px;
+    font-size: 9px;
+    line-height: 9px;
+    color: #7f7f7f!important;
+    text-decoration: none!important;
+    vertical-align: middle;
+    outline: 0;
+}
+
+li.userTask .task-item-updates {
+    margin-left: 2px;
+    display: inline-block;
+    height: 9px;
+    background: #acacac url(/public/task-sprite_8.png) no-repeat 0 -119px;
+    outline: 0;
+    cursor: pointer;
+    text-decoration: none!important;
+    line-height: 9px;
+    vertical-align: middle;
+}
+
+li.userTask .userTaskFooter,
+li.userTicket .userTaskFooter{
+    display: flex;
+    width: 100%;
+    font-size: 8pt;
+    opacity: 70%;
+}
+
+.userTaskFooter span.deadline {
+	align-self: flex-start;
+}
+
+
+li.userTask span.priority {
+	flex-grow: 1;
+	text-align: center;
+}
+
+li.userTask .userTaskFooter .msgStatus,
+li.userTask .userTaskFooter .status {
+    text-align: right;
+	align-self: flex-end;
+}
+
+li.userTask span.midPriority {color: green;}
+li.userTask span.hiPriority {color: red;}
+
+
+

@@ -1,0 +1,27 @@
+div.userCellHeader {
+	display: flex;
+	flex-flow: row nowrap;
+	justify-content: space-evenly;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    vertical-align: middle;
+    min-height: 20px;
+    background: linear-gradient(to bottom, #787878 5%, #2e2e2e 100%);
+    border: none;
+    border-radius: 5px;
+    margin: 2px;
+}
+
+div.userCellHeader span {
+    text-shadow: 0 0 3px black;
+    cursor: pointer;
+}
+
+
+div.userCellHeader span.closedTicketsCountLabel    {color: #79bbff;}
+div.userCellHeader span.openTicketsCountLabel      {color: red;}
+div.userCellHeader span.closedJobsCountLabel       {color: #5cb811;}
+div.userCellHeader span.openJobsCountLabel         {color: #ffee66}
+div.userCellHeader span.closedTasksCountLabel      {color: blueviolet;}
+div.userCellHeader span.openTasksCountLabel        {color: #e9e9e9;}

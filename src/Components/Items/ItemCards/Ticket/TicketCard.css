@@ -1,0 +1,72 @@
+li.userTicket {
+	background-image: url('/public/alum0.jpg');
+	min-height: 25px;
+}
+
+
+li.userTicket span.deadline {
+	float: right;
+	vertical-align: bottom;
+	font-size: 11px;
+	line-height: 12px;
+}
+
+li.userTicket:after {
+	content: " ";
+	clear: both;
+	display: block;
+}
+
+li.userItem.userTicket.red {
+	border: solid 2px red;
+	padding: 1px;
+}
+
+li.userItem.userTicket.green {
+	border: solid 2px limegreen;
+	padding: 1px;
+}
+
+li.userItem.userTicket.blue {
+	box-shadow: inset 0 0 10px 0 lightskyblue;
+	border: 2px solid lightskyblue !important;
+}
+
+li.userItem.userTicket.closed {
+	/*background: repeating-linear-gradient(0deg, lightblue 0, lightblue 1px, lightskyblue 1px, lightskyblue 2px);*/
+	background: linear-gradient(#79bbff, #378de5);
+	box-shadow: inset 0 1px 0 0 #bbdaf7;
+	text-shadow: 0 1px 0 #528ecc;
+	color: #fff;
+	border-color: #84bbf3;
+}
+
+
+span.userTicketLink {
+	border: solid 1px #999999;
+	background-image: url('/public/alum0.jpg');
+	box-shadow: inset 0 1px 0 0 #ffffff;
+	border-radius: 4px;
+	color: black;
+}
+
+span.userTicketLink.red {
+	border-left: 4px solid red;
+}
+
+span.userTicketLink.green {
+	border-left: 4px solid limegreen;
+}
+
+span.userTicketLink.blue {
+	border-left: 4px solid lightskyblue;
+}
+
+span.userTicketLink.closed {
+	background: linear-gradient(#79bbff, #378de5);
+	box-shadow: inset 0 1px 0 0 #bbdaf7;
+	text-shadow: 0 1px 0 #528ecc;
+	color: #fff;
+}
+
+

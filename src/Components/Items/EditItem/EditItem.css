@@ -1,0 +1,10 @@
+textarea.EditItem {
+	padding:0;
+	margin:0;
+	width: 100%;
+	box-sizing: border-box;
+	border: none;
+    outline: none;
+	font: inherit
+	
+}

@@ -1,0 +1,27 @@
+.App-Sidebar {
+	flex-grow: 0;
+	flex-shrink: 0;
+	min-width: 150px;
+	max-width: 600px;
+	display: flex;
+	flex-direction: row;
+	z-index: 2;
+}
+
+.App-Sidebar .App-Sidebar-content {
+	flex: 1;
+}
+
+.App-Sidebar .App-Sidebar-resizer {
+	flex-grow: 0;
+	flex-shrink: 0;
+	flex-basis: 4px;
+	justify-self: flex-end;
+	cursor: col-resize;
+	resize: horizontal;
+}
+
+.App-Sidebar .App-Sidebar-resizer:hover {
+	width: 2px;
+	background: #c1c3c5b4;
+}

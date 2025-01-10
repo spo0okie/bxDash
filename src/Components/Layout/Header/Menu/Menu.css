@@ -1,0 +1,40 @@
+.AppHeader div.AppMenu {
+	display: none;
+	text-align: left;
+	align-items: stretch;
+	width: 100%;
+	justify-content: space-evenly;
+}
+
+.AppHeader:hover div.AppMenu {
+	display: flex;
+}
+
+.AppHeader div.AppMenu div.central.section {
+	text-align: center;
+}
+
+.AppHeader div.AppMenu div.right.section {
+	text-align: right;
+}
+
+span.MenuTimer {
+    float: right;
+}
+
+
+div.AppMenu button {
+	border-radius: 5px;
+	border-width: 1px;
+}
+div.AppMenu button.on {
+	background: green;
+	border-color: limegreen;
+	color: lightgreen;
+}
+
+div.AppMenu button.off {
+	background: #311;
+	border-color: red;
+	color:red
+}
