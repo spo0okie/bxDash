@@ -1,3 +1,7 @@
+td.UserItem.ABSENT			{background-color: indianred;}
+td.UserItem.WEEK_ABSENT		{background-color: orange;}
+td.UserItem.TWO_WEEK_ABSENT	{background-color: yellow;}
+
 td.UserItem.hovered {
     background-color: lime;
 }

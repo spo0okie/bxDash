@@ -19,6 +19,9 @@ div.userCellContent {
     margin: 0;
 }
 
+div.userCellContent div.workArea {
+    flex-grow: 1;
+}
 div.userCellContent ul.droppableBlock {
     flex-grow: 1;
 }

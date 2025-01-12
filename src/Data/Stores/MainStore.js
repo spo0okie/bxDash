@@ -20,7 +20,7 @@ class MainStore {
 	bxLogin=null;
 
 
-	itemsTypes = ['task', 'ticket', 'job', 'plan', 'memo'];
+	itemsTypes = ['task', 'ticket', 'job', 'plan', 'memo','absent'];
 
     
     inventory=new Inventory();
@@ -71,7 +71,6 @@ class MainStore {
             }
         );
     }
-
 
 
 	init(){

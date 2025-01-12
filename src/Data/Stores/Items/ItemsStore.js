@@ -6,6 +6,7 @@ import DashItem from 'Data/Items/DashItem';
 import PlanItem from 'Data/Items/PlanItem';
 import TicketItem from 'Data/Items/TicketItem';
 import MemoItem from 'Data/Items/MemoItem';
+import AbsentItem from 'Data/Items/AbsentItem';
 
 class ItemsStore {
     items = new observable.map([],{deep:true});
@@ -22,12 +23,13 @@ class ItemsStore {
     newTaskTemplate={};
 
 	classMap={
-		'dash':	DashItem,
-		'task':	TaskItem,
-		'job': JobItem,
-		'plan': PlanItem,
-		'ticket': TicketItem,
-		'memo': MemoItem
+		'dash':		DashItem,
+		'task':		TaskItem,
+		'job':		JobItem,
+		'plan':		PlanItem,
+		'ticket':	TicketItem,
+		'memo':		MemoItem,
+		'absent':	AbsentItem,
 	}
 
 	setLoading(value) {

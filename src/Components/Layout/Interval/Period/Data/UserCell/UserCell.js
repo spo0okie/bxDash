@@ -8,6 +8,7 @@ import classNames from "classnames";
 import { dashItemsSort,dashClosedItemsSort } from "Data/Items/DashItem";
 import CreateItemButton from "Components/Items/CreateItemButton/CreateItemButton";
 import CardsBlock from "./CardsBlock";
+import { userPeriodAbsentsGradient } from "Helpers/IntervalHelper";
 
 const UserCell= observer((props)=>{
 
@@ -66,6 +67,8 @@ const UserCell= observer((props)=>{
 
     const mouseIn = () => {context.users.setHover(props.user);};
     const mouseOut = () => {context.users.setHover(null);};
+	const cellOptions=userPeriodAbsentsGradient(context.items['absent'],period.start,period.end,props.user);
+	//console.log(cellOptions);
     
     //console.log('userCell render '+cell.id+'('+TimeHelper.strDateHuman(cell.t)+'): '+tasks.length);
     return (
@@ -79,7 +82,8 @@ const UserCell= observer((props)=>{
         onMouseOver={mouseIn}
         onMouseOut={mouseOut}
     >
-        <div className="userCellContent">
+		
+        <div className="userCellContent" >
             <UserCellHeader 
 				key={'header'+cell.id} 
 				closedTasks={closedTasks} 
@@ -89,22 +93,17 @@ const UserCell= observer((props)=>{
 				closedTickets={closedTickets}
 				openedTickets={openedTickets}
 			/>
-			<CardsBlock key={'closed' + cell.id} items={closedItems} cell={cell} dnd={false} />
-            {/*<ClosedItemsBlock key={'closed'+cell.id} closedItems={closedItems} cell={cell}/>*/}
-			<CreateItemButton cell={cell} closed={cell.isClosed} />
-
-				{/*period.isOpen && (<OpenedItemsBlock
-					key={'open' + cell.id}
-					openedItems={openedItems}
-					cell={cell}
-				/>)*/}
+			<div className='workArea' style={{background:cellOptions.background}} title={cellOptions.title}>
+				<CardsBlock key={'closed' + cell.id} items={closedItems} cell={cell} dnd={false} />
+				<CreateItemButton cell={cell} closed={cell.isClosed} />
 				<CardsBlock
 					key={'open' + cell.id}
 					items={openedItems}
 					cell={cell}
 					dnd={true}
 				/>
-        </div>
+			</div>
+		</div>
     </td>)
 
 })
