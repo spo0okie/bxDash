@@ -80,6 +80,8 @@ class TimeHelper {
 		W--;                //сдвигаем в диапазон [-1 - вс; 0..5 - пн..сб]
 		if (W<0) W=6;       //теперь это диапазон [0..6 => пн..вс]
 
+		let Y=t.getUTCFullYear();
+		let y=Y % 100;
 		return {
 			h:t.getUTCHours(),
 			m:t.getMinutes(),
@@ -87,7 +89,9 @@ class TimeHelper {
 	
 			D:t.getUTCDate(),
 			M:t.getUTCMonth()+1,	//месяц по умолчанию начинается с ноля, нам это неудобно
-			Y:t.getUTCFullYear(),
+			
+			Y:Y,
+			y:y,
 			
 			W:W,					//номер дня недели
 			w:this.wDays[W],		//короткий текст дня недели

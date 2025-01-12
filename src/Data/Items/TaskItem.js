@@ -30,14 +30,14 @@ class TaskItem extends DashItem {
 			this.deadlineObj = TimeHelper.objDate(this.deadline);
 			this.deadlineStr = this.deadlineObj.D + '.' + this.deadlineObj.M;
 			if (this.context.time.year !== this.deadlineObj.Y)
-				this.deadlineStr += this.deadlineObj.Y;
+				this.deadlineStr += '.' + this.deadlineObj.y;
 		} else this.deadlineStr = 'нет срока';
 
 		if (this.closedDate) {
 			this.closedDateObj = TimeHelper.objDate(this.closedDate);
 			this.closedDateStr = this.closedDateObj.D + '.' + this.closedDateObj.M;
 			if (this.context.time.year !== this.closedDateObj.Y)
-				this.closedDateStr += this.closedDateObj.Y;
+				this.closedDateStr += '.' + this.closedDateObj.y;
 		} else this.closedDateStr = '';
 
 
@@ -65,9 +65,9 @@ class TaskItem extends DashItem {
         this.status=Number(item.REAL_STATUS);
 		
 		switch (this.status) {
-            case -1:    this.strStatus="Просрочено";	break;
+            case -1:    this.strStatus="Просрочена";	break;		//просрочена
             case 1:     this.strStatus="Новая";  		break;
-            case 2:     this.strStatus="Ожидание"; 		break;
+            case 2:     this.strStatus="Ожидание"; 		break;	//Ожидание
             case 3:     this.strStatus="В работе"; 		break;
             case 4:     this.strStatus="Ож. подтв.";  	break;
             case 5:     this.strStatus="Завершена";  	break;

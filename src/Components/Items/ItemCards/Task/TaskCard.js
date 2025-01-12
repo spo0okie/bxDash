@@ -11,6 +11,7 @@ import { StoreContext } from "Data/Stores/StoreProvider";
 import TimeHelper from "Helpers/TimeHelper";
 import EditItem from "../../EditItem/EditItem";
 import ModalLink from "Components/Layout/Modal/ModalLink";
+import { Tooltip } from "antd";
 
 
 const TaskStatusUpdates=observer((props)=>{
@@ -55,23 +56,21 @@ const TaskDeadline=observer((props)=>{
 		tips.push('Закрыта: '+TimeHelper.strDateTimeHumanLong(task.closedDate))
 		date=task.closedDateStr;
 	} else {
-		tips.push('Крайний срок: '+TimeHelper.strDateTimeHumanLong(task.deadline))
+		tips.push('Крайний срок: '+(task.deadline?TimeHelper.strDateTimeHumanLong(task.deadline):'отсутствует'))
 		date=task.deadlineStr;
 	}
 
-	return (<span className="deadline" title={tips.join("\n")}>{date}</span>);
+	return (<Tooltip title={tips.join("\n")}><span className="deadline" >{date}</span></Tooltip>);
 });
 
 
 function TaskPriority(props) {
-	let rendered='';
 	switch (props.priority) {
-		case 0: rendered=(<span className="lowPriority">Низк.</span>); break
-		case 1: rendered = (<span className="midPriority">Средн.</span>); break
-		case 2: rendered = (<span className="hiPriority">Выс.</span>); break
-		default: rendered = ''; break
-	}
-	return (<span className="priority">{rendered}</span>);
+		case 0: return (<span className="priority"><Tooltip title={'Низкий приоритет'}><span className="taskPriority low"/></Tooltip></span>);
+		case 1: return  (<span className="priority"><Tooltip title={'Средний приоритет'}><span className="taskPriority mid"/></Tooltip></span>);
+		case 2: return  (<span className="priority"><Tooltip title={'Высокий приоритет'}><span className="taskPriority high"/></Tooltip></span>);
+		default: return null;
+	}	
 }
 
 

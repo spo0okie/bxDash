@@ -22,3 +22,5 @@ td.UserItem span.userStatus.online {background-color: lime;}
 td.UserItem span.userStatus.away {background-color: orange;}
 td.UserItem span.userStatus.unavail {background-color: red;}
 td.UserItem span.userStatus.offline {background-color: gray;}
+
+td.UserItem span.dutyPhone{color:blue; font-weight: bolder;}

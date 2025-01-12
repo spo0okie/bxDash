@@ -107,3 +107,14 @@ li.userTask span.hiPriority {color: red;}
 
 
 
+span.taskPriority {
+    width: 6px;
+    height: 6px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-bottom: 1px;
+    margin-right: 1px;
+}
+span.taskPriority.low {background-color: lime;}
+span.taskPriority.mid {background-color: sandybrown;}
+span.taskPriority.high {background-color: red;}

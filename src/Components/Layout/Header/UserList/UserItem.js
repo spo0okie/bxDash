@@ -69,7 +69,12 @@ import { Tooltip } from 'antd';
 						<span className={classNames(
 							'userStatus',user.activityStatus
 						)}></span>
-					{user.name} ({user.phone})
+					{user.id===usersStore.dutyTicketer&&(<Tooltip title={'Дежурный по заявкам на портале'}>🎫</Tooltip>)}
+					{user.name}
+					{user.phone===usersStore.dutyPhone&&(
+						<>{'('}<Tooltip title={'Дежурный на телефоне'}><span className="dutyPhone">{user.phone}</span></Tooltip>{')'}</>
+					)}
+					{user.phone!==usersStore.dutyPhone&&'('+user.phone+')'}
 				</td>
 				</Tooltip>
         )

@@ -1,6 +1,7 @@
 import React, {useContext} from "react";
 import {observer} from "mobx-react";
 import {get,trace} from "mobx"
+import { Tooltip } from 'antd';
 
 import './TicketCard.css'
 import classNames from "classnames";
@@ -20,24 +21,28 @@ const TicketLink = observer((props)=>{
 	//console.log(props);
 
 	if (item===undefined) {
-		console.log('Task #'+props.id+' not found');
-		return 'Задача '+props.id;
+		//console.log('Task #'+props.id+' not found');
+		return 'Заявка '+props.id;
 	}
-	return <span 
-		className={classNames(
-			'clickable',
-			'userItem',		//это понятно
-			'userTicketLink',		//это тоже
-			{'hovered':item.isHovered},
-			{ 'closed': item.isClosed && item.status !== 'blue' },		//признак что закрыта
-			{ 'green': !item.isClosed && item.status==='green'},		//зеленый
-			{ 'red': !item.isClosed && item.status === 'red' },			//красный
-			{ 'blue': item.status === 'blue' },							//красный
-		)}
-		onClick={onClick}
-		title={item.title}
-		
-	>{props.id}</span>
+	return (
+		<Tooltip title={'Заявка '+props.id+': '+item.title}>
+			<span 
+				className={classNames(
+					'clickable',
+					'userItem',		//это понятно
+					'userTicketLink',		//это тоже
+					{'hovered':item.isHovered},
+					{ 'closed': item.isClosed && item.status !== 'blue' },		//признак что закрыта
+					{ 'green': !item.isClosed && item.status==='green'},		//зеленый
+					{ 'red': !item.isClosed && item.status === 'red' },			//красный
+					{ 'blue': item.status === 'blue' },							//красный
+				)}
+				onClick={onClick}
+			>
+				{props.id}
+			</span>
+		</Tooltip>
+	)
 })
 
 export default TicketLink;

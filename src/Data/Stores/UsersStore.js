@@ -19,7 +19,7 @@ class UsersStore {
     @observable items = observable.map();
 
 	@observable dutyPhone=null;
-	@observable dutyTicketLogin=null;
+	@observable dutyTicketer=null;
 
     async loadUser(item) {
         //console.log(mainStore)
@@ -116,8 +116,8 @@ class UsersStore {
 			//если такой элемент есть - обновляем его поля (поштучно)
 			get(this.items, uid).updateConnection(connection);
 		} else {
-			console.log('No user '+uid+' in this dashboard');
-			console.log(keys(this.items));
+			//console.log('No user '+uid+' in this dashboard');
+			//console.log(keys(this.items));
 		}
 	}
 
@@ -132,6 +132,15 @@ class UsersStore {
         this.saveOption('selected',id);
     }
 
+	@action setDutyTicketer(id) {        
+		if (this.dutyTicketer===id) return;
+		this.dutyTicketer=id;
+	}
+
+	@action setDutyPhone(id) {        
+		if (this.dutyPhone===id) return;
+		this.dutyPhone=id;
+	}
 }
 
 export default UsersStore;

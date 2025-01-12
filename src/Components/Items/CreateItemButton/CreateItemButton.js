@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import './CreateItemButton.css';
 import TaskItem from "Data/Items/TaskItem";
 import JobItem from "Data/Items/JobItem";
@@ -6,6 +6,7 @@ import PlanItem from "Data/Items/PlanItem";
 import { StoreContext } from "Data/Stores/StoreProvider";
 import {get } from 'mobx';
 import ModalLink from "Components/Layout/Modal/ModalLink";
+import { observer } from "mobx-react";
 
 const CreateTaskButton=(props)=>{
 	const [label, setLabel] = useState('здч');
@@ -103,25 +104,25 @@ const CreatePlanButton = (props) => {
 }
 
 
-class CreateItemButton extends React.Component {
+const CreateItemButton = observer((props)=>{
+	const context = useContext(StoreContext);
+	const showJobs = context.layout.jobsVisible;
+	const cell = props.cell;
+	const period = get(context.periods.periods,cell.t);
+	const closed = period.isClosed;
+	const open = period.isOpen;
+	//console.log(this.context);
 
-    render() {
-        const cell = this.props.cell;
-		const period = get(this.context.periods.periods,cell.t);
-		const closed = period.isClosed;
-		const open = period.isOpen;
+	return (
+		<span className="CreateItemButton">
+			{closed && showJobs && <CreateClosedJobButton items={context.items} cell={cell} context={context} />}
+			{open && showJobs && <CreateJobButton items={context.items} cell={cell} context={context} />}
+			{open && props.cell.isToday && <CreateTicketButton items={context.items} cell={cell} context={context} />}
+			{open && <CreateTaskButton items={context.items} cell={cell} context={context} />}
+			{props.cell.dropT !== null && props.cell.period.wDays.includes(6) && <CreatePlanButton items={context.items} cell={cell} context={context} />}
+		</span>
 
-        return (
-			<span className="CreateItemButton">
-				{closed && <CreateClosedJobButton items={this.context.items} cell={cell} context={this.context} />}
-				{open && <CreateJobButton items={this.context.items} cell={cell} context={this.context} />}
-				{open && this.props.cell.isToday && <CreateTicketButton items={this.context.items} cell={cell} context={this.context} />}
-				{open && <CreateTaskButton items={this.context.items} cell={cell} context={this.context} />}
-				{this.props.cell.dropT !== null && this.props.cell.period.wDays.includes(6) && <CreatePlanButton items={this.context.items} cell={cell} context={this.context} />}
-			</span>
-	
-        )
-    }
-}
-CreateItemButton.contextType=StoreContext
+	)
+})
+
 export default CreateItemButton;

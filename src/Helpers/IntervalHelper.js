@@ -106,7 +106,7 @@ function userPeriodAbsentsGradient(list,start,end,user) {
 		//console.log(item[1]);
         let from=item.createdAt;
         let to=item.closedDate;
-		console.log(from,to);
+		//console.log(from,to);
         //console.log('Checking for absent ['+from+','+to+'] to intersect ['+work_start+','+work_end+']    //    ' +
         //'['+unixTimeToMyDate(from*86400000)+','+unixTimeToMyDate(to*86400000)+'] intersect with ['+unixTimeToMyDate(work_start*86400000)+','+unixTimeToMyDate(work_end*86400000)+']');
 

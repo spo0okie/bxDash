@@ -36,9 +36,13 @@ export class WsStore {
 				//console.log(this.users);
 				this.users.updateConnection(data.connection);
 				break;
-				/*case 'jobUpdate':
-                loadJobById(data.jobId);
-                break;
+			case 'techSupportTicketer':
+				this.users.setDutyTicketer(data.user);
+				break;
+			case 'techSupportShift':
+				this.users.setDutyPhone(data.phone);
+				break;
+						/*
             case 'jobRemove':
                 userJobRemove(data.jobId);
                 break;
