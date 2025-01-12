@@ -57,26 +57,6 @@ export class WsStore {
 		
 	}
 	
-	wsConnectionUpdate(connection) {
-		if (typeof connection === 'undefined') return;
-		if (typeof connection.id === 'undefined') return;
-		
-		connection.userId=Number(connection.userId);
-		
-		/*for (let id=0; id<$globDashConnections.length; id++) {
-			if ($globDashConnections[id].id === connection.id) {
-				$globDashConnections[id]=connection;
-				if (!silent) wsConnectionUserTimeoutRender(connection.userId);
-				return;
-			}
-		}
-	
-		console.log('New Connection '+connection.id);
-		$globDashConnections.push(connection);
-		if (!silent) wsConnectionUserTimeoutRender(connection.userId);*/
-	
-	}
-
 	activityUpdate() {
 		this.activityTimestamp=TimeHelper.getTimestamp();
 	}
@@ -99,7 +79,7 @@ export class WsStore {
 			connection:connection
 		}
 		this.sendMessage(message);
-		this.wsConnectionUpdate(connection);
+		this.users.updateConnection(connection);
 	}
 
 	sendMessage=(data)=>{
