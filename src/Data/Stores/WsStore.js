@@ -99,6 +99,7 @@ export class WsStore {
 			connection:connection
 		}
 		this.sendMessage(message);
+		this.wsConnectionUpdate(connection);
 	}
 
 	sendMessage=(data)=>{
