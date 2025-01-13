@@ -184,8 +184,7 @@ export default class DashItem {
 				return;
 			}
 		});
-
-		if (this.intervalId===undefined) console.log(this);
+		if (this.intervalId===null)	console.log(this);
 	}
 
 	/**
@@ -218,7 +217,9 @@ export default class DashItem {
 		//console.log(this.intervalId);
 		
 		//после смены интервала надо найти свой период в нем
-		this.findPeriod(get(this.context.periods.intervals, this.intervalId).periodsIds);				
+		//this.periodId = null;
+		if (this.intervalId!==null)
+			this.findPeriod(get(this.context.periods.intervals, this.intervalId).periodsIds);				
 	}
 
 	findPeriod(ids=null) {
@@ -233,7 +234,7 @@ export default class DashItem {
 			}
 		});
 
-		if (this.periodId === undefined) console.log(this);
+		if (this.periodId===null) console.log(this);
 	}
 
 	/**
@@ -246,6 +247,7 @@ export default class DashItem {
 					.detachItem(this);				//отцепляемся от него
 			}
 		}
+		this.periodId = null;
 	}
 
 	setPeriod(id) {
@@ -255,11 +257,14 @@ export default class DashItem {
 
 		this.unsetPeriod();
 
-		this.periodId = id;
+		
 		//console.log(TimeHelper.strDateTime(this.periodId));
 		//console.log(this.context.periods.periods);
-		get(this.context.periods.periods, this.periodId)
+		if (id!==null) {
+			this.periodId = id;
+			get(this.context.periods.periods, this.periodId)
 			.attachItem(this);				//прицепляемся к нему
+		}
 	}
 
 
@@ -875,7 +880,7 @@ export function dashItemDragLogic(dropData,ref,setClosestEdge) {
 	if (dropData.item.isNew || dropData.item.isEdit) return;    //т.к. иначе глючит работа textarea внутри этого элемента и нельзя выделять текст мышью
     //let targetCell=null;    //ячейка над которой нас протаскивают
     const element=ref.current;
-	if (dropData.item.type==='memo') console.log(dropData);
+	//if (dropData.item.type==='memo') console.log(dropData);
     //признак что кидаем на верхнюю половинку карточки ниже или нижнюю половинку карточки выше, по итогу туда же
     const samePlace=(source,cell,index,closestEdge)=>{
 	    const isItemBeforeSource = index === source.data.index - 1 && cell.id===source.data.cell.id;

@@ -36,7 +36,7 @@ class PlanItem extends DashItem {
 	 */
 	loadData(item){
 		//console.log(item);
-		if (!super.loadData(item)) return false;
+		if (!super.loadData(item,false)) return false;
 		//console.log(item.DATE_ACTIVE_FROM);
 		this.deadline=TimeHelper.bitrixDateTimeToJs(item.DATE_ACTIVE_FROM);//-10000000;
 
@@ -64,6 +64,7 @@ class PlanItem extends DashItem {
 			this.deleteOnEmpty = true;	//при удалении текста плана удаляем весь элемент
 		}
 
+		this.recalcTime();
 		this.parseTitle();
 		this.setUpdating(false);
 	}

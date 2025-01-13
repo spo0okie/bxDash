@@ -25,13 +25,13 @@ const MemoCard = observer((props)=>{
 	const index = props.index;
 	const [closestEdge, setClosestEdge] = useState(null);
 
-	console.log('memo');
+	//console.log('memo');
 
 	//описание для DND
 	//const dropData = ;
 
 	useEffect(()=>{
-		console.log('dnd');
+		//console.log('dnd');
 		return dashItemDragLogic({
 			type: 'item',		//тип - элемент списка
 			element: ref.current,//ссылка на отрисованный элемент
@@ -122,7 +122,7 @@ const MemoCard = observer((props)=>{
 		onMouseLeave={()=>item.mouseOut()}
 		onClick={() => { item.startEdit() }}
 		ref={ref}
-		//title={item.sorting}
+		title={String(item.t)}
 
 	>
 		<Dropdown menu={{ items:menuItems, onClick:contextMenuClick }} trigger={['contextMenu']}>
