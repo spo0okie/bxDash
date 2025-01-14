@@ -45,9 +45,13 @@ const Sidebar=observer((props)=>{
 				ref={sidebarRef}
 				className="App-Sidebar"
 				style={{ width: layout.sidebarWidth }}
-				onMouseDown={(e) => {if (isResizing) e.preventDefault()}}
+				//onMouseDown={(e) => {if (isResizing) {e.preventDefault();e.stopPropagation()}}}
+				//
 			>
-			<div className="App-Sidebar-content">{props.children}</div>
+			<div 
+				className="App-Sidebar-content"
+				//onMouseMove={(e) => {if (isResizing) {e.preventDefault();e.stopPropagation()}}}
+			>{props.children}</div>
 			<div className="App-Sidebar-resizer" onMouseDown={startResizing} />
 			</div>
 	);
