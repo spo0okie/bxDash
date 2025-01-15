@@ -68,16 +68,16 @@ class PeriodItem {
 
         this.className='period0';
         if (start < this.time.monday0) {
-            let week=Math.floor((this.time.monday0-start-1000)/TimeHelper.weekLen)+1;
+            let week=Math.floor((this.time.monday0-start-1)/TimeHelper.weekLen)+1;
             this.className='period'+Math.min(week,6);
         }
-        if (start > this.time.sunday0) {
+        if (start > this.time.sunday0-1) {
             let week=Math.floor((start-this.time.sunday0)/TimeHelper.weekLen)+1;
             this.className='period'+Math.min(week,6);
         }
         //console.log(time.today);
         this.isClosed=(start <= this.time.today);
-        this.isOpen=(this.end >= this.time.today || this.end===null);
+        this.isOpen=(this.end > this.time.today || this.end===null);
         this.isToday=(this.isClosed && this.isOpen)
 
 		this.itemsIds = new ItemsIdsStore(interval.itemsTypes);
