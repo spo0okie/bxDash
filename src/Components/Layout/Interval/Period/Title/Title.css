@@ -20,6 +20,28 @@ div.Period.column div.PeriodTitle {
     display: block;
 }
 
+span.nextWeekButton button,
+span.prevWeekButton button{
+    height: 15px;
+	width: 15px;
+	margin: 0;
+	padding: 0;
+	text-align: center;
+	z-index: 100;
+}
+
+div.Period.column span.prevWeekButton {position:absolute; top:0; left:0;}
+div.Period.column span.prevWeekButton button.add::before {content: '<';}
+
+div.Period.row span.prevWeekButton {position: absolute; top:3px; left:2px;}
+div.Period.row span.prevWeekButton button.add::before {content: 'ᐱ';}
+
+div.Period.column span.nextWeekButton {position: absolute;  top:0; right:0;}
+div.Period.column span.nextWeekButton button.add::before {content: '>';}
+
+div.Period.row span.nextWeekButton {position: absolute;  bottom:3px; left:2px;}
+div.Period.row span.nextWeekButton button.add::before {content: 'ᐯ';}
+
 div.Period.column div.PeriodTitle h3 {
     transform: none;
 }

@@ -37,6 +37,7 @@ div.dashBoard {
 .Calendar.ColumnScroller {
 	overflow-x: scroll;
 	white-space: nowrap;
+	width: calc(100vw - 200px);
 }
 
 .Calendar.ColumnScroller .Interval {

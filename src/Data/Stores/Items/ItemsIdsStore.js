@@ -14,6 +14,7 @@ class ItemsIdsStore {
 		const i = this.ids[item.type].indexOf(item.id); 
 		if (i > -1) this.ids[item.type].splice(i, 1); 
 	}
+	
 
     constructor(types) {
 		//console.log(types);

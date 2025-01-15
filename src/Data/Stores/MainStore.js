@@ -26,8 +26,13 @@ class MainStore {
     inventory=new Inventory();
     cookies= new Cookies(null, { path: '/' });
 
-    loadOption(name) {return this.cookies.get(name);}
-    saveOption(name,value) {return this.cookies.set(name,value,);}
+    loadOption(name) {
+		return this.cookies.get(name);
+	}
+    saveOption(name,value) {
+		//console.log('saving '+value+' -> '+name)
+		return this.cookies.set(name,value,);
+	}
     
     setInventoryUrl(url) {
         this.inventoryUrl=url;

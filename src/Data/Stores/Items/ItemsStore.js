@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import {observable, when, makeObservable, keys , get, set, action, has, remove} from 'mobx';
+import {observable, when, makeObservable, keys , get, set, action, has, remove, observe} from 'mobx';
 import TaskItem from 'Data/Items/TaskItem';
 import JobItem from 'Data/Items/JobItem';
 import DashItem from 'Data/Items/DashItem';
@@ -7,6 +7,7 @@ import PlanItem from 'Data/Items/PlanItem';
 import TicketItem from 'Data/Items/TicketItem';
 import MemoItem from 'Data/Items/MemoItem';
 import AbsentItem from 'Data/Items/AbsentItem';
+import TimeHelper from 'Helpers/TimeHelper';
 
 class ItemsStore {
     items = new observable.map([],{deep:true});
@@ -19,6 +20,9 @@ class ItemsStore {
     users;
     main;
 	ws;
+
+	loadedFrom;
+	loadedTo;
 
     newTaskTemplate={};
 
@@ -79,12 +83,12 @@ class ItemsStore {
 		const id = Number(data.ID);		
 		const className = this.classMap[this.type];
         if (!has(this.items,id)) {
-			//console.log('creating new '+ this.type);
+			console.log('creating new '+ this.type);
 			const Item = new className({}, data, this);
 			this.setItem(Item);
 			this.master.buildReveseLinks(Item);
         } else {
-			//console.log('updating '+id);
+			console.log('updating '+id);
 			const Item = get(this.items, id)
 			Item.loadData(data);			
 			this.master.buildReveseLinks(Item);
@@ -120,11 +124,30 @@ class ItemsStore {
 	}
 
 
+	updateLoadRange(from,to) {
+		if (this.loadedFrom===undefined) {
+			this.loadedFrom=from;
+		} else if (this.loadedFrom>from) {
+			this.loadedFrom=from;
+		}
+
+		if (this.loadedTo===undefined || to===null) {
+			this.loadedTo=to;
+			return;
+		}
+
+		if (this.loadedTo===null) return;
+		//с этого места ни loadedTo ни to не null
+
+		if (this.loadedTo<to) {
+			this.loadedTo=to;
+		}
+	}
 
     //загрузить задачи из битрикс с отметки времени from и до отметки to
     loadItems(from,to,onComplete=null) {
 		console.log('loading ' + this.type + 's');
-        let url=this.main.apiUrl+this.type+'/load/'+from+'/'+to+'/'+keys(this.users.items).join(',')
+        let url=this.main.apiUrl+this.type+'/load/'+Math.round(from/1000)+'/'+(to?(Math.round(to/1000)):null)+'/'+keys(this.users.items).join(',')+'?random='+TimeHelper.getTimestamp();
         let store=this;
         console.log(url);
 		this.setLoading(true);
@@ -136,6 +159,7 @@ class ItemsStore {
 				data.forEach(function(item){store.initData(item)});
 				if (onComplete) onComplete();
 				this.setLoading(false);
+				this.updateLoadRange(from,to);
 			})
 			.catch(error=>console.error(error));	
 		})
@@ -146,7 +170,7 @@ class ItemsStore {
         let store=this;
 		console.log('loading ' + this.type + ' ID '+id);
 		when(()=>this.main.bxAuth,()=>{
-			fetch(this.main.apiUrl + this.type + '/get/'+id)
+			fetch(this.main.apiUrl + this.type + '/get/'+id+'?random='+TimeHelper.getTimestamp())
 				.then((response) => response.json())
 				.then((data) => {
 					console.log('got ' + data.length + ' ' + this.type + 's');
@@ -191,22 +215,36 @@ class ItemsStore {
 		remove(this.items, item.id);
 	}
 
+	loadPending(onComplete=null) {
+		let to=null;									//обозначаем что загружаем весь период времени
+		let from=this.time.firstWeekStart();			//если у нас уже загружены данные и мы подгружаем предыдущий период
+		if (this.loadedTo===null && this.loadedFrom!==undefined && this.loadedFrom>from) {
+			to=this.loadedFrom;							//то ограничиваем сверху загруженный период 
+		}
+		if (this.loadedTo!==undefined && this.loadedFrom!==undefined && (this.loadedTo===null || to<this.loadedTo) && (from>=this.loadedFrom )) {
+			console.log('nothing pending load');
+			return;
+		}
+		this.loadItems(from,to,onComplete);
+	}
+
     init() {
 		console.log(this.type + 's init');
         const users=this.users.items;
         when(()=>users.size,()=>{
-            this.loadItems(this.time.firstWeekStart()/1000,null);
+            this.loadPending();
 			let reloadInterval=0;
 			//перегружаем время от времени задачи и заявки, т.к. их обновления могут проскакивать мимо WS канала
-			if (this.type==='task') reloadInterval=5*60*1000;
-			if (this.type==='ticket') reloadInterval=2*60*1000;
+			//if (this.type==='task') reloadInterval=5*60*1000;
+			//if (this.type==='ticket') reloadInterval=2*60*1000;
 			if (reloadInterval) {
 				setInterval(()=>{
 					console.log(this.type + 's reload');
-					this.loadItems(this.time.firstWeekStart()/1000,null);
+					this.loadItems(this.time.firstWeekStart(),null);
 				},reloadInterval)
 			}
         });
+		observe(this.time,'weekMin',change=>{this.loadPending()});
     }
 
 	getMaxId() {

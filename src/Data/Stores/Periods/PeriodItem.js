@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import TimeHelper from 'Helpers/TimeHelper';
-import ItemsIdsStore from './Items/ItemsIdsStore';
+import ItemsIdsStore from '../Items/ItemsIdsStore';
+import PeriodItemsMixin from './PeriodItemsMixin';
 
 class PeriodItem {
     time;       //ссылка на объект - хранилище времени
@@ -19,30 +20,9 @@ class PeriodItem {
     isToday;    //содержит и те и эти (такое бывает только сегодня/на этой неделе)
 
 	interval;	//внутри какого интервала период
+	emeregency=false;		//блокировка помещения элементов в этот период (перед удалением)
 
 	itemsIds;
-
-	filterItem(item) {
-		return (
-			(item.t !== null && item.t >= this.start && (
-				(this.end !== null && item.t <= this.end)
-				||
-				this.end === null
-			))
-			||
-			(item.t === null && this.end === null)
-		);
-	}
-
-
-	attachItem(item) {
-		if (!this.filterItem(item)) return false;
-		this.itemsIds.attachItem(item);
-	}
-
-	detachItem(item) {
-		this.itemsIds.detachItem(item);
-	}
 	
     constructor(start,len,interval) {
 		this.interval=interval;
@@ -103,5 +83,7 @@ class PeriodItem {
 		this.itemsIds = new ItemsIdsStore(interval.itemsTypes);
     }
 }
+
+Object.assign(PeriodItem.prototype,PeriodItemsMixin);
 
 export default PeriodItem;

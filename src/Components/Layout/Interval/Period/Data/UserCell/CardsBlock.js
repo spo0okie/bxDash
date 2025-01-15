@@ -41,7 +41,7 @@ const CardsBlock = observer((props) => {
 					source.data.setCell(cell); //то мы карточке передаем что у нее новый таргет
 			},
 			onDragLeave() {
-				cell.dragOver(false);
+				//cell.dragOver(false);
 			}
 		});
 	}, [cell,items]);

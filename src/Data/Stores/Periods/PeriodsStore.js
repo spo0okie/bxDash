@@ -1,6 +1,6 @@
 import 'reflect-metadata';
-import {observable,  values, set, has, get, remove, action, makeAutoObservable} from 'mobx';
-import WeekItem from './WeekItem';
+import {observable,  values, set, has, get, keys, remove, action, makeAutoObservable, observe} from 'mobx';
+import IntervalItem from './IntervalItem';
 
 class PeriodsStore {
     @observable intervals = new observable.map();   //недели
@@ -12,15 +12,35 @@ class PeriodsStore {
     items;
     expand; //внутреннее состояние expand под который построены периоды
 
-	@action weeksInit(){
-		this.time.weeksRange(true).forEach(id=>{
+	weeksInit(){
+		const weeks=this.time.weeksRange(true);
+		//ищем что нужно добавить
+		weeks.reverse().forEach(id=>{
 			if (has(this.intervals, id)) {
 				//если такой элемент есть - обновляем его поля (поштучно)
+				//console.log(id +' updatin');
 				get(this.intervals,id).init(); 
 			} else {
-				set(this.intervals, id, new WeekItem(id,this.main,this.time,this.items,this.layout,this));
+				console.log(id +' creatin');
+				set(this.intervals, id, new IntervalItem(id,this.main,this.time,this.items,this.layout,this));
 			}
 		});
+
+		keys(this.intervals).forEach(id=>{
+			if(!weeks.includes(id)){
+				this.deleteInterval(id)
+
+			}
+		})
+		//this.logStatus();
+	}
+
+	logStatus() {
+		let status={};
+		values(this.intervals).forEach(item=>{
+			status[item.id]=item.countItems();
+		})
+		console.log(status);
 	}
 
 	@action setPeriod(period) {
@@ -29,6 +49,12 @@ class PeriodsStore {
 
 	@action deletePeriod(id) {
 		remove(this.periods,id);
+	}
+
+	@action deleteInterval(id) {
+		console.log(id +' deletin');
+		get(this.intervals,id).beforeDelete();
+		remove(this.intervals,id);
 	}
 
 	attachItemsStore(items) {
@@ -45,7 +71,8 @@ class PeriodsStore {
         //this.intervals = observable.map();
         this.weeksInit()
 
-        //observe(layout,'expand',change=>{this.refill()});
+        observe(time,'weekMin',change=>{this.weeksInit()});
+        observe(time,'weekMax',change=>{this.weeksInit()});
 
         makeAutoObservable(this);
     }

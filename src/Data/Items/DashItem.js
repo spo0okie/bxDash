@@ -173,18 +173,34 @@ export default class DashItem {
 
 
 	findInterval(ids = null) {
+		let homeless=false;
+		let found=false;
+
 		//если явно не сказали среди каких периодов искать - ищем среди всех
-		if (ids === null) { ids = keys(this.context.periods.intervals) }
+		if (ids === null) { 
+			ids = keys(this.context.periods.intervals).sort((a,b)=>b-a); //делаем обратно отсортированный список, чтобы искать всегда с конца (где ведро)
+			//console.log(ids);
+			homeless=true;	//если интервал не будет найден из всего набора, значит элемент никуда не входит
+		}
 
 		//для оптимизации надо наверно список развернуть от больших id к маленьким, т.к. половина осядет в ведре
 		ids.forEach(id => {
+			if (found) return;	//нам нужен первый совпавший
 			const interval = get(this.context.periods.intervals, id);
+			//console.log(id);
 			if (interval.filterItem(this)) {
 				this.setInterval(id);
-				return;
+				homeless=false;
+				found=true;
 			}
 		});
-		if (this.intervalId===null)	console.log(this);
+
+		if (homeless) {
+			this.unsetInterval()
+			console.log(this);
+		} else {
+			//console.log(this.intervalId);
+		}
 	}
 
 	/**
@@ -192,8 +208,9 @@ export default class DashItem {
 	 */
 	unsetInterval() {
 		if (this.intervalId !== null) {			//если уже был интервал
-			get(this.context.periods.intervals, this.intervalId)
-				.detachItem(this);				//отцепляемся от него
+			if (has(this.context.periods.intervals, this.intervalId))
+				get(this.context.periods.intervals, this.intervalId)
+					.detachItem(this);				//отцепляемся от него
 		}
 		this.intervalId = null;
 	}
@@ -208,18 +225,17 @@ export default class DashItem {
 	 * @returns 
 	 */
 	setInterval(id) {		
+		const interval=get(this.context.periods.intervals, id);
 		if (this.intervalId !== id) {				
 			this.unsetInterval();
 			this.intervalId=id;
-			get(this.context.periods.intervals, this.intervalId)
-				.attachItem(this);
+			
+			interval.attachItem(this);
+			//после смены интервала надо найти свой период в нем
 		}
+		this.findPeriod(interval.periodsIds);				
 		//console.log(this.intervalId);
 		
-		//после смены интервала надо найти свой период в нем
-		//this.periodId = null;
-		if (this.intervalId!==null)
-			this.findPeriod(get(this.context.periods.intervals, this.intervalId).periodsIds);				
 	}
 
 	findPeriod(ids=null) {
@@ -900,7 +916,7 @@ export function dashItemDragLogic(dropData,ref,setClosestEdge) {
 			dropData.item.dragCell=cell;                                    //запоминаем новую			
 			if (dropData.item.dragCell!==null) dropData.item.dragCell.dragOver(true);   //зажигаем новую
 		}
-        //console.log(dropData.item.uid+': '+cellId(cell)+' saved');
+        console.log(dropData.item.uid+': '+cellId(cell)+' saved');
     }
     //console.log(dropData.item);
     

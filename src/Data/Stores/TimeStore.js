@@ -4,6 +4,8 @@ import TimeHelper from 'Helpers/TimeHelper';
 
 class TimeStore {
 
+	main;
+
     @observable weekMin=-4;               //сколько недель перед этой отображается
     @observable weekMax=4;                //сколько недель после этой отображается
 
@@ -49,7 +51,7 @@ class TimeStore {
 
             d0=this.today   =TimeHelper.getToday().getTime();
             m0=this.monday0 =d0 -w*24*3600*1000;
-            s0=this.sunday0 =d0 +(7-w)*24*3600*1000 -1000;
+            s0=this.sunday0 =d0 +(7-w)*24*3600*1000;
             console.log('timeStore: today ['+d0+'] :'+TimeHelper.strDateTime(d0))
             console.log('timeStore: monday0 ['+m0+'] :'+TimeHelper.strDateTime(m0))
             console.log('timeStore: sunday0 ['+s0+'] :'+TimeHelper.strDateTime(s0))
@@ -69,19 +71,8 @@ class TimeStore {
         /**/
     }
 
-    //вытаскиваем сохраненные в куках предыдущие недели для загрузки
-    savedWeekMax() {
-        //let cookie=Cookies.get('weekMax');
-        //if (cookie) return cookie;
-        return this.weekMax;
-    }
-
-    //вытаскиваем сохраненные в куках будущие недели для загрузки
-    savedWeekMin() {
-        //let cookie=Cookies.get('weekMin');
-        //if (cookie) return cookie;
-        return this.weekMin;
-    }
+    loadOption(name) {return this.main.loadOption('time.'+name);}
+    saveOption(name,value) {return this.main.saveOption('time.'+name,value,);}
 
     weekStart(id) {
         return this.monday0 + TimeHelper.weekLen * id;
@@ -99,6 +90,36 @@ class TimeStore {
         return this.weekEnd(this.weekMax);
     }
 
+	@action setWeekMin(value) {
+		if (value===this.weekMin) return;
+		this.weekMin=value;
+		this.saveOption('weekMin',value)
+	}
+
+	@action setWeekMax(value) {
+		if (value===this.weekMax) return;
+		this.weekMax=value;
+		this.saveOption('weekMax',value)
+	}
+
+	decWeekMin() {
+		this.setWeekMin(this.weekMin-1);
+	}
+
+	incWeekMin() {
+		if (this.weekMin>=0) return;
+		this.setWeekMin(this.weekMin+1);
+	}
+
+	decWeekMax() {
+		if (this.weekMax<=0) return;
+		this.setWeekMax(this.weekMax-1);
+	}
+
+	incWeekMax() {
+		this.setWeekMax(this.weekMax+1);
+	}
+
     weeksRange(bucket=false) {
         let range = [];
 		let max = this.weekMax;
@@ -109,9 +130,10 @@ class TimeStore {
         return range;
     }
 
-    constructor() {
-        this.weekMax=this.savedWeekMax();
-        this.weekMin=this.savedWeekMin();
+    constructor(main) {
+		this.main=main;
+        this.weekMax=this.loadOption('weekMax') ?? 4;
+        this.weekMin=this.loadOption('weekMin') ?? -4;
         this.updateTime();
         makeAutoObservable(this);
 

@@ -41,7 +41,7 @@ class JobItem extends DashItem {
 	 */
 	loadData(item){
 		//console.log(item);
-		if (!super.loadData(item)) return false;
+		if (!super.loadData(item,false)) return false;
 
 		this.deadline=item.DATE_ACTIVE_FROM?TimeHelper.bitrixDateTimeToJs(item.DATE_ACTIVE_FROM):null;
 
@@ -61,6 +61,8 @@ class JobItem extends DashItem {
 		this.parseTitle();
 
 		this.setUpdating(false);
+		this.recalcTime();
+		console.log(this);
 	}
 
 

@@ -5,6 +5,7 @@ import { Tooltip } from 'antd';
 import './Task.css'
 import classNames from "classnames";
 import { StoreContext } from "Data/Stores/StoreProvider";
+import TimeHelper from "Helpers/TimeHelper";
 
 const TaskLink = observer((props)=>{
 	//trace();
@@ -21,7 +22,9 @@ const TaskLink = observer((props)=>{
 
 	if (task===undefined) {
 		//console.log('Task #'+props.id+' not found');
-		return 'Задача '+props.id;
+		return (<Tooltip title={'Задача '+props.id+' не загружена (скорее всего закрыта до '+TimeHelper.strDateHumanLong(context.time.firstWeekStart())+')'}>
+			{'Задача '+props.id}
+			</Tooltip>);
 	}
 	return (
 	<Tooltip title={'Задача '+props.id+': '+task.title}>

@@ -83,8 +83,8 @@ export class WsStore {
 	}
 
 	sendMessage=(data)=>{
-		console.log('sending');
-		console.log(data);
+		//console.log('sending');
+		//console.log(data);
 		this.socket.send(JSON.stringify(data));
 	}
 

@@ -3,7 +3,7 @@ import UsersStore from './UsersStore';
 import MainStore from './MainStore';
 import LayoutStore from './LayoutStore';
 import TimeStore from './TimeStore';
-import PeriodsStore from './PeriodsStore';
+import PeriodsStore from './Periods/PeriodsStore';
 import ItemsMultiStore from './Items/ItemsMultiStore';
 import {userList,inventoryUrl,apiUrl,wsUrl,asteriskUrl} from 'config.priv';
 import { WsStore } from './WsStore';
@@ -18,8 +18,8 @@ mainStore.setWsUrl(wsUrl);
 mainStore.setAsteriskUrl(asteriskUrl);
 mainStore.init();
 
-//инициализируем хранилище времени, т.к. оно тоже самостоятельное, но от него зависят другие
-const timeStore=new TimeStore();
+//инициализируем хранилище времени, т.к. от него зависят другие
+const timeStore=new TimeStore(mainStore);
 
 //инициализируем пользователей, т.к. им нужны только настройки
 const usersStore=new UsersStore(mainStore);

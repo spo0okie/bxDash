@@ -59,7 +59,7 @@ import { Tooltip } from 'antd';
 					className={classNames(
 						'UserItem',
 						'clickable',
-						{'hovered':id===usersStore.hovered},
+						{'hovered':id===usersStore.hovered && !usersStore.selected},
 						absentClass
 					)}
 					onMouseOver={this.mouseIn}

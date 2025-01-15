@@ -60,8 +60,8 @@ const UserCell= observer((props)=>{
 		period:period,
         maxSorting:openedItems.length?openedItems[0].sorting:null,
         dragOver:(state)=>{
-            console.log('Lighting '+id+'/'+props.user+' => '+state);
-            setDragOver(state)        //зажигатель флага "надо мной тащят карточку"
+			console.log('Lighting '+id+'/'+props.user+' => '+state);
+			setDragOver(state)        //зажигатель флага "надо мной тащят карточку"					
         }
     }
 
@@ -83,7 +83,7 @@ const UserCell= observer((props)=>{
         onMouseOut={mouseOut}
     >
 		
-        <div className="userCellContent" >
+        <div className="userCellContent" style={{background:cellOptions.background}} title={cellOptions.title}>
             <UserCellHeader 
 				key={'header'+cell.id} 
 				closedTasks={closedTasks} 
@@ -93,7 +93,6 @@ const UserCell= observer((props)=>{
 				closedTickets={closedTickets}
 				openedTickets={openedTickets}
 			/>
-			<div className='workArea' style={{background:cellOptions.background}} title={cellOptions.title}>
 				<CardsBlock key={'closed' + cell.id} items={closedItems} cell={cell} dnd={false} />
 				<CreateItemButton cell={cell} closed={cell.isClosed} />
 				<CardsBlock
@@ -102,7 +101,6 @@ const UserCell= observer((props)=>{
 					cell={cell}
 					dnd={true}
 				/>
-			</div>
 		</div>
     </td>)
 
