@@ -41,12 +41,14 @@ class PeriodItem {
             this.type='week';
             this.title='Долгий ящик';
             this.dropTime=null;
+			this.toolTip='Будущие элементы не вместившиеся в календарь';
         } else if (len<=TimeHelper.dayLen) {
             this.type='day';
             this.title=TimeHelper.strWeekDayDate(start);
             this.dropTime=this.start
                 +TimeHelper.hourLen*18; //18-00
-        } else {
+			this.toolTip=TimeHelper.strDateHumanLong(start);
+		} else {
             this.type='week';
             this.dropTime=this.start
                 +TimeHelper.dayLen*4    //пятница (четыре полных суток с начала понедельника - конец четверга, начало пятницы)

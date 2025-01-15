@@ -134,7 +134,7 @@ class TimeHelper {
 
 	strWeekDayDate(time) {
 		let t=this.objDate(time);
-		return time=this.zeroPad(t.M)+'.'+this.zeroPad(t.D) +'('+t.w+')';  
+		return time=this.zeroPad(t.D)+'.'+this.zeroPad(t.M) +' ('+t.w+')';  
 	}
 
 	strDateTime(time) {

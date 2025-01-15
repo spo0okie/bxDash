@@ -50,7 +50,7 @@ const ScrollSection = (props) => {
 	};
 
 	// Rendering the component's JSX.
-	return (<div id={props.id} className={props.className}>{props.children}</div>);
+	return (<div id={props.id} className={props.className} style={props.style}>{props.children}</div>);
 }
 
 export default ScrollSection;

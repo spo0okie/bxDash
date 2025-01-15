@@ -55,10 +55,17 @@ class Layout extends Component {
 				{layout.memosVisible && (<Sidebar><MemoCell /></Sidebar>)}
 				<div className="dashBoard">
 					{/*this.authForm()*/}
-					<ScrollSection className={classNames(
-						"Calendar",
-						{ 'ColumnScroller': personal && !layout.expand }
-					)} id='calendarGrid'>
+					<ScrollSection 
+						className={classNames(
+							"Calendar",
+							{ 'ColumnScroller': personal && !layout.expand }
+						)} id='calendarGrid'
+						style={{
+							width: (personal && !layout.expand)?
+								(layout.windowDimensions.width - 200 - (layout.memosVisible?layout.sidebarWidth:0))+'px'
+								:null
+						}}
+					>
 						{time.weeksRange(!personal).map((i) => <Interval key={i} id={i} />)}
 					</ScrollSection>
 				</div>
