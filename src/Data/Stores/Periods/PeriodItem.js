@@ -31,7 +31,7 @@ class PeriodItem {
         this.len=len;
         this.end=len===null?null:start+len;
 		this.startObj = TimeHelper.objDate(this.start);
-		this.endObj = this.end?TimeHelper.objDate(this.end):null;
+		this.endObj = this.end?TimeHelper.objDate(this.end-1):null;
 		this.wDays=[];
 		if (this.endObj) for (let i = this.startObj.W; i <= this.endObj.W; i++) this.wDays.push(i);
 		//console.log(this.startObj);
@@ -69,11 +69,11 @@ class PeriodItem {
         this.className='period0';
         if (start < this.time.monday0) {
             let week=Math.floor((this.time.monday0-start-1)/TimeHelper.weekLen)+1;
-            this.className='period'+Math.min(week,6);
+            this.className='period'+Math.min(week,7);
         }
         if (start > this.time.sunday0-1) {
             let week=Math.floor((start-this.time.sunday0)/TimeHelper.weekLen)+1;
-            this.className='period'+Math.min(week,6);
+            this.className='period'+Math.min(week,7);
         }
         //console.log(time.today);
         this.isClosed=(start <= this.time.today);

@@ -1,7 +1,6 @@
 td.userCell ul li.userPlan {
     color:white;
-    border-color:#457b9d;
-    background:#457b9d;
+    background:#444;
 }
 
 td.userCell ul li.userPlan.denied {
@@ -9,7 +8,7 @@ td.userCell ul li.userPlan.denied {
 }
 
 td.userCell ul li.userPlan.authorized {
-	background: #1d3557;
+	background: #222;
 }
 
 td.userCell ul li.userPlan.authorized.unknown {

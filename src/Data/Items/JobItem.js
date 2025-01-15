@@ -62,7 +62,7 @@ class JobItem extends DashItem {
 
 		this.setUpdating(false);
 		this.recalcTime();
-		console.log(this);
+		//console.log(this);
 	}
 
 

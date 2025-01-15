@@ -83,12 +83,12 @@ class ItemsStore {
 		const id = Number(data.ID);		
 		const className = this.classMap[this.type];
         if (!has(this.items,id)) {
-			console.log('creating new '+ this.type);
+			//console.log('creating new '+ this.type);
 			const Item = new className({}, data, this);
 			this.setItem(Item);
 			this.master.buildReveseLinks(Item);
         } else {
-			console.log('updating '+id);
+			//console.log('updating '+id);
 			const Item = get(this.items, id)
 			Item.loadData(data);			
 			this.master.buildReveseLinks(Item);
