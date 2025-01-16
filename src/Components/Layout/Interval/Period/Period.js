@@ -6,6 +6,7 @@ import PeriodData from "./Data/Data";
 import { StoreContext } from "Data/Stores/StoreProvider";
 
 import './Period.css';
+import { Element } from "react-scroll";
 
 @observer class Period extends React.Component {
     layoutClass() {
@@ -20,12 +21,12 @@ import './Period.css';
 		//console.log(period);
         //console.log('Period render');
         return (
-            <div className={"Period "+this.layoutClass()+' '+period.className}>
+            <Element className={"Period "+this.layoutClass()+' '+period.className} name={'period'+id}>
 				<div className="periodContent">
 					<PeriodTitle id={id} key={id + '.title'} />
 					<PeriodData id={id} key={id} />
 				</div>
-            </div>
+            </Element>
         )
     }
 }

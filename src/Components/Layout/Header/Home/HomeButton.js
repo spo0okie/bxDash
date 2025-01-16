@@ -10,7 +10,8 @@ const HomeButton = (props)=>{
 	const context=useContext(StoreContext);
 	const onClick=(e)=>{
 		//window.location.href=("#"+task.uid);
-		context.layout.scrollTo('interval0',scrollDuration);
+		console.log('period'+context.time.today);
+		context.layout.scrollTo('period'+context.time.today,scrollDuration);
 		e.stopPropagation();
 	}
 	//console.log(props);

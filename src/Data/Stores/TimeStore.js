@@ -60,7 +60,7 @@ class TimeStore {
         let time=h+':'+m+':'+s;
         let date=Y+'-'+M+'-'+d;
         this.strTime=time+' '+date;
-		console.log(d+' vs '+this.day+'  '+TimeHelper.strDateTimeHumanLong(d0)+' '+this.strTime);
+		//console.log(d+' vs '+this.day+'  '+TimeHelper.strDateTimeHumanLong(d0)+' '+this.strTime);
 
         //console.log(date+' ('+w+') '+time);
         /*
