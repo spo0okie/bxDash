@@ -15,6 +15,7 @@ class IntervalItem {
     start;      //начало недели
     end;        //конец периода
 	expand;		//внутреннее состояние expand под который построены периоды
+	today;		//отметка "сегодня" относительно которой опредлены флаги открытого/закрытого периода
 
 	itemsTypes;
 	itemsIds;
@@ -123,13 +124,15 @@ class IntervalItem {
 	init() {
 		const start = this.time.weekStart(this.id);
 		const end = this.id>this.time.weekMax?null:this.time.weekEnd(this.id);
+		const today = this.time.today;
 		//const oldStart = this.start;
 		const oldEnd = this.end;
 
-		if (this.start !== start || this.end !== end) {
-			//console.log (this.id + ': [' + this.start + ',' + this.end + '] -> [' + start+',' + end+']' );
+		if (this.start !== start || this.end !== end || this.today !== today) {
+			console.log (this.id + ': [' + this.start + ',' + this.end + ','+this.today+'] -> [' + start+',' + end + ','+today + ']' );
 			this.start=start;
 			this.end=end;
+			this.today=today;
 			this.reinitPeriods();	//большинство переедет в новый последний
 			if (oldEnd===null && end!==null) { //был последним и перестал
 				this.reintervalItems([this.id+1]);	//большинство переедет в новый последний

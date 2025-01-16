@@ -228,6 +228,15 @@ class ItemsStore {
 		this.loadItems(from,to,onComplete);
 	}
 
+	recalcPeriods() {
+		console.log('recalc periods');
+		this.items.forEach(test => {
+			test.recalcTime();
+			test.findInterval();
+
+		});
+	}
+
     init() {
 		console.log(this.type + 's init');
         const users=this.users.items;
@@ -244,7 +253,13 @@ class ItemsStore {
 				},reloadInterval)
 			}
         });
-		observe(this.time,'weekMin',change=>{this.loadPending()});
+		
+		//если мы поменяли первую неделю, то возмножно надо подгрузить старые даныне
+		observe(this.time,'weekMin',change=>{this.loadPending()});							
+
+		//если поменялось "сегодня" то возможно поменялись и границы недель (вс->пн), но при движении времени вперед ничего нового не подгрузить
+		//а вот пересчитать временные отметки элементов имеет смысл, т.к. все просрочки сдвинутся вперед
+		observe(this.time,'today',change=>{this.recalcPeriods()});
     }
 
 	getMaxId() {

@@ -4,6 +4,7 @@ import {keys} from "mobx"
 import { StoreContext } from "Data/Stores/StoreProvider";
 import Period from "./Period/Period";
 import './Interval.css';
+import { Element } from "react-scroll";
 
 @observer class Interval extends React.Component {
 
@@ -30,13 +31,14 @@ import './Interval.css';
         //console.log("Interval render "+id);
 
         return (
-            <div className={intervalClass}>
-                {
-                    keys(periods.periods)   //берем все периоды
-                    .filter((t)=>(t>=start) && (t<end)) //выбираем те, что попадают в интервал
-                    .map((t)=><Period id={t} key={t}/>)
-                }
-            </div>
+			<Element name={'interval'+id} className={intervalClass}>
+
+					{
+						keys(periods.periods)   //берем все периоды
+						.filter((t)=>(t>=start) && (t<end)) //выбираем те, что попадают в интервал
+						.map((t)=><Period id={t} key={t}/>)
+					}
+			</Element>
         )
     }
 }

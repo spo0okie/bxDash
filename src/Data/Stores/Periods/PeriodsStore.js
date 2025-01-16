@@ -18,7 +18,7 @@ class PeriodsStore {
 		weeks.reverse().forEach(id=>{
 			if (has(this.intervals, id)) {
 				//если такой элемент есть - обновляем его поля (поштучно)
-				//console.log(id +' updatin');
+				console.log(id +' updatin');
 				get(this.intervals,id).init(); 
 			} else {
 				console.log(id +' creatin');
@@ -26,6 +26,7 @@ class PeriodsStore {
 			}
 		});
 
+		//проверяем что нужно удалить
 		keys(this.intervals).forEach(id=>{
 			if(!weeks.includes(id)){
 				this.deleteInterval(id)
@@ -73,6 +74,7 @@ class PeriodsStore {
 
         observe(time,'weekMin',change=>{this.weeksInit()});
         observe(time,'weekMax',change=>{this.weeksInit()});
+        observe(time,'today',change=>{this.weeksInit()});
 
         makeAutoObservable(this);
     }

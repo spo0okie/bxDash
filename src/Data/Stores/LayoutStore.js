@@ -35,7 +35,7 @@ class LayoutStore {
 		scroller.scrollTo(item, {
 			duration: duration,
 			delay: 0,
-			smooth: true,
+			smooth: 'easeInOutQuint',
 			containerId: 'calendarGrid',
 			offset: -50, // Scrolls to element + 50 pixels down the page
 			// ... other options

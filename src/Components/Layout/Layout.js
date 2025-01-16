@@ -10,6 +10,7 @@ import "./Layout.css";
 import MemoCell from "../MemoCell/MemoCell";
 import Sidebar from "./Sidebar/Sidebar";
 import ScrollSection from "./ScrollSection/ScrollSection";
+import HomeButton from "./Header/Home/HomeButton";
 
 
 //@withStore
@@ -50,6 +51,7 @@ class Layout extends Component {
 			{main.bxAuth && (<>
 							<ModalWindow />
 							<AppHeader />
+							<HomeButton />
 				
 				<div className="layout">
 				{layout.memosVisible && (<Sidebar><MemoCell /></Sidebar>)}

@@ -56,7 +56,7 @@ const UserCell= observer((props)=>{
         user:props.user,            //пользователь
         id:id+'/'+props.user,       //ключ
         dropT:period.dropTime,      //на какое время ставить задачи падающие в эту ячейку
-		isToday:period.isToday,
+		//isToday:period.isToday,
 		period:period,
         maxSorting:openedItems.length?openedItems[0].sorting:null,
         dragOver:(state)=>{

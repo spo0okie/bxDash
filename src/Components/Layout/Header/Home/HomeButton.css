@@ -1,0 +1,11 @@
+span.homeButton {
+	position: fixed;
+	top: 0;
+	left: 0;
+	padding: 1px 4px;
+	z-index: 991;
+}
+
+span.homeButton:hover {
+	background: greenyellow;
+}

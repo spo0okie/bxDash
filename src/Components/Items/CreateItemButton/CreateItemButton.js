@@ -111,15 +111,16 @@ const CreateItemButton = observer((props)=>{
 	const period = get(context.periods.periods,cell.t);
 	const closed = period.isClosed;
 	const open = period.isOpen;
+	const isToday = period.isToday;
 	//console.log(this.context);
 
 	return (
 		<span className="CreateItemButton">
-			{closed && showJobs && <CreateClosedJobButton items={context.items} cell={cell} context={context} />}
-			{open && showJobs && <CreateJobButton items={context.items} cell={cell} context={context} />}
-			{open && props.cell.isToday && <CreateTicketButton items={context.items} cell={cell} context={context} />}
-			{open && <CreateTaskButton items={context.items} cell={cell} context={context} />}
-			{props.cell.dropT !== null && props.cell.period.wDays.includes(6) && <CreatePlanButton items={context.items} cell={cell} context={context} />}
+			{closed && showJobs		&& <CreateClosedJobButton	items={context.items} cell={cell} context={context} />}
+			{open && showJobs		&& <CreateJobButton			items={context.items} cell={cell} context={context} />}
+			{open && isToday		&& <CreateTicketButton		items={context.items} cell={cell} context={context} />}
+			{open 					&& <CreateTaskButton		items={context.items} cell={cell} context={context} />}
+			{period.dropTime !== null && period.wDays.includes(6) && <CreatePlanButton items={context.items} cell={cell} context={context} />}
 		</span>
 
 	)
