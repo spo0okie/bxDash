@@ -15,7 +15,9 @@ import { Tooltip } from "antd";
 
 
 const TaskStatusUpdates=observer((props)=>{
-	const task=props.task;
+	trace();
+	const context=useContext(StoreContext);
+	const task = get(context.items['task'].items,props.task.id);
 	if (!task.updatesCount) return '';
 	return(<a href={task.viewUrl+'#updates'} className="task-item-updates" title={'Изменения ('+task.updatesCount+')'}>
 		<span className="task-item-updates-inner">{task.updatesCount}</span>
@@ -24,12 +26,14 @@ const TaskStatusUpdates=observer((props)=>{
 
 
 const TaskStatus=observer((props)=>{
-	const task=props.task;
+	const context=useContext(StoreContext);
+	const task = get(context.items['task'].items,props.task.id);
 	let onclick=null;
 	switch (task.status) {
 		case 1:     onclick=()=>task.changeStatus(3); break;
 		case 2:     onclick=()=>task.changeStatus(3); break;
 		case 3:     onclick=()=>task.changeStatus(2); break;
+		default:	onclick=null;
 	}
 	return (
 	<span className="msgStatus">
@@ -45,8 +49,8 @@ const TaskStatus=observer((props)=>{
 
 
 const TaskDeadline=observer((props)=>{
-	const task=props.task;
-	let onclick=null;
+	const context=useContext(StoreContext);
+	const task = get(context.items['task'].items,props.task.id);
 
 	let date='неизв';
 	let tips=[

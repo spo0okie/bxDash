@@ -1,5 +1,7 @@
+import { action, makeObservable, observable } from "mobx";
 import DashItem from "./DashItem";
 import TimeHelper from "Helpers/TimeHelper";
+import { act } from "react";
 
 class TaskItem extends DashItem {
 
@@ -43,6 +45,16 @@ class TaskItem extends DashItem {
 
 		if (this.t !== t) this.findInterval();
 	}
+
+	setStatus(value) {
+		if (value===this.status) return;
+		this.status=value;
+	}
+
+	setUpdates(value) {
+		if (value===this.updatesCount) return;
+		this.updatesCount=value;
+	}
 	
 	/**
 	 * Инициализация на данных из Birtix
@@ -62,7 +74,7 @@ class TaskItem extends DashItem {
         this.user=Number(item.RESPONSIBLE_ID);
         this.accomplices=item.ACCOMPLICES?item.ACCOMPLICES.map(i=>Number(i)):[];
 
-        this.status=Number(item.REAL_STATUS);
+        this.setStatus(Number(item.REAL_STATUS));
 		
 		switch (this.status) {
             case -1:    this.strStatus="Просрочена";	break;		//просрочена
@@ -76,7 +88,7 @@ class TaskItem extends DashItem {
 			default:	this.strStatus="unknown";
         }
 
-        this.updatesCount=Number(item.UPDATES_COUNT);
+        this.setUpdates(Number(item.UPDATES_COUNT));
 
         this.deadline=item.DEADLINE?TimeHelper.bitrixDateTimeToJs(item.DEADLINE):null;
 		
@@ -107,6 +119,18 @@ class TaskItem extends DashItem {
 		if (newStatus===2 && !window.confirm("Остановить выполнение задачи "+this.id+"?")) return false;
 		this.update({status:newStatus},true);
 	}
-
+	
+	constructor(item,data,list) {
+		super(item,data,list);
+	
+		makeObservable(this,{
+			status:observable,
+			updatesCount:observable,
+			setStatus:action,
+			setUpdates:action,
+		})
+	
+			//console.log(this);
+	}
 }
 export default TaskItem;
