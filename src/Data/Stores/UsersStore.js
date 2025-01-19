@@ -49,6 +49,8 @@ class UsersStore {
 		};
 	}
 
+	
+
     @action init(items){
         this.items = observable.map();
         Object.keys(items).forEach((id) => {
@@ -66,11 +68,15 @@ class UsersStore {
 			}
 		}
 		console.log(this.order);
+		this.initialized=true;
     }
 
 	@action setCurrent(value) {
+		console.log(value);
 		when (()=>this.initialized,()=>{
+			console.log(value);
 			if (has(this.items,value)) {
+				console.log('current user is '+value);
 				this.current=value;
 			}
 		});
@@ -167,6 +173,7 @@ class UsersStore {
         this.selected=this.loadOption('selected')??null;
 		this.order=this.loadOption('order')??[];
         makeAutoObservable(this);
+		this.setCurrent(this.main.bxUserId);
 		observe(this.main,'bxUserId',change=>{this.setCurrent(this.main.bxUserId)});
     }
 	

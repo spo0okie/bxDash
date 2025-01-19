@@ -18,10 +18,10 @@ class PeriodsStore {
 		weeks.reverse().forEach(id=>{
 			if (has(this.intervals, id)) {
 				//если такой элемент есть - обновляем его поля (поштучно)
-				console.log(id +' updatin');
+				//console.log(id +' updatin');
 				get(this.intervals,id).init(); 
 			} else {
-				console.log(id +' creatin');
+				//console.log(id +' creatin');
 				set(this.intervals, id, new IntervalItem(id,this.main,this.time,this.items,this.layout,this));
 			}
 		});

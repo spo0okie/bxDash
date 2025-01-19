@@ -129,7 +129,7 @@ class IntervalItem {
 		const oldEnd = this.end;
 
 		if (this.start !== start || this.end !== end || this.today !== today) {
-			console.log (this.id + ': [' + this.start + ',' + this.end + ','+this.today+'] -> [' + start+',' + end + ','+today + ']' );
+			//console.log (this.id + ': [' + this.start + ',' + this.end + ','+this.today+'] -> [' + start+',' + end + ','+today + ']' );
 			this.start=start;
 			this.end=end;
 			this.today=today;

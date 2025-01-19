@@ -16,7 +16,7 @@ class MainStore {
     apiUrl;
     wsUrl;
     asteriskUrl;
-	bxUserId=null;
+	@observable bxUserId=null;
 	bxLogin=null;
 
 
@@ -58,9 +58,14 @@ class MainStore {
     }
 
 	@action setBxAuth(value) {
-        this.bxAuth=value;
-        console.log('bxAuth updated');
-    }
+		this.bxAuth=value;
+		console.log('bxAuth updated');
+	}
+
+	@action setBxUserid(value) {
+		console.log(value);
+		this.bxUserId=value;
+	}
 
         
     authenticateInventory(user,password,success,fail){
@@ -84,11 +89,11 @@ class MainStore {
 			.then((data) => {
 			if (data.auth !== undefined && data.auth) {
 				this.setBxAuth(true);
-				this.bxUserId=Number(data.id);
+				this.setBxUserid(Number(data.id));
 				this.bxLogin=data.login;
 			} else {
 				this.setBxAuth(false);
-				this.bxUserId=null;
+				this.setBxUserid(null);
 				this.bxLogin=null;
 				console.log(data);					
 			} 
