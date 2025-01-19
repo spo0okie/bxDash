@@ -17,8 +17,15 @@ const PlanCard = observer((props)=>{
 	const context=useContext(StoreContext);
 	const item = get(context.items['plan'].items,props.plan.id);
 
-		const items= [
-		{
+	let strAuthStatus;
+	switch (item.authStatus) {
+		case 0: strAuthStatus='Еще не согласовано'; break;
+		case 1: strAuthStatus='Согласовано'; break;
+		case 2: strAuthStatus='Отказано'; break;
+		default: strAuthStatus='???'
+	}
+	const items= [
+		context.users.isAdmin()?{
 			label: 'Согласование',			
 			key: '1',
 			type: 'group',
@@ -37,6 +44,10 @@ const PlanCard = observer((props)=>{
 				},
 
 			]
+		}:{
+			label: strAuthStatus,
+			key: '1',
+			disabled: true,
 		},
 		{
 			type: 'divider',
@@ -122,7 +133,7 @@ const PlanCard = observer((props)=>{
 		onClick={()=>{item.startEdit()}}
 
 		ref={ref}
-		title={item.sorting}
+		//title={item.sorting}
 
 	>
 		<Dropdown menu={{ items,onClick:contextMenuClick }} trigger={['contextMenu']}>
@@ -131,7 +142,7 @@ const PlanCard = observer((props)=>{
 				<EditItem item={item}/>
 			:
 			<>
-				<span className="plan-title-link clickable">{getTitle()}</span>{item.comments?<br/>:''}
+				<span className="plan-title-link clickable">{getTitle()}</span>{item.comments?<hr/>:''}
 				{item.isEdit && item.authStatus ?
 					<EditItem item={item} />
 					:

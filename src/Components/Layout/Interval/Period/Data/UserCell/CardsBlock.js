@@ -42,7 +42,11 @@ const CardsBlock = observer((props) => {
 			},
 			onDragLeave() {
 				//cell.dragOver(false);
-			}
+			},
+			canDrop({ source }) {
+				//нельзя бросать на недвижимые элементы списка, и на самого себя (ну или можно но надо обработать как то иначе)
+				return (source.data.type==='item');// && dropData.item.isDraggable(dropData.cell); // && source.element !== dropData.element;
+			},
 		});
 	}, [cell,items]);
 

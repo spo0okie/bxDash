@@ -1,6 +1,6 @@
 import React, {useRef,useEffect,useState,useContext} from "react";
 import {observer} from "mobx-react";
-import { dashItemDragLogic } from "Data/Items/DashItem";
+import { dashItemDragLogic } from "Helpers/DndHelper";
 import {get,trace} from "mobx"
 import { Element} from 'react-scroll';
 
@@ -15,7 +15,7 @@ import { Tooltip } from "antd";
 
 
 const TaskStatusUpdates=observer((props)=>{
-	trace();
+	//trace();
 	const context=useContext(StoreContext);
 	const task = get(context.items['task'].items,props.task.id);
 	if (!task.updatesCount) return '';

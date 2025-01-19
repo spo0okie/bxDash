@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import {observable, when, makeAutoObservable, runInAction , get, set, action, computed, keys, has} from 'mobx';
+import {observable, when, makeAutoObservable, runInAction , get, set, action, computed, keys, has, observe} from 'mobx';
 import UserItem from 'Data/Items/UserItem';
 
 class UsersStore {
@@ -8,15 +8,12 @@ class UsersStore {
     loadOption(name) {return this.main.loadOption('users.'+name);}
     saveOption(name,value) {return this.main.saveOption('users.'+name,value,);}
 
-    constructor(main) {
-        this.main=main;
-        this.selected=this.loadOption('selected')??null;
-        makeAutoObservable(this)
-    }
-
     @observable hovered = null;             //над каким пользователем (колонкой) сейчас мышь
     @observable selected = null;            //каким пользователем ограничено отображение
     @observable items = observable.map();
+	@observable order=[];
+	@observable initialized=false;
+	@observable current = null;
 
 	@observable dutyPhone=null;
 	@observable dutyTicketer=null;
@@ -58,8 +55,26 @@ class UsersStore {
 			const item=items[id];
 			item.id=Number(id);
             this.initItem(item);
+			if (item.roles.includes('user') && !this.order.includes(item.id)) this.order.push(item.id);	//добавляем в порядок элементов недостающие
         });
+		for(let i=this.order.length-1; i>=0; i--) {
+			if (!has(this.items,this.order[i])) {
+				this.order.splice(i);		//убираем лишние
+			} else if (!get(this.items,this.order[i]).roles.includes('user')) {
+				//console.log(get(this.items,this.order[i]).roles);
+				this.order.splice(i);		//убираем лишние
+			}
+		}
+		console.log(this.order);
     }
+
+	@action setCurrent(value) {
+		when (()=>this.initialized,()=>{
+			if (has(this.items,value)) {
+				this.current=value;
+			}
+		});
+	}
 
 	//создать/обновить элемент из другого JS объекта
     initItem(data){
@@ -81,14 +96,14 @@ class UsersStore {
         return keys(this.items).length;
     }
 
-    @computed getUser(id) {
-        return get(this.items,id);
-    }
-
     @action setItem(item) {
-
         set(this.items, item.id, item);        
     }
+
+	@computed isAdmin() {
+		if (!this.current) return false;
+		return get(this.items,this.current).roles.includes('admin');
+	}
 
     /**
      * Обновляет объект item  
@@ -141,6 +156,20 @@ class UsersStore {
 		if (this.dutyPhone===id) return;
 		this.dutyPhone=id;
 	}
+
+	@action setOrder(value) {
+		this.order=value;
+		this.saveOption('order',value);
+	}
+
+    constructor(main) {
+        this.main=main;
+        this.selected=this.loadOption('selected')??null;
+		this.order=this.loadOption('order')??[];
+        makeAutoObservable(this);
+		observe(this.main,'bxUserId',change=>{this.setCurrent(this.main.bxUserId)});
+    }
+	
 }
 
 export default UsersStore;

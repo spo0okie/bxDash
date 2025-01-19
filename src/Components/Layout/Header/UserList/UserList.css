@@ -2,3 +2,15 @@ div.AppUserList {
     width:100%;
     display: table;
 }
+
+div.AppUserList div.PeriodData table.UserCells {
+	min-height: 16px !important;
+	overflow: visible;
+}
+
+div.AppUserList div.PeriodData table.UserCells td {
+	overflow: visible;
+}
+
+
+div.dummyScrollBar {display: table-cell;}

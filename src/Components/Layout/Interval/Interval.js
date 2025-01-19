@@ -32,12 +32,11 @@ import { Element } from "react-scroll";
 
         return (
 			<Element name={'interval'+id} className={intervalClass}>
-
-					{
-						keys(periods.periods)   //берем все периоды
-						.filter((t)=>(t>=start) && (t<end)) //выбираем те, что попадают в интервал
-						.map((t)=><Period id={t} key={t}/>)
-					}
+				{
+					keys(periods.periods)   //берем все периоды
+					.filter((t)=>(t>=start) && (t<end)) //выбираем те, что попадают в интервал
+					.map((t)=><Period id={t} key={t}/>)
+				}
 			</Element>
         )
     }

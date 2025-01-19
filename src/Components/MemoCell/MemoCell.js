@@ -1,10 +1,7 @@
-import React, {useState,useContext} from "react";
+import React, {useContext} from "react";
 import {observer} from "mobx-react";
-import {get,trace} from "mobx"
 import { StoreContext } from "Data/Stores/StoreProvider";
-//import UserItem from "./UserItem";
-//import usersStore from '../../Stores/usersStore';
-import { dashItemsSort,dashClosedItemsSort } from "Data/Items/DashItem";
+import { dashItemsSort,dashClosedItemsSort } from "Helpers/SortHelper";
 import CardsBlock from "Components/Layout/Interval/Period/Data/UserCell/CardsBlock";
 import MemoItem from "Data/Items/MemoItem";
 import TimeHelper from "Helpers/TimeHelper";
@@ -14,7 +11,6 @@ const MemoCell= observer((props)=>{
 	const context = useContext(StoreContext);
     
     //trace();
-	const layout=context.layout;
 	const items=context.items['memo'];
 	//console.log(items);
 
@@ -55,8 +51,6 @@ const MemoCell= observer((props)=>{
 		maxSorting: openedItems.length ? openedItems[0].sorting : null,
 		dragOver: (state) => {}
 	}
-
-    const users=context.users;
 
 	openedItems=openedItems.sort((a,b)=>dashItemsSort(b,a));
 

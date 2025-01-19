@@ -36,11 +36,12 @@ import UserCell from "./UserCell/UserCell";
 				<table className="UserCells">
                     <tbody>
                         <tr>
-							{keys(users.items).map((i) => {
-                                if(users.selected===i || users.selected===null) 
+							{users.order.map((i) => {
+								const user=get(users.items,i);
+                                if(users.selected===user.id || users.selected===null) 
                                     return (<UserCell 
-                                        key={'cell'+id+'/'+i} 
-                                        user={Number(i)} 
+                                        key={'cell'+id+'/'+user.id} 
+                                        user={user.id} 
                                         period={id}
 										items={items} 
                                     />)

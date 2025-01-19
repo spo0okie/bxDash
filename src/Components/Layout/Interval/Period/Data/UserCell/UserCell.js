@@ -5,7 +5,7 @@ import { StoreContext } from "Data/Stores/StoreProvider";
 import UserCellHeader from "./UserCellHeader";
 import './UserCell.css'
 import classNames from "classnames";
-import { dashItemsSort,dashClosedItemsSort } from "Data/Items/DashItem";
+import { dashItemsSort,dashClosedItemsSort } from "Helpers/SortHelper";
 import CreateItemButton from "Components/Items/CreateItemButton/CreateItemButton";
 import CardsBlock from "./CardsBlock";
 import { userPeriodAbsentsGradient } from "Helpers/IntervalHelper";

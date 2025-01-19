@@ -23,6 +23,49 @@ class ArrayHelper {
 		}
 		array.splice(index,1)		
 	}
+
+	/**
+	 * Переместить элемент с индексом index в позицию между after и before
+	 * @param {*} array 
+	 * @param {*} index 
+	 * @param {*} after 
+	 * @param {*} before 
+	 * @returns 
+	 */
+	moveItem(array,index,after,before) {
+		console.log(array);
+		console.log(index,after,before);
+
+		let newArr=[];	
+		let moving=array[index];
+
+		array.splice(index,1);
+		if (index<before) before--;
+		if (index<after) after--;
+
+		console.log(array);
+		console.log(after,before);
+
+		if (typeof after === 'number') {
+			for (let i=0;i<=after; i++) {
+				console.log(i);
+				newArr.push(array[i]);
+			}
+		}
+
+		newArr.push(moving);
+		console.log('!');
+
+		if (typeof before === 'number') {
+			for (let i=before;i<array.length; i++) {
+				console.log(i);
+				newArr.push(array[i]);
+			}
+		}
+
+		console.log(newArr);
+		return newArr;
+	}
 }
 
 export default ArrayHelper = new ArrayHelper();

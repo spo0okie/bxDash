@@ -1,6 +1,6 @@
 import React, {useRef,useEffect,useState,useContext} from "react";
 import {observer} from "mobx-react";
-import { dashItemDragLogic } from "Data/Items/DashItem";
+import { dashItemDragLogic } from "Helpers/DndHelper";
 import { get, trace } from "mobx"
 
 

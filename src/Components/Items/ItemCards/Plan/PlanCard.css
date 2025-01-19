@@ -26,6 +26,12 @@ td.userCell ul li.userPlan.authorized.failed {
 td.userCell ul li.userPlan.authorized.complete {
 	border-left: green solid 8px;
 }
+td.userCell ul li.userPlan hr{
+	height: 1px;
+	border: 0;
+	background: gray;
+	margin: 2px;
+}
 
 span.plan-comments {
 	font-style: italic;

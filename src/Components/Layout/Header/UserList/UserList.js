@@ -1,6 +1,6 @@
 import React from "react";
-import {observer, inject} from "mobx-react";
-import {keys} from "mobx"
+import {observer} from "mobx-react";
+import { get} from "mobx"
 
 import './UserList.css';
 import UserItem from "./UserItem";
@@ -13,7 +13,7 @@ import { StoreContext } from "Data/Stores/StoreProvider";
 
         //console.log(userStore.items);
         console.log('UserList.render');
-        if (!usersStore.items.size) return (
+        if (!usersStore.order.length) return (
             <div>No users loaded</div>
         );
         //console.log(usersStore)
@@ -24,15 +24,18 @@ import { StoreContext } from "Data/Stores/StoreProvider";
                     <table className="UserCells">
                         <tbody>
                             <tr>
-                                {keys(usersStore.items).map((i) => {
-                                    if(usersStore.selected===i || usersStore.selected===null) 
-                                        return (<UserItem key={i} id={i} />)
+                                {usersStore.order.map((i,index) => {
+									const user=get(usersStore.items,i);
+                                    if(usersStore.selected===user.id || usersStore.selected===null) 
+                                        return (<UserItem key={user.id} id={user.id} index={index}/>);
+									return null;
                                 })}
                             </tr>
                         </tbody>
                     </table>
 
                 </div>
+				<div className="dummyScrollBar" style={{width:this.context.layout.scrollbarWidth}}>&nbsp;</div>
             </div>
         )
     }
