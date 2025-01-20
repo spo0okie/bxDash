@@ -20,7 +20,7 @@ const TaskStatusUpdates=observer((props)=>{
 	const task = get(context.items['task'].items,props.task.id);
 	if (!task.updatesCount) return '';
 	return(<a href={task.viewUrl+'#updates'} className="task-item-updates" title={'Изменения ('+task.updatesCount+')'}>
-		<span className="task-item-updates-inner">{task.updatesCount}</span>
+		{task.updatesCount}
 	</a>);
 })
 

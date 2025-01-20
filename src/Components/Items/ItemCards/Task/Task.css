@@ -38,36 +38,16 @@ li.userItem.userTask.closed {
     background:linear-gradient(#007dc1, #0061a7);
 }
 
-li.userItem.userTask .task-item-updates-inner {
-    display: inline-block;
-    height: 9px;
-    color: white;
-    background: #acacac url(/public/task-sprite_8.png) no-repeat right -119px;
-    margin-left: 2px;
-    padding: 0 2px 0 0;
-    font-size: 12px;
-    line-height: 9px;
-    vertical-align: baseline;
-}
 
-li.userItem.userTask .task-title-comments {
-    display: inline-block;
-    height: 11px;
-    padding-left: 12px;
-    background: url(/public/task-sprite_8.png) no-repeat -14px -103px;
-    font-size: 9px;
-    line-height: 9px;
-    color: #7f7f7f!important;
-    text-decoration: none!important;
-    vertical-align: middle;
-    outline: 0;
-}
 
 li.userTask .task-item-updates {
-    margin-left: 2px;
+    padding: 1pt 2pt;
+	margin-left: 2px;
+	border-radius: 4pt;
     display: inline-block;
-    height: 9px;
-    background: #acacac url(/public/task-sprite_8.png) no-repeat 0 -119px;
+    color: white;
+    background: red; /* #75ca57
+    background: #75ca57;/**/
     outline: 0;
     cursor: pointer;
     text-decoration: none!important;
