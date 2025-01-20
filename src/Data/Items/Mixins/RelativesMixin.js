@@ -80,9 +80,9 @@ const RelativesMixin = {
 		this.parsedTitle=this[title];
 
 		//taskRe = /задача\s*[#№]?\s*:?\s*(\d+)/i;
-		const tasksRe = /(работ[аы] по задаче|задача)\s*[#№]?\s*:?\s*(\d+)/ig;
+		const tasksRe = /(работ[аы] по задаче|задача)\s*[#№]?\s*[:-]?\s*(\d+)/ig;
 		//ticketRe = /(тикет|заявка|обращение)\s*[#№]?\s*:?\s*(\d+)/i;
-		const ticketsRe = /(тикет|заявка|обращение)\s*[#№]?\s*:?\s*(\d+)/ig;
+		const ticketsRe = /(тикет|заявка|обращение)\s*[#№]?\s*[:-]?\s*(\d+)/ig;
 	
 		const taskMatch = [...this.parsedTitle.matchAll(tasksRe)];
 		if (Array.isArray(taskMatch) && taskMatch.length) {
@@ -102,7 +102,33 @@ const RelativesMixin = {
 		}
 
 		this.directLinksRebuild();
+	},
+
+	/**
+	 * Убирает также текст описания родителей из текста элемента
+	 * @returns 
+	 */
+	cleanTitle() {
+		let title=this.parsedTitle
+
+		let links=[];
+
+		if (this.titleLinks==='parentUids') links=this.parents;
+		if (this.titleLinks==='childUids') links=this.children;
+
+		if (!links.length) return title;
+
+		links.forEach(link=>{
+			title=title.replace(link.title,'')
+			//console.log(this.parsedTitle);
+		})
+		
+		//если после уборки не осталось вообще ничего - добавляем текст задачи
+		if (!title.trim().length || title.trim()===':') title+=links[0].title;
+
+		return title;
 	}
+
 	
 }
 

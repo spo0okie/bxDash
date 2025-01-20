@@ -45,7 +45,6 @@ const JobCard = observer((props)=>{
 		e.preventDefault();
 	}
 
-	
 	return( <li 
 		className={classNames(
 			'userItem',		//это понятно

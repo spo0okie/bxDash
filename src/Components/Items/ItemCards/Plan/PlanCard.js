@@ -9,6 +9,7 @@ import { StoreContext } from "Data/Stores/StoreProvider";
 import TimeHelper from "Helpers/TimeHelper";
 import EditItem from "../../EditItem/EditItem";
 import TaskLink from "../Task/TaskLink";
+import ParentLink from "Components/Items/ParentLink/ParentLink";
 
 
 const PlanCard = observer((props)=>{
@@ -142,7 +143,7 @@ const PlanCard = observer((props)=>{
 				<EditItem item={item}/>
 			:
 			<>
-				<span className="plan-title-link clickable">{getTitle()}</span>{item.comments?<hr/>:''}
+				<ParentLink item={item} children={true} /> <span className="plan-title-link clickable">{item.cleanTitle()}</span>{item.comments?<hr/>:''}
 				{item.isEdit && item.authStatus ?
 					<EditItem item={item} />
 					:

@@ -23,15 +23,6 @@ class JobItem extends DashItem {
 			this.update({ closedDate: TimeHelper.getTimestamp() }, true);
 	}
 
-	cleanTitle() {
-		let title=this.parsedTitle
-		this.parents.forEach(parent=>{
-			title=title.replace(parent.title,'')
-			//console.log(this.parsedTitle);
-		})
-		return title;
-	}
-
 	/**
 	 * Инициализация
 	 * @param {*} item 

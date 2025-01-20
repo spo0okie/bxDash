@@ -5,7 +5,7 @@ const ParentLink=(props)=>{
 	const item=props.item;
 	//console.log(item);
 	let links=[];
-	const relatives=props.children?item.childrenUids:item.parentUids;
+	const relatives=props.children?item.childUids:item.parentUids;
 	relatives.forEach(uid => {
 		const tokens=uid.split(':');
 		if (tokens[0]==='task') {
