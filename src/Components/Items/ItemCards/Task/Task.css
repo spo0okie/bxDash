@@ -6,9 +6,6 @@ li.userTask.closeMe {border: 2px solid limegreen;}
 
 /* задача в работе*/
 li.userTask.activeNow {border-left: 4px solid limegreen;}
-li.userTask.activeNow .content {
-	background: url("/public/cog.webp") 50% 50% no-repeat;
-}
 
 span.userTaskLink {
 	border: solid 1px #999999;
