@@ -70,14 +70,17 @@ const UserCell= observer((props)=>{
 	const cellOptions=userPeriodAbsentsGradient(context.items['absent'],period.start,period.end,props.user);
 	//console.log(cellOptions);
     
-    //console.log('userCell render '+cell.id+'('+TimeHelper.strDateHuman(cell.t)+'): '+tasks.length);
+    //console.log('userCell render ');
     return (
         <td
         className={classNames(
             "userCell",
             {'draggedOver':dragedOver}
         )}
-        style={{ width: 100/users.count()+'%' }}
+        style={{ 
+			width: 100/users.order.length+'%',
+			//display: (users.selected===props.user || users.selected===null)?null:'none'
+		}}
         //className={"User "+(id===users.hovered?'hovered':'')}
         onMouseOver={mouseIn}
         onMouseOut={mouseOut}

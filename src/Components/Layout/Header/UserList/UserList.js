@@ -12,7 +12,7 @@ import { StoreContext } from "Data/Stores/StoreProvider";
         const usersStore = this.context.users;
 
         //console.log(userStore.items);
-        console.log('UserList.render');
+        //console.log('UserList.render');
         if (!usersStore.order.length) return (
             <div>No users loaded</div>
         );

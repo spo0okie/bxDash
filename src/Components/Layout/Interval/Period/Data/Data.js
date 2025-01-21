@@ -27,7 +27,7 @@ import UserCell from "./UserCell/UserCell";
 				items[type].push(get(itemsStorage[type].items, id));
 			});
 		})
-		//console.log(period);
+		//console.log('period');
 		//console.log(items['job']);
 
         //console.log('Period '+TimeHelper.strDateHuman(id)+' data render ('+tasks.length+')');
@@ -45,6 +45,7 @@ import UserCell from "./UserCell/UserCell";
                                         period={id}
 										items={items} 
                                     />)
+								return null;
                             })}
                         </tr>
                     </tbody>

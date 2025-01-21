@@ -406,7 +406,8 @@ export default class DashItem {
 
 		//смена ответственного
 		if (params.user !== this.user) {
-			const user = this.context.users.getUser(params.user);
+			//console.log(this);
+			const user = get(this.context.users.items,params.user);
 			confirm.push("Выставляем ответственным " + user.name);
 		}
 

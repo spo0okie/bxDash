@@ -23,7 +23,7 @@ const CardsBlock = observer((props) => {
 	const showTickets = context.layout.ticketsVisible;
 	const showPlans = context.layout.plansVisible
 	const keepPlanning = context.layout.keepPlanning;
-
+	//console.log('card');
 
 	if (props.dnd) useEffect(() => {
 		//console.log(dropTargetData);
