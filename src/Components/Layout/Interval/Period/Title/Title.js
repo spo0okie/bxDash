@@ -13,6 +13,7 @@ import { Button, Tooltip } from "antd";
         let id=this.props.id;
         const period=get(this.context.periods.periods,id);
 		const time=this.context.time;
+		const layout=this.context.layout;
         return (
             <div className="PeriodTitle">
 				{period.start===time.firstWeekStart() && <span className="prevWeekButton">
@@ -22,7 +23,14 @@ import { Button, Tooltip } from "antd";
                 <Tooltip title={period.toolTip}><h3>{period.title}</h3></Tooltip>
 				{period.end===time.lastWeekEnd() && <span className="nextWeekButton">
 					{time.weekMax>0 && <Tooltip title={'Убрать эту неделю с доски'}><Button onClick={()=>time.decWeekMax()}>X</Button></Tooltip>}
-					<Tooltip title={'Добавить следующую неделю'}><Button className='add' onClick={()=>time.incWeekMax()}/></Tooltip>
+					<Tooltip title={'Добавить следующую неделю'}>
+						<Button 
+							className='add' 
+							onClick={()=>{time.incWeekMax(); setTimeout(() => {
+								layout.scrollToLastWeek();
+							}, 100);}}
+						/>
+					</Tooltip>
 				</span>}
             </div>
         )

@@ -6,13 +6,9 @@ import './HomeButton.css';
 
 const HomeButton = (props)=>{
 	//trace();
-	const scrollDuration=1200;
 	const context=useContext(StoreContext);
 	const onClick=(e)=>{
-		//window.location.href=("#"+task.uid);
-		const today=context.layout.expand?context.time.today:context.time.monday0;
-		//console.log('period'+today);
-		context.layout.scrollTo('period'+today,scrollDuration);
+		context.layout.scrollToday();
 		e.stopPropagation();
 	}
 	//console.log(props);

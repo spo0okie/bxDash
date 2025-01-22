@@ -4,12 +4,13 @@
 import 'reflect-metadata';
 //import { useState } from 'react';
 import {observable, makeObservable, action} from 'mobx';
-import { Element, scroller } from 'react-scroll';
-import { useRef } from 'react';
-
+import { scroller } from 'react-scroll';
 
 class LayoutStore {
     main;
+	time;
+	users;
+
     expand = true;  //разбивать недели по дням
 	accomplicesVisible = false; //показывать задачи у соисполнителей
 	plansVisible = true; //показывать планы
@@ -69,8 +70,19 @@ class LayoutStore {
 			smooth: 'easeInOutQuint',
 			containerId: 'calendarGrid',
 			offset: -50, // Scrolls to element + 50 pixels down the page
+			horizontal: !this.expand && this.users.selected!==null,
 			// ... other options
 		  });		
+	}
+
+	scrollToday(duration=1200) {
+		const today=this.expand?this.time.today:this.time.monday0;
+		this.scrollTo('period'+today,duration);
+	}
+
+	scrollToLastWeek(duration=1200) {
+		const lastWeek=this.time.weekStart(this.time.weekMax);
+		this.scrollTo('period'+lastWeek,duration);
 	}
 
     setModalVisible(visible) {
@@ -144,8 +156,10 @@ class LayoutStore {
     loadOption(name) {return this.main.loadOption('layout.'+name);}
     saveOption(name,value) {return this.main.saveOption('layout.'+name,value,);}
 
-    constructor(main) {
+    constructor(main,time,users) {
         this.main=main;
+		this.time=time;
+		this.users=users;
 		this.scrollbarWidth=this.getScrollbarWidth();
 
         this.expand=this.loadOption('expand')??true;

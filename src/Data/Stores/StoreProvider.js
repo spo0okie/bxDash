@@ -26,7 +26,7 @@ const usersStore=new UsersStore(mainStore);
 usersStore.init(userList);
 
 //раскладка зависит только от настроек
-const layoutStore=new LayoutStore(mainStore);
+const layoutStore=new LayoutStore(mainStore,timeStore,usersStore);
 
 //периоды зависят от раскладки и времени
 const periodsStore = new PeriodsStore(mainStore, layoutStore,timeStore);
