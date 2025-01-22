@@ -10,7 +10,7 @@
 
 .App-Sidebar .App-Sidebar-content {
 	flex: 1;
-	overflow-y: scroll;
+	overflow-y: auto;
 }
 
 .App-Sidebar .App-Sidebar-resizer {
