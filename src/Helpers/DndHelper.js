@@ -268,7 +268,7 @@ export function dashItemDragLogic(dropData,ref,setClosestEdge) {
 			dropData.item.dragCell=cell;                                    //запоминаем новую			
 			if (dropData.item.dragCell!==null) dropData.item.dragCell.dragOver(true);   //зажигаем новую
 		}
-        console.log(dropData.item.uid+': '+cellId(cell)+' saved');
+        //console.log(dropData.item.uid+': '+cellId(cell)+' saved');
     }
     //console.log(dropData.item);
     
@@ -306,7 +306,7 @@ export function dashItemDragLogic(dropData,ref,setClosestEdge) {
 			element: element,
 			canDrop({ source }) {
 				//нельзя бросать на недвижимые элементы списка, и на самого себя (ну или можно но надо обработать как то иначе)
-				console.log(source.data.type);
+				//console.log(source.data.type);
 				return (source.data.type==='item') && dropData.item.isDraggable(dropData.cell); // && source.element !== dropData.element;
 			},
 			getData({ input }) {//когда над нами тащят элемент

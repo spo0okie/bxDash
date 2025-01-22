@@ -17,7 +17,7 @@ import { Element } from "react-scroll";
 
     render() {
         const id = this.props.id;
-        const period=get(this.context.periods.periods,id);
+        const period = get(this.context.periods.periods,id);
 		//console.log(period);
         //console.log('Period render');
         return (

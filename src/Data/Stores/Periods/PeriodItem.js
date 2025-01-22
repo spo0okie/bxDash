@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import TimeHelper from 'Helpers/TimeHelper';
 import ItemsIdsStore from '../Items/ItemsIdsStore';
 import PeriodItemsMixin from './PeriodItemsMixin';
+import {action, makeObservable, observable} from 'mobx';
 
 class PeriodItem {
     time;       //ссылка на объект - хранилище времени
@@ -23,6 +24,12 @@ class PeriodItem {
 	emeregency=false;		//блокировка помещения элементов в этот период (перед удалением)
 
 	itemsIds;
+
+	dragOverCell=null;
+	setDragOverCell=(value)=>{
+		//console.log(value);
+		if (this.dragOverCell!==value) this.dragOverCell=value;
+	}
 	
     constructor(start,len,interval) {
 		this.interval=interval;
@@ -83,6 +90,11 @@ class PeriodItem {
         this.isToday=(this.isClosed && this.isOpen)
 
 		this.itemsIds = new ItemsIdsStore(interval.itemsTypes);
+
+		makeObservable(this,{
+			dragOverCell: observable,
+			setDragOverCell: action
+		})
     }
 }
 
