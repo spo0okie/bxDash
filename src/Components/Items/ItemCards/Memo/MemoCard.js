@@ -123,7 +123,7 @@ const MemoCard = observer((props)=>{
 		onMouseLeave={()=>item.mouseOut()}
 		onClick={() => { item.startEdit() }}
 		ref={ref}
-		title={String(item.t)}
+		//title={String(item.t)}
 
 	>
 		<Dropdown menu={{ items:menuItems, onClick:contextMenuClick }} trigger={['contextMenu']}>

@@ -156,7 +156,7 @@ const UserItem = observer((props)=>{
 						'userStatus',user.activityStatus
 					)}></span>
 				{user.id===users.dutyTicketer&&(<Tooltip title={'Дежурный по заявкам на портале'}>🎫</Tooltip>)}
-				{user.name}
+				<Tooltip title={title}>{user.name}</Tooltip>
 				{user.phone===users.dutyPhone&&(
 					<>{'('}<Tooltip title={'Дежурный на телефоне'}><span className="dutyPhone">{user.phone}</span></Tooltip>{')'}</>
 				)}
