@@ -5,6 +5,7 @@ import { act } from "react";
 
 class TaskItem extends DashItem {
 	mark;	//оценка
+	strStatus;
 
 	initDefaults() {
 		this.type = 'task';		//тип
@@ -14,6 +15,7 @@ class TaskItem extends DashItem {
 		this.defaultTitle = "Заголовок задачи\nОписание задачи";
 		this.status = 1; 		//новая
 		this.mark = 0;
+		this.strStatus = 'unknown';
 	}
 
 	recalcTime() {
