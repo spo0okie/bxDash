@@ -77,6 +77,10 @@ class TaskItem extends DashItem {
         this.accomplices=item.ACCOMPLICES?item.ACCOMPLICES.map(i=>Number(i)):[];
 
         this.setStatus(Number(item.REAL_STATUS));
+
+		this.mark = 0;							//Neutral
+		if (item.MARK==='N')	this.mark=-1;	//Negative
+		if (item.MARK==='P')	this.mark=1;	//Positive
 		
 		switch (this.status) {
             case -1:    this.strStatus="Просрочена";	break;		//просрочена
@@ -84,15 +88,12 @@ class TaskItem extends DashItem {
             case 2:     this.strStatus="Ожидание"; 		break;	//Ожидание
             case 3:     this.strStatus="В работе"; 		break;
             case 4:     this.strStatus="Ож. подтв.";  	break;
-            case 5:     this.strStatus="Завершена";  	break;
+            case 5:     this.strStatus=this.mark<0?"Провалена":"Завершена"; break;
             case 6:     this.strStatus="Отложена";  	break;
             case 7:     this.strStatus="Отменена";  	break;
 			default:	this.strStatus="unknown";
         }
 
-		this.mark = 0;							//Neutral
-		if (item.MARK==='N')	this.mark=-1;	//Negative
-		if (item.MARK==='P')	this.mark=1;	//Positive
 
         this.setUpdates(Number(item.UPDATES_COUNT));
 
