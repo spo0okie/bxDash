@@ -30,6 +30,15 @@ span.userTaskLink.closed {
 /* чужая задача (пользователь - соисполнитель) */
 li.userItem.userTask.dimmedOut   {opacity: 60%;}
 
+li.userItem.userTask.closed.negative {
+    color:#fff;
+	box-shadow:inset 0px 1px 0px 0px #cf866c;
+	background:linear-gradient(to bottom, #a83516 5%, #852511 100%);
+	background-color:#a83516;
+	border:1px solid #942911;
+	text-shadow:0px 1px 0px #854629;
+}
+
 li.userItem.userTask.closed {
     color:#fff;
     border-color:#124d77;

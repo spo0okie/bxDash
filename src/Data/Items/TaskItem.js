@@ -4,6 +4,7 @@ import TimeHelper from "Helpers/TimeHelper";
 import { act } from "react";
 
 class TaskItem extends DashItem {
+	mark;	//оценка
 
 	initDefaults() {
 		this.type = 'task';		//тип
@@ -12,6 +13,7 @@ class TaskItem extends DashItem {
 		this.title = "Заголовок задачи\nОписание задачи";
 		this.defaultTitle = "Заголовок задачи\nОписание задачи";
 		this.status = 1; 		//новая
+		this.mark = 0;
 	}
 
 	recalcTime() {
@@ -64,7 +66,7 @@ class TaskItem extends DashItem {
 	 * }
 	 */
 	loadData(item,recalc){
-        //console.log(item)
+		
         if (!super.loadData(item)) return false;
 
 		this.parentUids = item.PARENT_ID ? ['task:'+Number(item.PARENT_ID)]:[];
@@ -87,6 +89,10 @@ class TaskItem extends DashItem {
             case 7:     this.strStatus="Отменена";  	break;
 			default:	this.strStatus="unknown";
         }
+
+		this.mark = 0;							//Neutral
+		if (item.MARK==='N')	this.mark=-1;	//Negative
+		if (item.MARK==='P')	this.mark=1;	//Positive
 
         this.setUpdates(Number(item.UPDATES_COUNT));
 

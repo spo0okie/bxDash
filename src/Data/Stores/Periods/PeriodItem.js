@@ -67,8 +67,8 @@ class PeriodItem {
                 week=Math.floor((this.time.monday0-start-1000)/TimeHelper.weekLen)+1;
                 this.title = week===1?'Пред. неделя':week+' нед. назад';
             }
-            if (start > this.time.sunday0) {
-                week=Math.floor((start-this.time.sunday0)/TimeHelper.weekLen)+1;
+            if (start > this.time.sunday0-1000) {
+                week=Math.floor((start-this.time.sunday0+1000)/TimeHelper.weekLen)+1;
                 this.title = week===1?'След. неделя':'Через '+week+' нед.';
             }
 

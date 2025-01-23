@@ -11,7 +11,7 @@ import { StoreContext } from "Data/Stores/StoreProvider";
 import TimeHelper from "Helpers/TimeHelper";
 import EditItem from "../../EditItem/EditItem";
 import ModalLink from "Components/Layout/Modal/ModalLink";
-import { Tooltip } from "antd";
+import { Dropdown, Tooltip } from "antd";
 
 
 const TaskStatusUpdates=observer((props)=>{
@@ -105,7 +105,54 @@ const TaskCard = observer((props)=>{
 	}
 	, [ref,visible,cell,index,task]);
 
-	if (visible) return( <li 
+	const menuItems= [
+		{
+			label: 'В начало списка',
+			key: 'toTop',
+			disabled: task.isClosed,
+		},
+		{
+			label: 'В конец списка',
+			key: 'toBottom',
+			disabled: task.isClosed,
+		},
+		/*{
+			label: 'В долгий ящик',			
+			key: '1',
+			type: 'group',
+			disabled: task.isClosed,
+			children: [
+				{
+					label: 'На верх',
+					key: 'bucketTop',
+					disabled: task.isClosed,
+				},
+				{
+					label: 'На дно',
+					key: 'bucketBottom',
+					disabled: task.isClosed,
+				},
+			]
+		},*/
+	];
+
+	const contextMenuClick=(e)=>{
+		console.log(e.key);
+		switch(e.key) {
+			case 'toTop': task.update({ sorting: cell.maxSorting?cell.maxSorting+100:100 }, true); break;
+			case 'toBottom': task.update({ sorting: cell.minSorting?cell.minSorting-100:100 }, true); break;
+
+			case 'failed': task.update({ status: 0 }, true); break;
+			case 'partial': task.update({ status: 1 }, true); break;
+			case 'complete': task.update({ status: 2 }, true); break;
+
+			default: console.log('unknown menu item');
+		}
+	}
+
+	if (visible) return( 
+	<Dropdown menu={{ items:menuItems,onClick:contextMenuClick }} trigger={['contextMenu']}>
+		<li 
 			className={classNames(
 				'userItem',		//это понятно
 				'userTask',		//это тоже
@@ -120,6 +167,7 @@ const TaskCard = observer((props)=>{
 				{'favorite':task.favorite},		//избранное
 				{'activeNow':task.status===3},	//в работе
 				{'closed':task.isClosed},		//признак что закрыта
+				{'negative':task.mark===-1},	//негативная оценка
 				{'closeMe':task.status===4}		//признак что требует закрытия (подтверждения)
 			)}
 
@@ -144,7 +192,9 @@ const TaskCard = observer((props)=>{
 				}
 			</Element></div>
 			{closestEdge && <DropIndicator edge={closestEdge} gap="4px" background="lime"/>}
-		</li>);
+		</li>
+	</Dropdown>
+	);
 })
 
 export default TaskCard;

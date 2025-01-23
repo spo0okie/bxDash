@@ -100,6 +100,7 @@ import CreateItemButton from "Components/Items/CreateItemButton/CreateItemButton
 									dropT:period.dropTime,		//на какое время ставить задачи падающие в эту ячейку
 									period:period,
 									maxSorting:openedItems.length?openedItems[0].sorting:null,
+									minSorting:openedItems.length?openedItems[openedItems.length-1].sorting:null,
 									dragOver:(value)=>{
 										//console.log(value);
 										if (value) 

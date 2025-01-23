@@ -122,6 +122,7 @@ export default class DashItem {
 	}
 
 	setHover(value) {
+		if (this.isHovered===value) return;
 		this.isHovered=value;
 		//console.log(this.uid+' hover is '+value);
 		//console.log(this.parents);
