@@ -581,6 +581,7 @@ export default class DashItem {
 			setChildHover: action,
 			setEdit: action,
 			setExpanded: action,
+			recalcTime: action,
 
 			addParent:action,
 			addChild:action,

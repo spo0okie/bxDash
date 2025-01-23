@@ -90,7 +90,7 @@ class ItemsStore {
         } else {
 			//console.log('updating '+id);
 			const Item = get(this.items, id)
-			Item.loadData(data);			
+			Item.loadData(data,true);
 			this.master.buildReveseLinks(Item);
         }
         //console.log(this.tasks[id]);

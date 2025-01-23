@@ -131,6 +131,7 @@ class TaskItem extends DashItem {
 	
 		makeObservable(this,{
 			status:observable,
+			mark:observable,
 			updatesCount:observable,
 			setStatus:action,
 			setUpdates:action,
