@@ -11,6 +11,7 @@ import { draggable,	dropTargetForElements} from '@atlaskit/pragmatic-drag-and-dr
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { DropIndicator } from '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box';
 import { dashUserNewPos } from "Helpers/DndHelper";
+import UserAlerts from "./UserAlerts";
 
 
 const UserItem = observer((props)=>{
@@ -161,6 +162,7 @@ const UserItem = observer((props)=>{
 					<>{'('}<Tooltip title={'Дежурный на телефоне'}><span className="dutyPhone">{user.phone}</span></Tooltip>{')'}</>
 				)}
 				{user.phone!==users.dutyPhone&&'('+user.phone+')'}
+				<UserAlerts username={user.name} />
 				{closestEdge && <DropIndicator edge={closestEdge} />}
 			</td>
 	)    

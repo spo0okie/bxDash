@@ -195,7 +195,7 @@ export default class DashItem {
 
 		if (homeless) {
 			this.unsetInterval()
-			console.log(this);
+			//console.log(this);
 		} else {
 			//console.log(this.intervalId);
 		}
@@ -330,7 +330,7 @@ export default class DashItem {
 		this.setUpdating(true);
 
 		//сохраняем новые значения
-		fetch(this.context.main.apiUrl + this.type + (this.isNew ? '/create/' : '/update/') + this.id, {
+		this.context.main.bx.fetch(this.type + (this.isNew ? '/create/' : '/update/') + this.id, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(params)
@@ -371,7 +371,7 @@ export default class DashItem {
 		else {
 			this.setUpdating(true);
 			//удаляем в бэке
-			fetch(this.context.main.apiUrl + this.type + '/delete/' + this.id)
+			this.context.main.bx.fetch(this.type + '/delete/' + this.id)
 				.then((response) => response.json())
 				.then((data) => {
 					if (data.result !== undefined && data.result==='ok') {

@@ -173,8 +173,8 @@ class UsersStore {
         this.selected=this.loadOption('selected')??null;
 		this.order=this.loadOption('order')??[];
         makeAutoObservable(this);
-		this.setCurrent(this.main.bxUserId);
-		observe(this.main,'bxUserId',change=>{this.setCurrent(this.main.bxUserId)});
+		this.setCurrent(this.main.bx.userId);
+		observe(this.main.bx,'userId',change=>{this.setCurrent(this.main.bx.userId)});
     }
 	
 }

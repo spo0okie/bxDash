@@ -36,7 +36,7 @@ class MemoItem extends DashItem {
 		this.t = this.deadline;
 		this.isClosed=(this.closedDate!==null);
 		this.isOpen=!this.isClosed;
-		console.log(this.isClosed,this.isOpen);
+		//console.log(this.isClosed,this.isOpen);
 		//if (this.t !== t) this.findInterval();
 	}
 

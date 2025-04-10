@@ -1,0 +1,12 @@
+table.ConnectionStates td.status {
+	width:100px;
+}
+
+table.ConnectionStates td.id {
+	width:60px;
+	color: cyan;
+}
+
+table.ConnectionStates span.green {color:lime;}
+table.ConnectionStates span.yellow {color:yellow;}
+table.ConnectionStates span.red {color:red;}

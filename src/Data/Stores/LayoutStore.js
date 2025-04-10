@@ -25,6 +25,7 @@ class LayoutStore {
 	keepFavorites = false;	//не скрывать относящееся к избранному
     
 	modalVisible = false;
+	debugVisible = false;
     modal;
 
     // .struct makes sure observer won't be signaled unless the
@@ -153,6 +154,10 @@ class LayoutStore {
 		this.saveOption('sidebarWidth', value);
 	}
 
+	setDebugVisible(value) {
+		this.debugVisible = value;
+	}
+
     loadOption(name) {return this.main.loadOption('layout.'+name);}
     saveOption(name,value) {return this.main.saveOption('layout.'+name,value,);}
 
@@ -185,6 +190,7 @@ class LayoutStore {
 			ticketsVisible: observable,
 			tasksVisible: observable,
 			memosVisible: observable,
+			debugVisible: observable,
 			
 			keepFavorites: observable,
 			keepPlanning: observable,
@@ -203,6 +209,7 @@ class LayoutStore {
 			setKeepPlanning: action,
 			setMemosVisible: action,
 			setSidebarWidth: action,
+			setDebugVisible: action,
         });
         window.onresize = () => {
             console.log('height => '+window.innerHeight);

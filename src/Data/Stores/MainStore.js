@@ -1,137 +1,61 @@
-//import 'reflect-metadata';
-import Inventory from 'Helpers/Inventory';
-import {observable, action, makeAutoObservable} from 'mobx';
+import {observable, action, makeAutoObservable, when} from 'mobx';
 import Cookies from 'universal-cookie';
+import BackendSystem from './BackendSystem';
+import { bxAuthScheme } from 'Helpers/BxHelper';
+import { zabbixAuthScheme } from 'Helpers/ZabbixHelper';
+import { inventoryAuthScheme } from 'Helpers/InventoryHelper';
 
 class MainStore {
 
     constructor() {
+		this.bx=new BackendSystem('Bitrix',	bxAuthScheme);
+		this.zabbix=new BackendSystem('Zabbix', zabbixAuthScheme);
+		this.inventory=new BackendSystem('Inventory', inventoryAuthScheme);
         makeAutoObservable(this)
     }
 
-    @observable inventoryAuth=false;         //признак успешной авторизации
-    @observable bxAuth=false;         //признак успешной авторизации
-
-    inventoryUrl;
-    apiUrl;
-    wsUrl;
-    asteriskUrl;
-	@observable bxUserId=null;
-	bxLogin=null;
-
-
 	itemsTypes = ['task', 'ticket', 'job', 'plan', 'memo','absent'];
 
-    
-    inventory=new Inventory();
-    cookies= new Cookies(null, { path: '/' });
+	cookies= new Cookies(null, { path: '/' });
 
     loadOption(name) {
 		return this.cookies.get(name);
 	}
-    saveOption(name,value) {
+
+	saveOption(name,value) {
 		//console.log('saving '+value+' -> '+name)
 		return this.cookies.set(name,value,);
 	}
     
     setInventoryUrl(url) {
-        this.inventoryUrl=url;
-        this.inventory.baseUrl=url;
+		this.inventory.setUrl(url);
     }
 
-    setApiUrl(url) {
-        this.apiUrl=url;
-    }
-
-    setWsUrl(url) {
-        this.wsUrl=url;
+    setBxUrl(url) {
+        this.bx.setUrl(url);
     }
 
     setAsteriskUrl(url) {
-        this.asteriskUrl=url; 
+        //this.asteriskUrl=url; 
+    }
+
+	setZabbixUrl(url) {
+        this.zabbix.setUrl(url); 
     }
 
 
-    @action setInventoryAuth(value) {
-        this.inventoryAuth=value;
-        console.log('inventoryAuth updated');
-    }
 
-	@action setBxAuth(value) {
-		this.bxAuth=value;
-		console.log('bxAuth updated');
-	}
-
-	@action setBxUserid(value) {
-		console.log(value);
-		this.bxUserId=value;
-	}
-
-        
-    authenticateInventory(user,password,success,fail){
-        this.inventory.authorize(
-            user,
-            password,
-            ()=>{
-                this.setInventoryAuth(true);
-                success();
-            },
-            ()=>{
-                fail();
-            }
-        );
-    }
-
-
-	init(){
-		fetch(this.apiUrl + 'user/get')
-			.then((response) => response.json())
-			.then((data) => {
-			if (data.auth !== undefined && data.auth) {
-				this.setBxAuth(true);
-				this.setBxUserid(Number(data.id));
-				this.bxLogin=data.login;
+	async authenticate(user,password,onSuccess,onFail){
+		this.bx.setLoginCredentials(user,password);
+		this.zabbix.setLoginCredentials(user,password);
+		this.inventory.setLoginCredentials(user,password);
+		when (()=>this.bx.authStatus!=='Pending' && this.zabbix.authStatus!=='Pending' && this.inventory.authStatus!=='Pending',()=>{
+			if (this.bx.authStatus==='OK' && this.zabbix.authStatus==='OK' && this.inventory.authStatus==='OK') {
+				if (onSuccess) onSuccess();
 			} else {
-				this.setBxAuth(false);
-				this.setBxUserid(null);
-				this.bxLogin=null;
-				console.log(data);					
-			} 
-		})
-		.catch((error) => {
-			console.log(error)
+				if (onFail) onFail();
+			}
 		});
-	}
-
-
-	authenticateBx(user,password,onSuccess,onFail){
-		fetch(this.apiUrl + 'user/login', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				user:user,
-				password:password
-			})
-		})
-			.then((response) => response.json())
-			.then((data) => {
-				if (data.auth !== undefined && data.auth) {
-					this.setBxAuth(true);
-					this.bxUserId=Number(data.id);
-					this.bxLogin=data.login;
-						if (onSuccess !== undefined && onSuccess !== null) onSuccess();
-				} else {
-					this.setBxAuth(false);
-					this.bxUserId=null;
-					this.bxLogin=null;
-						if (onFail !== undefined && onFail !== null) onFail();
-					console.log(data);					
-				} 
-			})
-			.catch((error) => {
-				if (onFail !== undefined && onFail !== null) onFail();
-				console.log(error)
-			});
 	}
 }
 

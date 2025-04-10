@@ -1,4 +1,5 @@
 import TimeHelper from "Helpers/TimeHelper";
+import { observable, action, makeAutoObservable } from "mobx";
 
 //https://developer.mozilla.org/en-US/docs/Web/API/WebSocket
 export class WsStore {
@@ -7,16 +8,24 @@ export class WsStore {
 	users;
 	socket;
 	
-	id=null;
-
+	@observable id=null;
+	@observable connectionStatus = "disconnected"; // статус соединения: 'connected', 'disconnected', 'connecting'
 	activityTimestamp=0;	//отметка последнего оповещения об активности
+
+	@action setConnectionStatus(status) {
+        this.connectionStatus = status;
+    }
+
+	@action setId(id) {
+        this.id = id;
+    }
   
 	onMessage=(message)=>{
 		const data=JSON.parse(message.data)
 
 		switch (data.event) {
             case 'wsConnected':
-                this.id=Number(data.connection);
+                this.setId(Number(data.connection));
                 //$globDashConnections[0].id=$globWsId;
                 console.log('WS Connection ID set to '+this.id);
                 break;
@@ -62,15 +71,15 @@ export class WsStore {
 	}
 
 	ping() {
-		if (!this.main.bxUserId) {
+		if (!this.main.bx.userId) {
 			console.log('cant ping without user ID');
-			console.log(this.main);
+			//console.log(this.main);
 			return;
 		}
 		const connection={
 			id:this.id,
-			userId:this.main.bxUserId,
-			login:this.main.bxLogin,
+			userId:this.main.bx.userId,
+			login:this.main.bx.login,
 			activityTimestamp:this.activityTimestamp,
 			pingTimestamp:TimeHelper.getTimestamp()
 		}
@@ -85,17 +94,51 @@ export class WsStore {
 	sendMessage=(data)=>{
 		//console.log('sending');
 		//console.log(data);
+		if (this.connectionStatus !== 'OK') {
+			console.log('cant send message, connection status is '+this.connectionStatus);
+			return;
+		}
 		this.socket.send(JSON.stringify(data));
 	}
 
-	constructor (url,main,users,items) {
-		console.log('connecting '+url);
-		this.main=main;
-		this.items=items;
-		items.ws=this;
-		this.users=users;
-    	this.socket = new WebSocket(url);
-    	this.socket.addEventListener('message',this.onMessage);
-		setInterval(()=>this.ping(),10000);
-	}
+	connect(url) {
+        this.setConnectionStatus("Pending");
+        this.socket = new WebSocket(url);
+
+        this.socket.addEventListener("open", () => {
+            this.setConnectionStatus("OK");
+            console.log("WebSocket connected");
+        });
+
+        this.socket.addEventListener("close", () => {
+            this.setConnectionStatus("Disconnected");
+            console.log("WebSocket disconnected");
+        });
+
+        this.socket.addEventListener("message", this.onMessage);
+
+        this.socket.addEventListener("error", (error) => {
+            console.error("WebSocket error:", error);
+            this.setConnectionStatus("Disconnected");
+        });
+    }
+
+	checkConnection() {
+        if (this.connectionStatus === "Disconnected") {
+            console.log("Reconnecting WebSocket...");
+            this.connect(this.socket.url); // Переподключение
+        }
+    }
+
+    constructor(url, main, users, items) {
+        makeAutoObservable(this); // Автоматическое создание наблюдаемых свойств и действий
+        console.log("connecting " + url);
+        this.main = main;
+        this.items = items;
+        items.ws = this;
+        this.users = users;
+        this.connect(url);
+        setInterval(() => this.ping(), 10000);
+        setInterval(() => this.checkConnection(), 15000); // Проверка соединения каждые 5 секунд
+    }
 };

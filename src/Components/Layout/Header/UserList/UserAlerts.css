@@ -1,0 +1,29 @@
+ul.user-alerts {
+	font-size: smaller;
+	padding-left: 0.7em;
+}
+ul.user-alerts a {
+	color: white;
+}
+div.user-alerts > span.item{
+	width: 20%;
+	display: inline-block;
+	font-size: smaller;
+	font-weight: normal;
+	text-shadow: none;
+	padding: 0;
+	margin: 0;
+}
+div.user-alerts {
+	padding: 0;
+	margin:	0;
+}
+div.user-alerts.support {
+	opacity: 0.5;
+}
+
+div.user-alerts > span.severity1 {background-color: #7499FF;color: #00268e;}
+div.user-alerts > span.severity2 {background-color: #FFC859;color: #734d00;}
+div.user-alerts > span.severity3 {background-color: #FFA059;color: #733100;}
+div.user-alerts > span.severity4 {background-color: #E45959;color: #52190b;}
+div.user-alerts > span.severity5 {background-color: #891515;color: /*#4b0c0c*/ #000;}

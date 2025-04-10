@@ -5,18 +5,18 @@ import LayoutStore from './LayoutStore';
 import TimeStore from './TimeStore';
 import PeriodsStore from './Periods/PeriodsStore';
 import ItemsMultiStore from './Items/ItemsMultiStore';
-import {userList,inventoryUrl,apiUrl,wsUrl,asteriskUrl} from 'config.priv';
+import {userList,inventoryUrl,apiUrl,wsUrl,asteriskUrl, zabbixUrl} from 'config.priv';
 import { WsStore } from './WsStore';
+import AlertsStore from './Items/AlertsStore';
 
 //инициализируем стораджи и настройки
 
 //настройки инициализируем первыми, т.к. они не от чего не зависят
 const mainStore=new MainStore();
 mainStore.setInventoryUrl(inventoryUrl);
-mainStore.setApiUrl(apiUrl);
-mainStore.setWsUrl(wsUrl);
+mainStore.setBxUrl(apiUrl);
 mainStore.setAsteriskUrl(asteriskUrl);
-mainStore.init();
+mainStore.setZabbixUrl(zabbixUrl);
 
 //инициализируем хранилище времени, т.к. от него зависят другие
 const timeStore=new TimeStore(mainStore);
@@ -36,6 +36,8 @@ const itemsStore = new ItemsMultiStore(mainStore,timeStore,usersStore,periodsSto
 
 const wsStore=new WsStore(wsUrl,mainStore,usersStore,itemsStore);
 
+const alertStore=new AlertsStore(mainStore);
+
 /* Store helpers */
 export const StoreContext = React.createContext({
 	main: mainStore,
@@ -44,6 +46,7 @@ export const StoreContext = React.createContext({
 	users: usersStore,
 	periods: periodsStore,
 	items: itemsStore,
-	ws: wsStore
+	ws: wsStore,
+	alerts: alertStore,
 });
 

@@ -3,12 +3,25 @@
 	/*top: 100px;*/
 	background: repeating-linear-gradient(
 		-60deg,
-		#dddddd,
-		#dddddd 25px,
-		#eeeeee 25px,
-		#eeeeee 50px
+		rgba(120,0,0,0.7),
+		rgba(120,0,0,0.7) 25px,
+		rgba(00,0,0,0.7) 25px,
+		rgba(00,0,0,0.7) 50px
 	  );
+	border: 2px solid red;
 	width: 100%;
 	padding-bottom: 1em;
 	text-align: center;
+	z-index: 998;
+	color: white;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	justify-content: space-between;
+}
+
+.invAuthForm > .section {
+	flex-grow: 1;
+	flex-basis: 600px;
 }

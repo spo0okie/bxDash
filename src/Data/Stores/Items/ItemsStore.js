@@ -147,12 +147,12 @@ class ItemsStore {
     //загрузить задачи из битрикс с отметки времени from и до отметки to
     loadItems(from,to,onComplete=null) {
 		console.log('loading ' + this.type + 's');
-        let url=this.main.apiUrl+this.type+'/load/'+Math.round(from/1000)+'/'+(to?(Math.round(to/1000)):null)+'/'+keys(this.users.items).join(',')+'?random='+TimeHelper.getTimestamp();
+        let url=this.type+'/load/'+Math.round(from/1000)+'/'+(to?(Math.round(to/1000)):null)+'/'+keys(this.users.items).join(',')+'?random='+TimeHelper.getTimestamp();
         let store=this;
         console.log(url);
 		this.setLoading(true);
-		when(()=>this.main.bxAuth,()=>{
-			fetch(url)
+		when(()=>this.main.bx.authStatus==='OK',()=>{
+			this.main.bx.fetch(url)
 			.then((response) => response.json())
 			.then((data) => {
 				console.log('got ' +data.length+' '+ this.type + 's');
@@ -169,8 +169,8 @@ class ItemsStore {
     loadItem(id,onComplete=null) {
         let store=this;
 		console.log('loading ' + this.type + ' ID '+id);
-		when(()=>this.main.bxAuth,()=>{
-			fetch(this.main.apiUrl + this.type + '/get/'+id+'?random='+TimeHelper.getTimestamp())
+		when(()=>this.main.bx.authStatus==='OK',()=>{
+			this.main.bx.fetch(this.type + '/get/'+id+'?random='+TimeHelper.getTimestamp())
 				.then((response) => response.json())
 				.then((data) => {
 					console.log('got ' + data.length + ' ' + this.type + 's');

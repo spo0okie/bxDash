@@ -3,20 +3,18 @@
 	text-align: left;
 	align-items: stretch;
 	width: 100%;
-	justify-content: space-evenly;
+	justify-content: space-between;
+	flex-wrap: nowrap 
 }
 
 .AppHeader:hover div.AppMenu {
 	display: flex;
 }
 
-.AppHeader div.AppMenu div.central.section {
-	text-align: center;
+.AppHeader div.AppMenu div.left.section {
+	padding-left: 20px;
 }
 
-.AppHeader div.AppMenu div.right.section {
-	text-align: right;
-}
 
 span.MenuTimer {
     float: right;

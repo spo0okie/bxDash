@@ -51,7 +51,10 @@ import MenuButton from "./MenuIButton";
 						<button onClick={this.defaultMode} className="small">Сброс</button>
 						&nbsp;
 						Time: {time.strTime}
-					</span>                
+						</span>                
+				</div>
+				<div className="right section">
+					<MenuButton property='debugVisible' title='dbg' />
 				</div>
             </div>
         )

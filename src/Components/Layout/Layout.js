@@ -44,11 +44,12 @@ class Layout extends Component {
     const users = this.context.users;
     const layout = this.context.layout;
 	const main = this.context.main;
+	const ws = this.context.ws;
 	const personal = (users.selected !== null);
     console.log('layout render');
     return (<>
-			{!main.bxAuth && <InvAuthForm />}
-			{main.bxAuth && (<>
+			{(main.bx.authStatus!=='OK'||main.zabbix.authStatus!=='OK'|| main.inventory.authStatus!=='OK'||!ws.connectionStatus || layout.debugVisible) && <InvAuthForm />}
+			{(<>
 							<ModalWindow />
 							<AppHeader />
 							<HomeButton />
