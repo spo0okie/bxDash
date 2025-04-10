@@ -87,11 +87,7 @@ class AlertsStore {
 									if (trigger.hosts[0].status === '1') return; //unmonitored host
 									event.host = trigger.hosts[0].name; // Add host attribute
 								}
-								/*if (trigger.items && trigger.items.length > 0) {
-									if (trigger.items.find(item=>item.state === '1')) return; //unmonitored item
-									if (trigger.items.find(item=>item.status === '1')) return; //unsupported item
-								}
-								if (trigger.error) return; // Skip if trigger is error*/
+								
 								if (trigger.status === '1') return; // Skip if trigger is not enabled
 								if (trigger.state === '1') return; // Skip if trigger is unknown state
 								if (trigger.value !== '1') return; // Skip if trigger is not problem
@@ -102,29 +98,37 @@ class AlertsStore {
 							const supportTeamTag = event.tags.find(tag => tag.tag === 'supportteam');
 							const nodeSupportTag = event.tags.find(tag => tag.tag === 'node-support');
 
-							const serviceKey = servicemanTag?.value || nodeServiceTag?.value;
-							const supportKey = supportTeamTag?.value || nodeSupportTag?.value;
+							const serviceKeys = servicemanTag ? 
+								(servicemanTag.value ? servicemanTag.value.split(/[\s,]+/) : []): 
+								(nodeServiceTag?.value ? nodeServiceTag.value.split(/[\s,]+/) : []);
+							const supportKeys = supportTeamTag ? 
+								(supportTeamTag.value ? supportTeamTag.value.split(/[\s,]+/) : []): 
+								(nodeSupportTag?.value ? nodeSupportTag.value.split(/[\s,]+/) : []);
 
-							if (serviceKey) {
-								console.log(event);
-								if (!this.service.has(serviceKey)) {
-									this.service.set(serviceKey, new Map());
+							serviceKeys.forEach(serviceKey => {
+								if (serviceKey) {
+									console.log(event);
+									if (!this.service.has(serviceKey)) {
+										this.service.set(serviceKey, new Map());
+									}
+									const serviceMap = this.service.get(serviceKey);
+									if (!serviceMap.has(event.eventid)) {
+										serviceMap.set(event.eventid, event);
+									}
 								}
-								const serviceMap = this.service.get(serviceKey);
-								if (!serviceMap.has(event.eventid)) {
-									serviceMap.set(event.eventid, event);
-								}
-							}
+							});
 
-							if (supportKey) {
-								if (!this.support.has(supportKey)) {
-									this.support.set(supportKey, new Map());
+							supportKeys.forEach(supportKey => {
+								if (supportKey) {
+									if (!this.support.has(supportKey)) {
+										this.support.set(supportKey, new Map());
+									}
+									const supportMap = this.support.get(supportKey);
+									if (!supportMap.has(event.eventid)) {
+										supportMap.set(event.eventid, event);
+									}
 								}
-								const supportMap = this.support.get(supportKey);
-								if (!supportMap.has(event.eventid)) {
-									supportMap.set(event.eventid, event);
-								}
-							}
+							});
 						});
 
 						// Remove closed problems from service storage
