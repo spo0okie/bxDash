@@ -8,13 +8,13 @@ div.AppUserList div.PeriodData table.UserCells {
 	overflow: visible;
 	padding:0;
 	margin: 0;
-	vertical-align: top;
 }
 
 div.AppUserList div.PeriodData table.UserCells td {
 	overflow: visible;
 	padding:0;
 	margin: 0;
+	vertical-align: top;
 }
 
 
