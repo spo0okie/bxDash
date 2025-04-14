@@ -5,6 +5,9 @@ ul.user-alerts {
 ul.user-alerts a {
 	color: white;
 }
+h4.user-alerts {
+	padding:0; margin: 0;
+}
 div.user-alerts > span.item{
 	width: 20%;
 	display: inline-block;

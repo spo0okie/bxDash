@@ -7,7 +7,9 @@ import { Tooltip } from 'antd';
 
 const AlertListButton = ({severity,list}) => {
     const { main } = useContext(StoreContext);
-	return (list.length>0)&&<Tooltip title={
+	const severityTitles={1:'Информация',2:'Предупреждение',3:'Средняя',4:'Высокая',5:'Критическая'};
+	return (list.length>0)&&<Tooltip title={<>
+		<h4 className='user-alerts'>{severityTitles[severity]}</h4>
 		<ul className="user-alerts">
 			{list.map((item)=>{
 				const trigerid=get(item,'objectid');
@@ -24,7 +26,7 @@ const AlertListButton = ({severity,list}) => {
 						</a>
 					</li>
 			})}
-		</ul>} overlayInnerStyle={{maxWidth: '500px'}}>
+		</ul></>} overlayInnerStyle={{maxWidth: '500px'}}>
 		<span className={'severity'+severity+' item'}>
 			{list.length}
 		</span>
