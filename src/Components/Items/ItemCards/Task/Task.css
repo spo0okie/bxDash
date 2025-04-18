@@ -2,7 +2,10 @@
 li.userTask { border: solid 1px #999999; background: linear-gradient(to bottom,#f9f9f9,#e9e9e9); box-shadow:inset 0 1px 0 0 #ffffff;}
 
 /* ожидает закрытия */
-li.userTask.closeMe {border: 2px solid limegreen;}
+li.userTask.closeMe {
+	border: 2px solid #54a3f7;
+	box-shadow:inset 0 0 5px 5px rgba(84, 163, 247, 0.2);
+}
 
 /* задача в работе*/
 li.userTask.activeNow {border-left: 4px solid limegreen;}
