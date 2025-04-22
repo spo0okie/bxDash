@@ -7,6 +7,7 @@ import { StoreContext } from "Data/Stores/StoreProvider";
 import {get } from 'mobx';
 import ModalLink from "Components/Layout/Modal/ModalLink";
 import { observer } from "mobx-react";
+import TimeHelper from "Helpers/TimeHelper";
 
 const CreateTaskButton=(props)=>{
 	const [label, setLabel] = useState('здч');
@@ -51,7 +52,9 @@ const CreateJobButton=(props)=>{
 		const item = new JobItem({
 			id: items.getMaxId() + 64,
 			user: props.cell.user,
-			deadline: props.cell.dropT,
+			deadline: props.period.isToday?		//если работа на сегодня, 
+				TimeHelper.getTimestamp():		//то ставим ее на текущее время
+				props.cell.dropT,				//иначе на время ячейки
 			isNew: true,
 			isEdit: true,
 			sorting: props.cell.maxSorting ? props.cell.maxSorting + 20 : null,
@@ -73,7 +76,9 @@ const CreateClosedJobButton = (props) => {
 		const item = new JobItem({
 			id: items.getMaxId() + 64,
 			user: props.cell.user,
-			closedDate: props.cell.dropT,
+			closedDate: props.period.isToday?	//если работа на сегодня, 
+				TimeHelper.getTimestamp():		//то ставим ее на текущее время
+				props.cell.dropT,				//иначе на время ячейки
 			isNew: true,
 			isEdit: true,
 			sorting: props.cell.maxSorting ? props.cell.maxSorting + 20 : null,
@@ -116,8 +121,8 @@ const CreateItemButton = observer((props)=>{
 
 	return (
 		<span className="CreateItemButton">
-			{closed && showJobs		&& <CreateClosedJobButton	items={context.items} cell={cell} context={context} />}
-			{open && showJobs		&& <CreateJobButton			items={context.items} cell={cell} context={context} />}
+			{closed && showJobs		&& <CreateClosedJobButton	items={context.items} cell={cell} context={context} period={period} />}
+			{open && showJobs		&& <CreateJobButton			items={context.items} cell={cell} context={context} period={period} />}
 			{open && isToday		&& <CreateTicketButton		items={context.items} cell={cell} context={context} />}
 			{open 					&& <CreateTaskButton		items={context.items} cell={cell} context={context} />}
 			{period.dropTime !== null && period.wDays.includes(6) && <CreatePlanButton items={context.items} cell={cell} context={context} />}
