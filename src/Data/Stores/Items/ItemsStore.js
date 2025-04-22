@@ -244,8 +244,8 @@ class ItemsStore {
             this.loadPending();
 			let reloadInterval=0;
 			//перегружаем время от времени задачи и заявки, т.к. их обновления могут проскакивать мимо WS канала
-			//if (this.type==='task') reloadInterval=5*60*1000;
-			//if (this.type==='ticket') reloadInterval=2*60*1000;
+			if (this.type==='task') reloadInterval=5*60*1000;
+			if (this.type==='ticket') reloadInterval=2*60*1000;
 			if (reloadInterval) {
 				setInterval(()=>{
 					console.log(this.type + 's reload');
