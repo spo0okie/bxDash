@@ -107,7 +107,7 @@ class AlertsStore {
 
 							serviceKeys.forEach(serviceKey => {
 								if (serviceKey) {
-									console.log(event);
+									//console.log(event);
 									if (!this.service.has(serviceKey)) {
 										this.service.set(serviceKey, new Map());
 									}

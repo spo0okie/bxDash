@@ -7,6 +7,9 @@ class UserItem extends DashItem {
 	activityTimestamp;
 	connectionTimestamp;
 	activityStatus;
+	realPhones;
+	phoneStatus;	//статус телефона (для звонков) - UNKNOWN, AVAILABLE, UNAVAILABLE, BUSY, OFFLINE
+	realPhoneStatuses; //статусы реальных телефонов (включая дублеров)
 
 	initDefaults() {
 		this.type = 'user';		//тип
@@ -14,6 +17,9 @@ class UserItem extends DashItem {
 		this.activityTimestamp=0;
 		this.connectionTimestamp=0;
 		this.activityStatus='offline';
+		this.phoneStatus='UNKNOWN';
+		this.realPhones=[];
+		this.realPhoneStatuses=[];
 		this.t=0;
 		setInterval(() => {
 			this.recalcTime();
@@ -56,6 +62,12 @@ class UserItem extends DashItem {
 		this.activityStatus=value;
 	}	
 	
+	setPhoneStatus(value) {
+		if (value===this.phoneStatus) return;
+		console.log(this.phone+' => '+value);
+		this.phoneStatus=value;
+	}	
+
 	/**
 	 * Инициализация
 	 * @param {*} item 
@@ -88,6 +100,8 @@ class UserItem extends DashItem {
 			makeObservable(this,{
 				activityStatus:observable,
 				setStatus:action,
+				phoneStatus:observable,
+				setPhoneStatus:action,
 			})
 	
 			//console.log(this);

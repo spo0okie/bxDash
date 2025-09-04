@@ -7,7 +7,8 @@
     background-color: lime;
 }
 
-.UserItem span.userStatus {
+.UserItem span.userStatus,
+.UserItem span.phoneStatus {
     width: 6px;
     height: 6px;
     border-radius: 3px;
@@ -21,3 +22,8 @@
 .UserItem span.userStatus.offline {background-color: gray;}
 
 .UserItem span.dutyPhone{color:blue; font-weight: bolder;}
+.UserItem span.phoneStatus.IDLE {background-color: lime;}
+.UserItem span.phoneStatus.RINGING {background-color: orange;}
+.UserItem span.phoneStatus.INUSE {background-color: red;}
+.UserItem span.phoneStatus.UNKNOWN,
+.UserItem span.phoneStatus.UNAVAILABLE {background-color: gray;}

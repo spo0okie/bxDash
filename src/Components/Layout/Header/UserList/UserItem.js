@@ -13,6 +13,12 @@ import { DropIndicator } from '@atlaskit/pragmatic-drag-and-drop-react-drop-indi
 import { dashUserNewPos } from "Helpers/DndHelper";
 import UserAlerts from "./UserAlerts";
 
+const PhoneItem = observer(({ user }) => (
+	<>
+		{user.phone}
+		<span className={classNames('phoneStatus', user.phoneStatus)}></span>
+	</>
+));
 
 const UserItem = observer((props)=>{
 	const context = useContext(StoreContext);
@@ -159,9 +165,9 @@ const UserItem = observer((props)=>{
 				{user.id===users.dutyTicketer&&(<Tooltip title={'Дежурный по заявкам на портале'}>🎫</Tooltip>)}
 				<Tooltip title={title}>{user.name}</Tooltip>
 				{user.phone===users.dutyPhone&&(
-					<>{'('}<Tooltip title={'Дежурный на телефоне'}><span className="dutyPhone">{user.phone}</span></Tooltip>{')'}</>
+					<>{'('}<Tooltip title={'Дежурный на телефоне'}><span className="dutyPhone"><PhoneItem  user={user}/></span></Tooltip>{')'}</>
 				)}
-				{user.phone!==users.dutyPhone&&'('+user.phone+')'}
+				{user.phone!==users.dutyPhone&&(<>{'('}<PhoneItem user={user}/>{')'}</>)}
 				<UserAlerts username={user.name} />
 				{closestEdge && <DropIndicator edge={closestEdge} />}
 			</td>

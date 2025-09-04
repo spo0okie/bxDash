@@ -2,6 +2,21 @@ import 'reflect-metadata';
 import {observable, when, makeAutoObservable, runInAction , get, set, action, computed, keys, has, observe} from 'mobx';
 import UserItem from 'Data/Items/UserItem';
 
+const STATE_PRIORITY = {
+    50: "RINGING",
+    40: "INUSE",
+    30: "IDLE",
+    20: "UNAVAILABLE",
+    10: "UNKNOWN",
+};
+const STATE_PRIORITY_REVERSE = {
+    "RINGING": 50,
+    "INUSE": 40,
+    "IDLE": 30,
+    "UNAVAILABLE": 20,
+    "UNKNOWN": 10,
+};
+
 class UsersStore {
     main;
 
@@ -85,6 +100,8 @@ class UsersStore {
 	//создать/обновить элемент из другого JS объекта
     initItem(data){
 		const id = Number(data.id);		
+		data.realPhones = [data.phone, ...(data.additionalPhones ?? [])];	// все телефоны в одном массиве
+		console.log(data);
         if (!has(this.items,id)) {
 			//console.log('creating new '+ this.type);
 			const Item = new UserItem(data, {}, this);
@@ -167,6 +184,51 @@ class UsersStore {
 		this.order=value;
 		this.saveOption('order',value);
 	}
+
+    /**
+     * Обновляет статус телефона пользователя по номеру телефона
+     * @param {string} phone
+     * @param {string} status
+     */
+    updatePhoneStatus(phone, status) {
+        // Найти пользователя, у которого есть этот телефон
+		phone = Number(phone);
+        let user = null, idx = -1;
+        for (const id of keys(this.items)) {
+            const item = get(this.items, id);
+			//console.log(item);
+            if (item.realPhones && Array.isArray(item.realPhones)) {
+                const i = item.realPhones.indexOf(phone);
+				//console.log(phone, item.realPhones,i);
+                if (i !== -1) {
+                    user = item;
+                    idx = i;
+                    break;
+                }
+            }
+        }
+        if (!user || idx === -1) return;
+
+        // Ensure realPhonesStatuses exists
+        if (!user.realPhonesStatuses) user.realPhonesStatuses = [];
+
+        // Обновить статус телефона
+        user.realPhonesStatuses[idx] = status;
+
+        // Пересчитать phoneStatus
+        let maxPriority = 0;
+        let maxState = "UNKNOWN";
+        for (let s of user.realPhonesStatuses) {
+            const prio = STATE_PRIORITY_REVERSE[s] ?? 10;
+            if (prio > maxPriority) {
+                maxPriority = prio;
+                maxState = s;
+            }
+        }
+        if (user.phoneStatus !== maxState) {
+            user.setPhoneStatus(maxState);
+        }
+    }
 
     constructor(main) {
         this.main=main;

@@ -51,6 +51,12 @@ export class WsStore {
 			case 'techSupportShift':
 				this.users.setDutyPhone(data.phone);
 				break;
+            case 'phonesStatusUpdate':
+				// data.data: { phone1: state1, phone2: state2, ... }
+				Object.entries(data.data).forEach(([phone, state]) => {
+					this.users.updatePhoneStatus(phone, state);
+				});
+                break;
 						/*
             case 'jobRemove':
                 userJobRemove(data.jobId);
