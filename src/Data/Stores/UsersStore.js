@@ -32,6 +32,7 @@ class UsersStore {
 
 	@observable dutyPhone=null;
 	@observable dutyTicketer=null;
+	allPhones=[];	//все телефоны всех пользователей
 
     async loadUser(item) {
         //console.log(mainStore)
@@ -101,6 +102,8 @@ class UsersStore {
     initItem(data){
 		const id = Number(data.id);		
 		data.realPhones = [data.phone, ...(data.additionalPhones ?? [])];	// все телефоны в одном массиве
+        this.allPhones.push(...data.realPhones);
+
 		console.log(data);
         if (!has(this.items,id)) {
 			//console.log('creating new '+ this.type);

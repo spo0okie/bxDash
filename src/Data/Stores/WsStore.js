@@ -1,5 +1,5 @@
 import TimeHelper from "Helpers/TimeHelper";
-import { observable, action, makeAutoObservable } from "mobx";
+import { observable, action, makeAutoObservable, when, values } from "mobx";
 
 //https://developer.mozilla.org/en-US/docs/Web/API/WebSocket
 export class WsStore {
@@ -98,8 +98,8 @@ export class WsStore {
 	}
 
 	sendMessage=(data)=>{
-		//console.log('sending');
-		//console.log(data);
+		console.log('sending');
+		console.log(data);
 		if (this.connectionStatus !== 'OK') {
 			console.log('cant send message, connection status is '+this.connectionStatus);
 			return;
@@ -127,6 +127,12 @@ export class WsStore {
             console.error("WebSocket error:", error);
             this.setConnectionStatus("Disconnected");
         });
+
+		// Отправить запрос на получение статусов телефонов
+        when(()=>this.connectionStatus === 'OK',()=>{this.sendMessage({
+            action: 'getPhonesStates',
+            numbers: values(this.users.allPhones)
+        })});
     }
 
 	checkConnection() {
@@ -144,7 +150,11 @@ export class WsStore {
         items.ws = this;
         this.users = users;
         this.connect(url);
+
+        // Собрать все телефоны из realPhones всех пользователей
+
         setInterval(() => this.ping(), 10000);
         setInterval(() => this.checkConnection(), 15000); // Проверка соединения каждые 5 секунд
+
     }
 };
