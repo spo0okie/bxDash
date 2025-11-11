@@ -1,7 +1,7 @@
 import React, {useRef,useEffect,useState,useContext} from "react";
 import {observer} from "mobx-react";
 import { dashItemDragLogic } from "Helpers/DndHelper";
-import {get,trace} from "mobx"
+import {get,trace,values} from "mobx"
 import { Element} from 'react-scroll';
 
 import './Task.css'
@@ -116,9 +116,9 @@ const TaskCard = observer((props)=>{
 			key: 'toBottom',
 			disabled: task.isClosed,
 		},
-		/*{
+		{
 			label: 'В долгий ящик',			
-			key: '1',
+			//key: '1',
 			type: 'group',
 			disabled: task.isClosed,
 			children: [
@@ -133,7 +133,7 @@ const TaskCard = observer((props)=>{
 					disabled: task.isClosed,
 				},
 			]
-		},*/
+		},
 	];
 
 	const contextMenuClick=(e)=>{
@@ -141,6 +141,19 @@ const TaskCard = observer((props)=>{
 		switch(e.key) {
 			case 'toTop': task.update({ sorting: cell.maxSorting?cell.maxSorting+100:100 }, true); break;
 			case 'toBottom': task.update({ sorting: cell.minSorting?cell.minSorting-100:100 }, true); break;
+			case 'bucketTop': {
+				let bucketTasks=[...values(context.items['task'].items), ...values(context.items['job'].items)].filter((t)=>t.deadline===null && t.isOpen && t.user===cell.user);
+				let bucketMaxSorting=bucketTasks.length?Math.max(...bucketTasks.map((t)=>t.sorting))+100:100;
+				task.update({ sorting: bucketMaxSorting, deadline: null }, true); 
+				break;
+			}
+			
+			case 'bucketBottom': {
+				let bucketTasks=[...values(context.items['task'].items), ...values(context.items['job'].items)].filter((t)=>t.deadline===null && t.isOpen && t.user===cell.user);
+				let bucketMinSorting=bucketTasks.length?Math.max(...bucketTasks.map((t)=>t.sorting))-100:0;
+				task.update({ sorting: bucketMinSorting, deadline: null }, true); 
+				break;
+			}
 
 			case 'failed': task.update({ status: 0 }, true); break;
 			case 'partial': task.update({ status: 1 }, true); break;
