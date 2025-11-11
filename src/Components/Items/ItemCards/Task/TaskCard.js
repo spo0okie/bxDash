@@ -105,36 +105,7 @@ const TaskCard = observer((props)=>{
 	}
 	, [ref,visible,cell,index,task]);
 
-	const menuItems= [
-		{
-			label: 'В начало списка',
-			key: 'toTop',
-			disabled: task.isClosed,
-		},
-		{
-			label: 'В конец списка',
-			key: 'toBottom',
-			disabled: task.isClosed,
-		},
-		{
-			label: 'В долгий ящик',			
-			//key: '1',
-			type: 'group',
-			disabled: task.isClosed,
-			children: [
-				{
-					label: 'На верх',
-					key: 'bucketTop',
-					disabled: task.isClosed,
-				},
-				{
-					label: 'На дно',
-					key: 'bucketBottom',
-					disabled: task.isClosed,
-				},
-			]
-		},
-	];
+	
 
 	const contextMenuClick=(e)=>{
 		console.log(e.key);
@@ -164,7 +135,7 @@ const TaskCard = observer((props)=>{
 	}
 
 	if (visible) return( 
-	<Dropdown menu={{ items:menuItems,onClick:contextMenuClick }} trigger={['contextMenu']}>
+	<Dropdown menu={{ items:items.contextMenu(task),onClick:items.contextMenuHandler(task,cell) }} trigger={['contextMenu']}>
 		<li 
 			className={classNames(
 				'userItem',		//это понятно

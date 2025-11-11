@@ -10,6 +10,7 @@ import { DropIndicator } from '@atlaskit/pragmatic-drag-and-drop-react-drop-indi
 import { StoreContext } from "Data/Stores/StoreProvider";
 import EditItem from "../../EditItem/EditItem";
 import ParentLink from "../../ParentLink/ParentLink";
+import { Dropdown } from "antd";
 
 
 
@@ -45,7 +46,9 @@ const JobCard = observer((props)=>{
 		e.preventDefault();
 	}
 
-	return( <li 
+	return( 
+	<Dropdown menu={{ items:context.items.contextMenu(item),onClick:context.items.contextMenuHandler(item,cell) }} trigger={['contextMenu']}>
+	<li 
 		className={classNames(
 			'userItem',		//это понятно
 			'userJob',		//это тоже
@@ -78,7 +81,9 @@ const JobCard = observer((props)=>{
 			}
 		</div>
 		{closestEdge && <DropIndicator edge={closestEdge} gap="4px" background="lime"/>}
-	</li>);
+	</li>
+	</Dropdown>
+	);
 })
 
 export default JobCard;
