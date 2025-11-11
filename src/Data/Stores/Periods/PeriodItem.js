@@ -30,6 +30,53 @@ class PeriodItem {
 		//console.log(value);
 		if (this.dragOverCell!==value) this.dragOverCell=value;
 	}
+
+	timeInit=()=>{
+        if (this.len===null) {
+            this.type='week';
+            this.title='Долгий ящик';
+            this.dropTime=null;
+			this.toolTip='Будущие элементы не вместившиеся в календарь';
+        } else if (this.len<=TimeHelper.dayLen) {
+            this.type='day';
+            this.title=TimeHelper.strWeekDayDate(this.start);
+            this.dropTime=this.start
+                +TimeHelper.hourLen*18; //18-00
+			this.toolTip=TimeHelper.strDateHumanLong(this.start);
+		} else {
+            this.type='week';
+            this.dropTime=this.start
+                +TimeHelper.dayLen*4    //пятница (четыре полных суток с начала понедельника - конец четверга, начало пятницы)
+                +TimeHelper.hourLen*18; //18-00
+            this.title='Эта неделя'
+            this.toolTip=TimeHelper.strDateHuman(this.start)+' - '+TimeHelper.strDateHuman(this.start+this.len);
+            let week=Math.floor((this.time.monday0-this.start-1000)/TimeHelper.weekLen)+1;
+            if (this.start < this.time.monday0) {
+                week=Math.floor((this.time.monday0-this.start-1000)/TimeHelper.weekLen)+1;
+                this.title = week===1?'Пред. неделя':week+' нед. назад';
+            }
+            if (this.start > this.time.sunday0-1000) {
+                week=Math.floor((this.start-this.time.sunday0+1000)/TimeHelper.weekLen)+1;
+                this.title = week===1?'След. неделя':'Через '+week+' нед.';
+            }
+
+			this.title+=' ('+TimeHelper.getWeek(this.start)+')';
+        }
+
+        this.className='period0';
+        if (this.start < this.time.monday0) {
+            let week=Math.floor((this.time.monday0-this.start-1)/TimeHelper.weekLen)+1;
+            this.className='period'+Math.min(week,7);
+        }
+        if (this.start > this.time.sunday0-1) {
+            let week=Math.floor((this.start-this.time.sunday0)/TimeHelper.weekLen)+1;
+            this.className='period'+Math.min(week,7);
+        }
+        //console.log(time.today);
+        this.isClosed=(this.start <= this.time.today);
+        this.isOpen=(this.end > this.time.today || this.end===null);
+        this.isToday=(this.isClosed && this.isOpen)
+	}
 	
     constructor(start,len,interval) {
 		this.interval=interval;
@@ -44,56 +91,14 @@ class PeriodItem {
 		//console.log(this.startObj);
 		//console.log(this.endObj);
 		//console.log(this.wDays);
-        if (len===null) {
-            this.type='week';
-            this.title='Долгий ящик';
-            this.dropTime=null;
-			this.toolTip='Будущие элементы не вместившиеся в календарь';
-        } else if (len<=TimeHelper.dayLen) {
-            this.type='day';
-            this.title=TimeHelper.strWeekDayDate(start);
-            this.dropTime=this.start
-                +TimeHelper.hourLen*18; //18-00
-			this.toolTip=TimeHelper.strDateHumanLong(start);
-		} else {
-            this.type='week';
-            this.dropTime=this.start
-                +TimeHelper.dayLen*4    //пятница (четыре полных суток с начала понедельника - конец четверга, начало пятницы)
-                +TimeHelper.hourLen*18; //18-00
-            this.title='Эта неделя'
-            this.toolTip=TimeHelper.strDateHuman(start)+' - '+TimeHelper.strDateHuman(start+len);
-            let week=Math.floor((this.time.monday0-start-1000)/TimeHelper.weekLen)+1;
-            if (start < this.time.monday0) {
-                week=Math.floor((this.time.monday0-start-1000)/TimeHelper.weekLen)+1;
-                this.title = week===1?'Пред. неделя':week+' нед. назад';
-            }
-            if (start > this.time.sunday0-1000) {
-                week=Math.floor((start-this.time.sunday0+1000)/TimeHelper.weekLen)+1;
-                this.title = week===1?'След. неделя':'Через '+week+' нед.';
-            }
 
-			this.title+=' ('+TimeHelper.getWeek(this.start)+')';
-        }
-
-        this.className='period0';
-        if (start < this.time.monday0) {
-            let week=Math.floor((this.time.monday0-start-1)/TimeHelper.weekLen)+1;
-            this.className='period'+Math.min(week,7);
-        }
-        if (start > this.time.sunday0-1) {
-            let week=Math.floor((start-this.time.sunday0)/TimeHelper.weekLen)+1;
-            this.className='period'+Math.min(week,7);
-        }
-        //console.log(time.today);
-        this.isClosed=(start <= this.time.today);
-        this.isOpen=(this.end > this.time.today || this.end===null);
-        this.isToday=(this.isClosed && this.isOpen)
-
+		this.timeInit();
 		this.itemsIds = new ItemsIdsStore(interval.itemsTypes);
 
 		makeObservable(this,{
 			dragOverCell: observable,
-			setDragOverCell: action
+			setDragOverCell: action,
+			className: observable
 		})
     }
 }
