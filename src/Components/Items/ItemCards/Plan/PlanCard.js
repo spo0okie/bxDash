@@ -1,6 +1,6 @@
 import React, {useRef,useContext} from "react";
 import {observer} from "mobx-react";
-import { get, trace } from "mobx"
+import { get } from "mobx"
 import { Dropdown } from 'antd';
 
 import './PlanCard.css'
@@ -90,24 +90,7 @@ const PlanCard = observer((props)=>{
 		}
 	}
 
-	const getTitle=()=> {
-		if (item.childUids.length) {
-			let links=[];
-			item.childUids.forEach(uid=>{
-				const tokens=uid.split(':');
-				//console.log(tokens);
-				const type=tokens[0];
-				if (type==='task') {
-					const id=Number(tokens[1]);
-					const task=get(context.items['task'].items,id);
-					if (task!==undefined)
-						links.push(<TaskLink id={id} />,': '+task.title)	
-				}
-			})
-			if (links.length) return links;
-		}
-		return item.title;
-	}
+
 
 	return( <li 
 		className={classNames(

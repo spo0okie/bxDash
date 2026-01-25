@@ -1,28 +1,50 @@
 
 export const bxAuthScheme={
 	authorize: async (be)=>{
-		const response = await fetch(be.baseUrl+'user/login', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ user:be.login, password:be.password })
-		});
-		const data = await response.json();
-		if (!data.auth??false) return false;
-		if (data.hash) {
-			be.token = data.hash;
-			return true;
+		try {
+			const response = await fetch(be.baseUrl+'user/login', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ user:be.login, password:be.password })
+			});
+			
+			if (!response.ok) {
+				console.error('Bx authorization failed:', response.status, response.statusText);
+				return false;
+			}
+			
+			const data = await response.json();
+			if (!data?.auth) return false;
+			if (data.hash) {
+				be.token = data.hash;
+				return true;
+			}
+			return false;
+		} catch (error) {
+			console.error('Bx authorization error:', error);
+			return false;
 		}
-		return false;
 	},
 
 	authCheck: async (be)=>{
-		const response = await be.fetch('user/get');
-		const data = await response.json();
-		if (data.id) {
-			be.setUserId(Number(data.id));
-			return true;
+		try {
+			const response = await be.fetch('user/get');
+			
+			if (!response.ok) {
+				console.error('Bx auth check failed:', response.status, response.statusText);
+				return false;
+			}
+			
+			const data = await response.json();
+			if (data?.id) {
+				be.setUserId(Number(data.id));
+				return true;
+			}
+			return false;
+		} catch (error) {
+			console.error('Bx auth check error:', error);
+			return false;
 		}
-		return false;
 	},
 
 	reqOptions: (options,be) => {

@@ -1,4 +1,4 @@
-import {observable, action, makeAutoObservable, when} from 'mobx';
+import {action, makeAutoObservable, when} from 'mobx';
 import Cookies from 'universal-cookie';
 import BackendSystem from './BackendSystem';
 import { bxAuthScheme } from 'Helpers/BxHelper';

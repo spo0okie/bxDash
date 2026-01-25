@@ -7,10 +7,12 @@ export class WsStore {
 	items;
 	users;
 	socket;
+	url;
 	
 	@observable id=null;
 	@observable connectionStatus = "disconnected"; // статус соединения: 'connected', 'disconnected', 'connecting'
 	activityTimestamp=0;	//отметка последнего оповещения об активности
+	intervals = [];
 
 	@action setConnectionStatus(status) {
         this.connectionStatus = status;
@@ -20,56 +22,74 @@ export class WsStore {
         this.id = id;
     }
   
-	onMessage=(message)=>{
-		const data=JSON.parse(message.data)
+onMessage=(message)=>{
+		try {
+			const data=JSON.parse(message.data);
 
-		switch (data.event) {
-            case 'wsConnected':
-                this.setId(Number(data.connection));
-                //$globDashConnections[0].id=$globWsId;
-                console.log('WS Connection ID set to '+this.id);
-                break;
-			case 'taskUpdate':
-				this.items['task'].loadItem(Number(data.taskId));
-				break;
-			case 'jobUpdate':
-				this.items['job'].loadItem(Number(data.jobId));
-				break;
-			case 'planUpdate':
-				this.items['plan'].loadItem(Number(data.id));
-				break;
-            case 'ticketUpdate':
-				this.items['ticket'].loadItem(Number(data.ticketId));
-                break;
-			case 'ping':
-				//console.log(this.users);
-				this.users.updateConnection(data.connection);
-				break;
-			case 'techSupportTicketer':
-				this.users.setDutyTicketer(data.user);
-				break;
-			case 'techSupportShift':
-				this.users.setDutyPhone(data.phone);
-				break;
-            case 'phonesStatusUpdate':
-				// data.data: { phone1: state1, phone2: state2, ... }
-				Object.entries(data.data).forEach(([phone, state]) => {
-					this.users.updatePhoneStatus(phone, state);
-				});
-                break;
-						/*
-            case 'jobRemove':
-                userJobRemove(data.jobId);
-                break;
-            case 'techSupportShift':
-                userPhonesSetDuty(data.phone);
-                break;*/
-            default:
-                console.log('Unknown event');
-                console.log(data);
-
-        }
-		
+			switch (data.event) {
+				case 'wsConnected':
+					this.setId(Number(data.connection));
+					//$globDashConnections[0].id=$globWsId;
+					console.log('WS Connection ID set to '+this.id);
+					break;
+				case 'taskUpdate':
+					if (this.items && this.items['task']) {
+						this.items['task'].loadItem(Number(data.taskId));
+					}
+					break;
+				case 'jobUpdate':
+					if (this.items && this.items['job']) {
+						this.items['job'].loadItem(Number(data.jobId));
+					}
+					break;
+				case 'planUpdate':
+					if (this.items && this.items['plan']) {
+						this.items['plan'].loadItem(Number(data.id));
+					}
+					break;
+				case 'ticketUpdate':
+					if (this.items && this.items['ticket']) {
+						this.items['ticket'].loadItem(Number(data.ticketId));
+					}
+					break;
+				case 'ping':
+					//console.log(this.users);
+					if (this.users) {
+						this.users.updateConnection(data.connection);
+					}
+					break;
+				case 'techSupportTicketer':
+					if (this.users) {
+						this.users.setDutyTicketer(data.user);
+					}
+					break;
+				case 'techSupportShift':
+					if (this.users) {
+						this.users.setDutyPhone(data.phone);
+					}
+					break;
+				case 'phonesStatusUpdate':
+					// data.data: { phone1: state1, phone2: state2, ... }
+					if (this.users && data.data) {
+						Object.entries(data.data).forEach(([phone, state]) => {
+							this.users.updatePhoneStatus(phone, state);
+						});
+					}
+					break;
+							/*
+				case 'jobRemove':
+					userJobRemove(data.jobId);
+					break;
+				case 'techSupportShift':
+					userPhonesSetDuty(data.phone);
+					break;*/
+				default:
+					console.log('Unknown event');
+					console.log(data);
+			}
+		} catch (error) {
+			console.error('Error parsing WebSocket message:', error);
+		}
 	}
 	
 	activityUpdate() {
@@ -97,17 +117,22 @@ export class WsStore {
 		this.users.updateConnection(connection);
 	}
 
-	sendMessage=(data)=>{
+sendMessage=(data)=>{
 		console.log('sending');
 		console.log(data);
 		if (this.connectionStatus !== 'OK') {
 			console.log('cant send message, connection status is '+this.connectionStatus);
 			return;
 		}
-		this.socket.send(JSON.stringify(data));
+		try {
+			this.socket.send(JSON.stringify(data));
+		} catch (error) {
+			console.error('Error sending WebSocket message:', error);
+		}
 	}
 
-	connect(url) {
+connect(url) {
+        this.url = url;
         this.setConnectionStatus("Pending");
         this.socket = new WebSocket(url);
 
@@ -131,18 +156,18 @@ export class WsStore {
 		// Отправить запрос на получение статусов телефонов
         when(()=>this.connectionStatus === 'OK',()=>{this.sendMessage({
             action: 'getPhonesStates',
-            numbers: values(this.users.allPhones)
+            numbers: values(this.users ? this.users.allPhones : [])
         })});
     }
 
 	checkConnection() {
         if (this.connectionStatus === "Disconnected") {
             console.log("Reconnecting WebSocket...");
-            this.connect(this.socket.url); // Переподключение
+            this.connect(this.url); // Переподключение
         }
     }
 
-    constructor(url, main, users, items) {
+constructor(url, main, users, items) {
         makeAutoObservable(this); // Автоматическое создание наблюдаемых свойств и действий
         console.log("connecting " + url);
         this.main = main;
@@ -152,9 +177,20 @@ export class WsStore {
         this.connect(url);
 
         // Собрать все телефоны из realPhones всех пользователей
+        const pingInterval = setInterval(() => this.ping(), 10000);
+        const checkConnectionInterval = setInterval(() => this.checkConnection(), 15000); // Проверка соединения каждые 15 секунд
+        this.intervals.push(pingInterval, checkConnectionInterval);
+    }
 
-        setInterval(() => this.ping(), 10000);
-        setInterval(() => this.checkConnection(), 15000); // Проверка соединения каждые 5 секунд
+    clearIntervals() {
+        this.intervals.forEach(interval => clearInterval(interval));
+        this.intervals = [];
+    }
 
+    destroy() {
+        this.clearIntervals();
+        if (this.socket) {
+            this.socket.close();
+        }
     }
 };

@@ -1,7 +1,7 @@
 import React, {useRef,useEffect,useState,useContext} from "react";
 import {observer} from "mobx-react";
 import { dashItemDragLogic } from "Helpers/DndHelper";
-import { get, trace } from "mobx"
+import { get } from "mobx"
 
 
 import './JobCard.css'
@@ -37,8 +37,8 @@ const JobCard = observer((props)=>{
 			item: item,			//dashItem элемент (task|job|ticket|plan)
 			index: index,		//порядок элемента в списке
 			cell: cell,			//ячейка в которой и список и элемент
-		},ref,setClosestEdge)
-	});
+		},ref,setClosestEdge);
+	}, [item, index, cell]);
 
 	const onToggleClick=(e)=>{
 		item.completionToggle();

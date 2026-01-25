@@ -27,7 +27,6 @@ import MenuButton from "./MenuIButton";
 
     render() {
         const time=this.context.time;
-		const layout=this.context.layout;
 
         return (
             <div className="AppMenu">

@@ -1,7 +1,7 @@
 import React, {useRef,useEffect,useState,useContext} from "react";
 import {observer} from "mobx-react";
 import { dashItemDragLogic } from "Helpers/DndHelper";
-import { get, trace } from "mobx"
+import { get } from "mobx"
 import remarkGfm from "remark-gfm";
 
 import './MemoCard.css'

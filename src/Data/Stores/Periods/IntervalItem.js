@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import TimeHelper from 'Helpers/TimeHelper';
 import PeriodItem from './PeriodItem';
-import {values, get, observe, when, has, keys} from 'mobx';
+import {values, get, observe, when, has} from 'mobx';
 import ItemsIdsStore from '../Items/ItemsIdsStore';
 import PeriodItemsMixin from './PeriodItemsMixin';
 

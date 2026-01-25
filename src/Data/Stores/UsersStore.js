@@ -2,13 +2,7 @@ import 'reflect-metadata';
 import {observable, when, makeAutoObservable, runInAction , get, set, action, computed, keys, has, observe} from 'mobx';
 import UserItem from 'Data/Items/UserItem';
 
-const STATE_PRIORITY = {
-    50: "RINGING",
-    40: "INUSE",
-    30: "IDLE",
-    20: "UNAVAILABLE",
-    10: "UNKNOWN",
-};
+
 const STATE_PRIORITY_REVERSE = {
     "RINGING": 50,
     "INUSE": 40,

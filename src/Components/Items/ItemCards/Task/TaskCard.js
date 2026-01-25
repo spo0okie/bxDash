@@ -1,7 +1,7 @@
 import React, {useRef,useEffect,useState,useContext} from "react";
 import {observer} from "mobx-react";
 import { dashItemDragLogic } from "Helpers/DndHelper";
-import {get,trace,values} from "mobx"
+import {get,values} from "mobx"
 import { Element} from 'react-scroll';
 
 import './Task.css'
@@ -106,7 +106,6 @@ const TaskCard = observer((props)=>{
 	, [ref,visible,cell,index,task]);
 
 	
-
 	const contextMenuClick=(e)=>{
 		console.log(e.key);
 		switch(e.key) {

@@ -22,6 +22,7 @@ class BackendSystem {
     constructor(name,authConfig={}) {
         this.name = name;
         this.authConfig = authConfig;
+        this.intervals = [];
         makeAutoObservable(this);
     }
 
@@ -81,7 +82,7 @@ class BackendSystem {
         }
     }
 
-    async checkAvailability() {
+async checkAvailability() {
 		//console.log(this.name+': conenction check '+this.baseUrl);
 		if (!this.baseUrl) {
 			this.setAvailability(STATUS.UNINITIALIZED);
@@ -97,17 +98,20 @@ class BackendSystem {
 			checkUrl=this.authConfig.checkUrl(this.baseUrl,options);
 		}
         try {
-            await fetch(checkUrl, options);
+            const response = await fetch(checkUrl, options);
+            if (!response.ok && !response.redirected) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
             this.setAvailability(STATUS.OK);
 			if (this.authStatus===STATUS.UNAUTHORIZED) this.authenticate();
         } catch (error) {
-			console.log(this.name+': conenction ERR');
+			console.log(this.name+': connection ERR');
 			console.log(error);
             this.setAvailability(STATUS.UNREACHABLE);
         }
     }
 
-    async authenticate() {
+async authenticate() {
         if (this.authStatus === STATUS.PENDING || this.availability !== STATUS.OK || !this.login || !this.password) return;
         this.setAuthStatus(STATUS.PENDING);
         try {
@@ -118,7 +122,8 @@ class BackendSystem {
 			} else {
 				this.setAuthStatus(STATUS.AUTH_FAIL);
 			}
-        } catch {
+        } catch (error) {
+            console.error(this.name+': Authentication error:', error);
             this.setAuthStatus(STATUS.AUTH_FAIL);
         }
     }
@@ -131,14 +136,26 @@ class BackendSystem {
             } else {
                 this.setAuthStatus(STATUS.UNAUTHORIZED);
             }
-        } catch {
+        } catch (error) {
+            console.error(this.name+': Auth status check error:', error);
             this.setAuthStatus(STATUS.UNAUTHORIZED);
         }
     }
 
-    startAvailabilityCheck() {
-        setInterval(() => this.checkAvailability(), 10000);
-        setInterval(() => this.checkAuthStatus(), 60000);
+startAvailabilityCheck() {
+        this.clearIntervals();
+        const availabilityInterval = setInterval(() => this.checkAvailability(), 10000);
+        const authInterval = setInterval(() => this.checkAuthStatus(), 60000);
+        this.intervals.push(availabilityInterval, authInterval);
+    }
+
+    clearIntervals() {
+        this.intervals.forEach(interval => clearInterval(interval));
+        this.intervals = [];
+    }
+
+    destroy() {
+        this.clearIntervals();
     }
 }
 

@@ -1,52 +1,74 @@
 
 export const zabbixAuthScheme={
 	authorize: async (be)=>{
-		const response = await fetch(be.baseUrl+'api_jsonrpc.php', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				jsonrpc: '2.0',
-    			method: 'user.login',
-    			params: {
-					username:be.login, password:be.password
-				},
-				id: 1
-			})
-		});
-		const data = await response.json();
-		if (data.error) {
-			console.error('Ошибка авторизации:', data.error);
-			return false; 
+		try {
+			const response = await fetch(be.baseUrl+'api_jsonrpc.php', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					jsonrpc: '2.0',
+					method: 'user.login',
+					params: {
+						username:be.login, password:be.password
+					},
+					id: 1
+				})
+			});
+			
+			if (!response.ok) {
+				console.error('Zabbix authorization failed:', response.status, response.statusText);
+				return false;
+			}
+			
+			const data = await response.json();
+			if (data.error) {
+				console.error('Zabbix authorization error:', data.error);
+				return false; 
+			}
+			if (data.result) {			
+				be.token = data.result;
+				return true;
+			}
+			return false;
+		} catch (error) {
+			console.error('Zabbix authorization network error:', error);
+			return false;
 		}
-		if (data.result) {			
-			be.token = data.result;
-			return true;
-		}
-		return false;
 	},
 
 	authCheck: async (be)=>{
-		const response = await be.fetch('api_jsonrpc.php',{
-			method: 'POST',
-			headers: { 
-			},
-			body: JSON.stringify({
-				jsonrpc: '2.0',
-    			method: 'user.get',
-    			params: {
-					filter: {
-						username: be.login
-					}
+		try {
+			const response = await be.fetch('api_jsonrpc.php',{
+				method: 'POST',
+				headers: { 
 				},
-				id: 1
-			})
-		});
-		const data = await response.json();
-		if (data.result && data.result[0] && data.result[0].userid) {
-			be.setUserId(Number(data.result[0].userid));
-			return true;
+				body: JSON.stringify({
+					jsonrpc: '2.0',
+					method: 'user.get',
+					params: {
+						filter: {
+							username: be.login
+						}
+					},
+					id: 1
+				})
+			});
+			
+			if (!response.ok) {
+				console.error('Zabbix auth check failed:', response.status, response.statusText);
+				return false;
+			}
+			
+			const data = await response.json();
+			if (data.result && data.result[0] && data.result[0].userid) {
+				be.setUserId(Number(data.result[0].userid));
+				return true;
+			}
+			return false;
+		} catch (error) {
+			console.error('Zabbix auth check network error:', error);
+			return false;
 		}
-		return false;
 	},
 
 	checkUrl: (baseUrl,options) => {

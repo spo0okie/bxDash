@@ -1,4 +1,4 @@
-import {values, get, observe, when, has, keys} from 'mobx';
+import {get} from 'mobx';
 
 const PeriodItemsMixin = {
 

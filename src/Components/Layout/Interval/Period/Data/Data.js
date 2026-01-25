@@ -1,6 +1,6 @@
 import React from "react";
 import {observer} from "mobx-react";
-import {get,keys,values,trace} from "mobx"
+import {get,keys,values} from "mobx"
 import { StoreContext } from "Data/Stores/StoreProvider";
 import "./Data.css";
 import UserCell from "./UserCell/UserCell"; 

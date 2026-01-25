@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import './Sidebar.css';
 import { StoreContext } from "Data/Stores/StoreProvider";
 import { observer } from "mobx-react";

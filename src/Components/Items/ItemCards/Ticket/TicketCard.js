@@ -1,6 +1,6 @@
-import React, {useRef,useEffect,useState,useContext} from "react";
+import React, {useRef,useContext} from "react";
 import {observer} from "mobx-react";
-import { get, trace } from "mobx"
+import { get } from "mobx"
 import { Element} from 'react-scroll';
 
 

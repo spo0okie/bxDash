@@ -1,6 +1,5 @@
 
 import React from "react";
-import {get} from 'mobx';
 import './EditItem.css';
 //TODO https://www.npmjs.com/package/react-textarea-autosize
 import { Input } from 'antd';

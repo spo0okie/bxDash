@@ -1,7 +1,6 @@
 import { action, makeObservable, observable } from "mobx";
 import DashItem from "./DashItem";
 import TimeHelper from "Helpers/TimeHelper";
-import { act } from "react";
 
 class TaskItem extends DashItem {
 	mark;	//оценка
