@@ -1,14 +1,34 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import './invAuthForm.css';
 import { StoreContext } from 'Data/Stores/StoreProvider';
 import ConnectionStates from 'Components/Layout/ConnectionStates/ConnectionStates';
+import { debugLogin, debugPassword, debugAutoLogin } from 'config.priv';
 
 const InvAuthForm = observer(function InvAuthForm() {
     const [login, setLogin] = useState('');
     const [password, setPassword] = useState('');
     const [status, setStatus] = useState('typing');
     const context = useContext(StoreContext);
+
+    // Автозаполнение из конфигурации и автовход для отладки
+    useEffect(() => {
+        if (debugLogin && debugPassword) {
+            setLogin(debugLogin);
+            setPassword(debugPassword);
+            
+            // Если включен автовход - сразу выполняем авторизацию
+            if (debugAutoLogin) {
+                setStatus('submitting');
+                context.main.authenticate(
+                    debugLogin,
+                    debugPassword,
+                    () => setStatus('success'),
+                    () => setStatus('error')
+                );
+            }
+        }
+    }, [context.main]);
 
     async function handleSubmit(e) {
         e.preventDefault();
