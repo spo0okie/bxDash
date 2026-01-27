@@ -10,12 +10,13 @@ const AlertListButton = ({severity,list}) => {
 	const severityTitles={1:'Информация',2:'Предупреждение',3:'Средняя',4:'Высокая',5:'Критическая'};
 	return (list.length>0)&&<Tooltip title={<>
 		<h4 className='user-alerts'>{severityTitles[severity]}</h4>
-		<ul className="user-alerts">
-			{list.map((item)=>{
-				const trigerid=get(item,'objectid');
-				const eventid=get(item,'eventid');
-				const name=get(item,'host')+': '+get(item,'name');
-				return <li>
+			<ul className="user-alerts">
+				{list.map((item, index)=>{
+					const trigerid=get(item,'objectid');
+					const eventid=get(item,'eventid');
+					const name=get(item,'host')+': '+get(item,'name');
+					const keyId=`${severity}-${eventid||trigerid||name||index}`;
+					return <li key={keyId}>
 						<a 
 							href={main.zabbix.baseUrl+"tr_events.php?triggerid="+trigerid+"&eventid="+eventid} 
 							target='_blank' 
@@ -69,12 +70,12 @@ const UserAlerts = observer((props) => {
     });
 
 	//console.log(serviceCounts);
-    return (<>
-        <div className="user-alerts service">
-			{serviceCounts.map(({ priority, list }) => <AlertListButton list={list} severity={priority}/>)}
-        </div>
-        <div className="user-alerts support">
-			{supportCounts.map(({ priority, list }) => <AlertListButton list={list} severity={priority}/>)}
+	return (<>
+		<div className="user-alerts service">
+			{serviceCounts.map(({ priority, list }) => <AlertListButton key={priority} list={list} severity={priority}/>)}
+		</div>
+		<div className="user-alerts support">
+			{supportCounts.map(({ priority, list }) => <AlertListButton key={priority} list={list} severity={priority}/>)}
 		</div>
 	</>);
 });

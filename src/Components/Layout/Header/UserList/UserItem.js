@@ -159,15 +159,20 @@ const UserItem = observer((props)=>{
 				onMouseOut={mouseOut}
 				onClick={toggleUser}
 				>
-				<span className={classNames(
-						'userStatus',user.activityStatus
-					)}></span>
-				{user.id===users.dutyTicketer&&(<Tooltip title={'Дежурный по заявкам на портале'}>🎫</Tooltip>)}
-				<Tooltip title={title}>{user.name}</Tooltip>
-				{user.phone===users.dutyPhone&&(
-					<>{'('}<Tooltip title={'Дежурный на телефоне'}><span className="dutyPhone"><PhoneItem  user={user}/></span></Tooltip>{')'}</>
-				)}
-				{user.phone!==users.dutyPhone&&(<>{'('}<PhoneItem user={user}/>{')'}</>)}
+				<div className="firstLine">
+					<span className={classNames('userStatus', user.activityStatus)}></span>
+					{user.id===users.dutyTicketer && (
+						<Tooltip title="Дежурный по заявкам на портале">🎫</Tooltip>
+					)}
+					<Tooltip title={title}>
+						<span className="userName">{user.name}</span>
+					</Tooltip>
+					{user.phone===users.dutyPhone ? (
+						<>(<Tooltip title="Дежурный на телефоне"><span className="dutyPhone"><PhoneItem user={user} /></span></Tooltip>)</>
+					) : (
+						<>(<PhoneItem user={user} />)</>
+					)}
+				</div>
 				<UserAlerts username={user.name} />
 				{closestEdge && <DropIndicator edge={closestEdge} />}
 			</td>

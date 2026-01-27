@@ -418,8 +418,9 @@ export default class DashItem {
 	}
 
 	startEdit() {
-		console.log('start editing ' + this.editField + ' of '+this.uid);
 		this.editValue=this[this.editField];
+		console.log(this);
+		console.log('start editing ' + this.editField + ' of ' + this.uid + ': ' + this.editValue);
 		if (this.editValue === undefined || this.editValue === null) this.editValue='';
 		this.setHover(false);
 		this.setEdit(true);
@@ -533,10 +534,10 @@ export default class DashItem {
 	};
 
 	/**
-	 * 
-	 * @param {*} item 
-	 * @param {*} data 
-	 * @param {*} list 
+	 * Создает новый элемент
+	 * @param {*} item DashItem элемент того же класса с начальными параметрами
+	 * @param {*} data Bitrix данные для загрузки
+	 * @param {*} list Store в который добавляется элемент
 	 */
 	constructor(item,data,list) {
 		this.attachList(list);

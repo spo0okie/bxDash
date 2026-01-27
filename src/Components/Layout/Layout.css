@@ -23,7 +23,7 @@ div.memo {
 div.dashBoard {
 	display: inline-block;
 	height: 100%;
-	flex-grow: 1;
+	flex: 1;
 	
 }
 

@@ -1,6 +1,6 @@
 # Описание тестирования в bxDash
 
-Этот документ описывает систему тестирования приложения bxDash, включая текущие тесты, рекомендации по запуску и расширению.
+Этот документ описывает систему тестирования приложения bxDash, включая текущие тесты, рекомендации по запуску и расширению. Также описаны новые системы E2E тестирования и mock данных для внешних систем.
 
 ## Обзор системы тестирования
 
@@ -8,6 +8,7 @@ bxDash использует:
 - **Jest** как тестовый фреймворк (встроен в Create React App)
 - **@testing-library/react** для тестирования компонентов React
 - **@testing-library/jest-dom** для дополнительных матчеров DOM
+- **Playwright** для E2E тестирования
 - **TypeScript** для типизации тестов
 
 ## Запуск тестов
@@ -34,6 +35,18 @@ npm test -- --verbose
 
 # Запуск тестов с покрытием кода
 npm test -- --coverage --watchAll=false
+
+# Запуск unit тестов
+npm run test:unit
+
+# Запуск E2E тестов с Playwright
+npm run test:e2e
+
+# Запуск тестов с покрытием кода
+npm run test:coverage
+
+# Запуск тестов mock данных
+npm run test:mock
 ```
 
 ### Конфигурация Babel
@@ -100,6 +113,105 @@ render(
     <Menu />
   </StoreContext.Provider>
 );
+```
+
+### AuthForm тесты
+
+#### InvAuthForm.test.js
+**Расположение:** `src/Components/Layout/AuthForm/InvAuthForm.test.js`
+**Описание:** Тест компонента формы авторизации
+**Что тестирует:**
+- Рендеринг формы авторизации
+- Автозаполнение данных из config.priv.js
+- Выполнение авторизации при включенном автовходе
+
+```javascript
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import InvAuthForm from '../src/Components/Layout/AuthForm/InvAuthForm';
+
+// Mock для MobX store
+const mockStore = {
+  main: {
+    authenticate: jest.fn()
+  }
+};
+
+test('рендерит форму авторизации', () => {
+  render(<InvAuthForm />);
+  expect(screen.getByText('Авторизация')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /Вход/i })).toBeInTheDocument();
+});
+
+test('заполняет форму данными из config.priv.js', async () => {
+  render(<InvAuthForm />);
+  
+  // Проверяем автозаполнение
+  await waitFor(() => {
+    expect(screen.getByDisplayValue('reviakin.a')).toBeInTheDocument();
+  });
+});
+
+test('выполняет авторизацию при включенном автовходе', async () => {
+  render(<InvAuthForm />);
+  
+  // Ждем автозаполнения
+  await waitFor(() => {
+    expect(screen.getByDisplayValue('reviakin.a')).toBeInTheDocument();
+  });
+  
+  // Проверяем что authenticate был вызван
+  expect(mockStore.main.authenticate).toHaveBeenCalled();
+});
+```
+
+## Новые системы тестирования
+
+### Mock данные для внешних систем
+**Расположение:** `src/Helpers/MockDataHandler.js`
+**Описание:** Система для работы с mock данными внешних систем
+
+#### Использование MockDataHandler:
+```javascript
+import MockDataHandler from '../Helpers/MockDataHandler';
+
+// Загрузка mock данных для конкретной системы
+const tasks = await MockDataHandler.loadMockData('tasks');
+const zabbixData = await MockDataHandler.loadMockData('zabbix');
+
+// Инициализация всех mock систем
+const allData = await MockDataHandler.initMockSystems();
+```
+
+#### Структура mock файлов:
+- `mocks/tasks.json` - задачи из Bitrix
+- `mocks/jobs.json` - работы из Bitrix  
+- `mocks/plans.json` - планы из Bitrix
+- `mocks/tickets.json` - тикеты из Bitrix
+- `mocks/memos.json` - заметки из Bitrix
+- `mocks/absents.json` - отсутствия из Bitrix
+- `mocks/zabbix.json` - данные из Zabbix
+
+### E2E тестирование с Playwright
+**Расположение:** `tests/`
+**Описание:** End-to-end тесты с использованием Playwright
+
+#### Пример E2E теста:
+```javascript
+import { test, expect } from '@playwright/test';
+
+test('should login and display dashboard', async ({ page }) => {
+  await page.goto('https://portal.azimuth.holding.local/reviakin/z2/');
+  
+  // Заполнение формы авторизации
+  await page.fill('[name="login"]', 'testuser');
+  await page.fill('[name="password"]', 'testpass');
+  await page.click('button:has-text("Вход")');
+  
+  // Проверка успешного входа
+  await expect(page).toHaveURL(/.*dashboard/);
+  await expect(page.locator('text=Режим планирования')).toBeVisible();
+});
 ```
 
 ## Покрытие кода

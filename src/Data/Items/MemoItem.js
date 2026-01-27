@@ -1,8 +1,10 @@
 import DashItem from "./DashItem";
 import TimeHelper from "Helpers/TimeHelper";
 
+/**
+ * @property {string} text
+ */
 class MemoItem extends DashItem {
-	text;
 
 	initDefaults() {
 		this.type = 'memo';		//тип
@@ -69,6 +71,7 @@ class MemoItem extends DashItem {
 	
 
 		this.text = item['~DETAIL_TEXT'];
+		//console.log(this.text);
 		this.title = this.text.split("\n")[0];
 
 		this.parseTitle();

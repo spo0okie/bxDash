@@ -22,9 +22,25 @@
 .UserItem span.userStatus.unavail {background-color: red;}
 .UserItem span.userStatus.offline {background-color: gray;}
 
-.UserItem span.dutyPhone{color:blue; font-weight: bolder;}
+.UserItem span.dutyPhone{color:blue; font-weight: bolder; white-space: nowrap;}
 .UserItem span.phoneStatus.IDLE {background-color: lime;}
 .UserItem span.phoneStatus.RINGING {background-color: orange;}
 .UserItem span.phoneStatus.INUSE {background-color: red;}
 .UserItem span.phoneStatus.UNKNOWN,
 .UserItem span.phoneStatus.UNAVAILABLE {background-color: gray;}
+
+.UserItem .firstLine {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+	justify-content: center;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.UserItem .firstLine .userName {
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: hidden;
+}

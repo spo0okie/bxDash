@@ -38,7 +38,7 @@ const RelativesMixin = {
 
 	directLinkBuild() {
 		when(()=>!this.list.master.isLoading(),()=>{
-			console.log('all loaded!');
+			//console.log('all loaded!');
 			this.list.master.getUidsItems(this.parentUids).forEach(item=>{
 				this.addParent(item);
 				item.addChild(this);

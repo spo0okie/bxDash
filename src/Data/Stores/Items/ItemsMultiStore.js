@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import ItemsStore from './ItemsStore';
-import { get, values} from 'mobx';
+import { get, values, has} from 'mobx';
 
 
 class ItemsMultiStore {
@@ -16,11 +16,13 @@ class ItemsMultiStore {
 	ws;
 
 	types;
+	linkedPending={};	// cache requested ids to avoid repeated linked fetches
 
 	/*findRelativesFor(item) {
 		this.types.forEach(type => this[type].findRelativesFor(item))
 	}*/
 
+	//возвращает элемент по UID
 	getUidItem(uid) {
 		const tokens=uid.split(':');
 		const type=tokens[0];
@@ -31,6 +33,7 @@ class ItemsMultiStore {
 		return get(this[type].items,id);
 	}
 
+	//возвращает массив элементов по массиву UIDs
 	getUidsItems(uids) {
 		let result=[];
 		uids.forEach(uid=>{
@@ -41,6 +44,104 @@ class ItemsMultiStore {
 			//	console.log(uid+' not found');
 		})
 		return result;
+	}
+
+	//возвращает наборы всех ссылок по типам
+	getLinkedUidsMap() {
+		const map = {
+			task: new Set(),
+			ticket: new Set(),
+		};
+		this.types.forEach(type => { if (this[type]!==undefined) {
+			values(this[type].items).forEach(item => {
+				['parentUids', 'childUids'].forEach(key => {
+					const links = item[key];
+					if (!Array.isArray(links)) return;
+					links.forEach(uid => {
+						if (typeof uid !== 'string') return;
+						if (uid.startsWith('task:')) {
+							map.task.add(uid);
+						}
+						if (uid.startsWith('ticket:')) {
+							map.ticket.add(uid);
+						}
+					});
+				});
+			});
+		}});
+		return map;
+	}
+
+	// возвращает массив всех ссылок в одном массиве
+	getLinkedUids() {
+		const map = this.getLinkedUidsMap();
+		return [...map.task, ...map.ticket];
+	}
+
+	// возвращает UID текущих ссылок по конкретному типу
+	getLinkedUidsByType(type) {
+		const map = this.getLinkedUidsMap();
+		return Array.from(map[type] || []);
+	}
+
+	// определяет, каких ссылок типа еще нет в сторе и не запрошены ранее
+	getMissingLinkedUidsForType(type) {
+		const store = this[type];
+		if (!store) return [];
+		const referenced = this.getLinkedUidsByType(type);
+		//console.log('referenced', type, referenced);
+		if (!referenced.length) return [];
+		const pending = this.linkedPending[type] || new Set();
+		const missing = [];
+		referenced.forEach(uid => {
+			const tokens = uid.split(':');
+			if (tokens.length !== 2) return;
+			const id = Number(tokens[1]);
+			//console.log('checking', uid, id);
+			if (!id) return;
+			if (has(store.items, id)) return;
+			if (pending.has(uid)) return;
+			missing.push(id);
+		});
+		return missing;
+	}
+
+	markLinkedPending(type, uids) {
+		if (!this.linkedPending[type]) this.linkedPending[type] = new Set();
+		uids.forEach(uid => this.linkedPending[type].add(uid));
+	}
+
+	clearLinkedPending(type, uids) {
+		if (!this.linkedPending[type]) return;
+		uids.forEach(uid => this.linkedPending[type].delete(uid));
+	}
+
+	requestLinkedFetch(type = null) {
+		console.log('requestLinkedFetch', type);
+		const targets = type ? [type] : ['task', 'ticket'];
+		targets.forEach(target => this.requestLinkedFetchForType(target));
+	}
+
+	requestLinkedFetchForType(type) {
+		console.log('requestLinkedFetchForType', type);
+		const store = this[type];
+		if (!store) return;
+		const missing = this.getMissingLinkedUidsForType(type);
+		console.log('missing', missing);
+		if (!missing.length) return;
+		this.markLinkedPending(type, missing);
+		store.loadLinkedItems(missing)
+			.then(success => {
+				this.clearLinkedPending(type, missing);
+				if (!success) {
+					return;
+				}
+				//this.requestLinkedFetch();
+			})
+			.catch(error => {
+				console.error(error);
+				this.clearLinkedPending(type, missing);
+			});
 	}
 
 	buildReveseLinks(item) {

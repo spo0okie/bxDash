@@ -13,6 +13,7 @@ class ItemsStore {
     items = new observable.map([],{deep:true});
 	type = 'dash';
 	isLoading=true;		//пока ничего не загрузили, считаем что еще загружаем
+	linkedLoadInProgress=false;	//флаг, чтобы не вызывать linked-загрузки одновременно
 
 	master;
     periods;
@@ -85,13 +86,15 @@ class ItemsStore {
         if (!has(this.items,id)) {
 			//console.log('creating new '+ this.type);
 			const Item = new className({}, data, this);
+			if (className === MemoItem) console.log(Item);
 			this.setItem(Item);
 			this.master.buildReveseLinks(Item);
         } else {
 			//console.log('updating '+id);
 			const Item = get(this.items, id)
 			Item.loadData(data,true);
-			this.master.buildReveseLinks(Item);
+			//не вижу смысла повторно искать обратные ссылки при обновлении элемента с сохранением id
+			//this.master.buildReveseLinks(Item);
         }
         //console.log(this.tasks[id]);
     }    
@@ -144,50 +147,93 @@ class ItemsStore {
 		}
 	}
 
+	getLinkedIdsParam() {
+		const linkedIds = this.master.getLinkedUids();
+		if (!linkedIds.length) return '';
+		return '&ids=' + encodeURIComponent(linkedIds.join(','));
+	}
+
     //загрузить задачи из битрикс с отметки времени from и до отметки to
-    loadItems(from,to,onComplete=null) {
+	// первичный запрос по временным рамкам/пользователям + ids, затем инициируем linked fetch
+	loadItems(from,to,onComplete=null) {
 		console.log('loading ' + this.type + 's');
-        let url=this.type+'/load/'+Math.round(from/1000)+'/'+(to?(Math.round(to/1000)):null)+'/'+keys(this.users.items).join(',')+'?random='+TimeHelper.getTimestamp();
-        let store=this;
-        console.log(url);
+		const linkedParam = this.getLinkedIdsParam();
+		const url = this.type + '/load/' + Math.round(from/1000) + '/' + (to ? Math.round(to/1000) : null) + '/' + keys(this.users.items).join(',') + '?random=' + TimeHelper.getTimestamp() + linkedParam;
+		const store = this;
 		this.setLoading(true);
-		when(()=>this.main.bx.authStatus==='OK',()=>{
-			this.main.bx.fetch(url)
+		return when(() => this.main.bx.authStatus==='OK')
+			.then(() => this.main.bx.fetch(url))
+			.then(response => response.json())
+			.then(data => {
+				console.log('got ' + data.length + ' ' + this.type + 's');
+				data.forEach(function(item) { store.initData(item); });
+				if (onComplete) onComplete();
+				this.updateLoadRange(from,to);
+				//если в элементах могут быть ссылки на другие объекты - инициируем их дозагрузку
+				if (this.type in ['memo','job','plan']) this.master.requestLinkedFetch();
+				return true;
+			})
+			.catch(error => {
+				console.error(error);
+				return false;
+			})
+			.finally(() => {
+				this.setLoading(false);
+			});
+	}
+    
+	//загрузить одну задачку по ID
+	loadItem(id,onComplete=null) {
+		const store=this;
+		console.log('loading ' + this.type + ' ID '+id);
+		const linkedParam = this.getLinkedIdsParam();
+		return when(()=>this.main.bx.authStatus==='OK')
+			.then(()=>this.main.bx.fetch(this.type + '/get/'+id+'?random='+TimeHelper.getTimestamp()+linkedParam))
 			.then((response) => response.json())
 			.then((data) => {
-				console.log('got ' +data.length+' '+ this.type + 's');
-				data.forEach(function(item){store.initData(item)});
+				console.log('got ' + data.length + ' ' + this.type + 's');
+				data.forEach(function (item) { store.initData(item) });
 				if (onComplete) onComplete();
-				this.setLoading(false);
-				this.updateLoadRange(from,to);
+				//this.master.requestLinkedFetch();
+				return true;
 			})
-			.catch(error=>console.error(error));	
-		})
-    }
-    
-    //загрузить одну задачку по ID
-    loadItem(id,onComplete=null) {
-        let store=this;
-		console.log('loading ' + this.type + ' ID '+id);
-		when(()=>this.main.bx.authStatus==='OK',()=>{
-			this.main.bx.fetch(this.type + '/get/'+id+'?random='+TimeHelper.getTimestamp())
-				.then((response) => response.json())
-				.then((data) => {
-					console.log('got ' + data.length + ' ' + this.type + 's');
-					data.forEach(function (item) { store.initData(item) });
-					if (onComplete) onComplete();
-				})
-				.catch(error => {
-					if (has(this.items, id)) {
-						const Item = get(this.items,id);
-						console.log(Item);
-						Item.setUpdating(false);
-						Item.alertItem();
-					}
-					console.error(error);     
-				});
-		});
-    }
+			.catch(error => {
+				if (has(this.items, id)) {
+					const Item = get(this.items,id);
+					console.log(Item);
+					Item.setUpdating(false);
+					Item.alertItem();
+				}
+				console.error(error);
+				return false;
+			});
+	}
+
+	// запрос только по ids (не зависит от временных границ) для дозагрузки ссылочных объектов
+	loadLinkedItems(ids) {
+		console.log('loadLinkedItems', ids);
+		if (!ids.length) return Promise.resolve(true);
+		const idsParam = encodeURIComponent(ids.join(','));
+		const url = this.type + '/linked?random=' + TimeHelper.getTimestamp() + '&ids=' + idsParam;
+		console.log('loading linked ' + this.type + 's: ' + idsParam);
+		this.linkedLoadInProgress = true;
+		const store = this;
+		return when(()=>this.main.bx.authStatus==='OK')
+			.then(()=>this.main.bx.fetch(url))
+			.then(response => response.json())
+			.then(data => {
+				console.log('got ' + data.length + ' linked ' + this.type + 's');
+				data.forEach(function(item){store.initData(item)});
+				return true;
+			})
+			.catch(error => {
+				console.error(error);
+				return false;
+			})
+			.finally(()=>{
+				this.linkedLoadInProgress=false;
+			});
+	}
 
 	updateItem(item) {
 		if (has(this.items, item.id)) {

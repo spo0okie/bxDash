@@ -4,12 +4,14 @@
 
 ## Обзор проекта
 
-bxDash - это dashboard-приложение на базе React, созданное с использованием:
+-bxDash - это dashboard-приложение на базе React, созданное с использованием:
 - React 18 with hooks
 - MobX для управления состояниями
 - Ant Design для UI компонент
 - Drag-and-drop функционал от Atlassian Pragmatic Drag and Drop
 - WebSocket integration for real-time updates
+
+Папка `back/` содержит Bitrix-бэкенд сервиса, поэтому частоту правок нужно синхронизировать с владельцами backend-части.
 
 ## Команды сборки, линтинга и тестирования
 
@@ -240,6 +242,7 @@ src/
 │   ├── Stores/         # MobX хранилища элементов
 │   └── Items/          # Модели данных элементов
 ├── Helpers/            # Вспомогательные функции
+├── back/               # Bitrix backend сервис
 └── config.priv.js      # Конфигурация
 ```
 

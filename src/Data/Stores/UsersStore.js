@@ -61,9 +61,13 @@ class UsersStore {
 
 	
 
-    @action init(items){
-        this.items = observable.map();
-        Object.keys(items).forEach((id) => {
+	@action init(items){
+		if (this.items) {
+			this.items.clear();
+		} else {
+			this.items = observable.map();
+		}
+		Object.keys(items).forEach((id) => {
 			const item=items[id];
 			item.id=Number(id);
             this.initItem(item);
