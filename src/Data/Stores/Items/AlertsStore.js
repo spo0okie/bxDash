@@ -156,7 +156,7 @@ class AlertsStore {
 						});
 
 						this.setLoading(false);
-						console.log(this.service);
+						//console.log(this.service);
 					})
 					.catch(error => {
 						console.error(error);

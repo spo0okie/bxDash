@@ -107,6 +107,23 @@ class router
 
 		return $def;
 	}
+
+	/**
+	 * Возвращает массив идентификаторов из параметра запроса
+	 */
+	static public function getIds($num=null,$var='ids',$def='') {
+		$rawIds = router::getRoute($num, $var, $def);
+		if (!$rawIds) return [];
+		$result = [];
+		foreach (explode(',', $rawIds) as $token) {
+			$token = trim($token);
+			if ($token === '') continue;
+			$id = (int)$token;
+			if ($id > 0) $result[$id] = $id;
+		}
+		return array_values($result);
+	}
+
 	
 	static public function init()
 	{

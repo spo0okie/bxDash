@@ -36,25 +36,6 @@ class controller_task {
 			$tasks[$i]['UPDATES_COUNT']=(integer)$count;
 	}
 
-	static private function parseLinkedIds($prefix) {
-		$rawIds = router::getRoute(null, 'ids', '');
-		if (!$rawIds) return [];
-		$prefixLen = strlen($prefix) + 1; // include ':'
-		$prefixLower = mb_strtolower($prefix . ':');
-		$result = [];
-		foreach (explode(',', $rawIds) as $token) {
-			$token = trim($token);
-			if ($token === '') continue;
-			if (mb_strtolower(substr($token, 0, $prefixLen)) !== $prefixLower) continue;
-			$id = (int)substr($token, $prefixLen);
-			if ($id > 0) $result[$id] = $id;
-		}
-		return array_values($result);
-	}
-
-	static private function getLinkedTaskIds() {
-		return static::parseLinkedIds('task');
-	}
 
 	static private function loadTasksByIds(array $ids) {
 		$ids = array_values(array_filter(array_unique(array_map('intval', $ids))));
@@ -170,13 +151,18 @@ class controller_task {
 
 		if (is_null($users= router::getRoute(5, 'users')))
 			router::haltJson(static::MSG_NO_USERS);
-		$tasks = static::loadPeriodUsers($from, $to,explode(',',$users));
-		$linkedTasks = static::loadTasksByIds(static::getLinkedTaskIds());
 		$result = [];
+		$tasks = static::loadPeriodUsers($from, $to,explode(',',$users));
+		$byIds=router::getIds();
 		foreach ($tasks as $task) {
+			$id=(int)$task['ID'];
 			$result[$task['ID']] = $task;
+			if (in_array($id,$byIds)) unset($byIds[$id]);
 		}
+
+		$linkedTasks = static::loadTasksByIds($byIds);
 		foreach ($linkedTasks as $task) {
+			$id=(int)$task['ID'];
 			$result[$task['ID']] = $task;
 		}
 		echo json_encode(array_values($result),JSON_UNESCAPED_UNICODE);
@@ -184,7 +170,7 @@ class controller_task {
 
 	public function action_linked(){
 		// Возвращаем только объекты из ids, без фильтра по периодам/пользователям
-		$tasks = static::loadTasksByIds(static::getLinkedTaskIds());
+		$tasks = static::loadTasksByIds(router::getIds());
 		echo json_encode(array_values($tasks),JSON_UNESCAPED_UNICODE);
 	}
 

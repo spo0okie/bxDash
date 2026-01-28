@@ -11,56 +11,22 @@ class controller_ticket {
 	const MSG_NO_JOB_ID='NO_JOB_ID_SET';
 	const MSG_NO_TICKET_ID='NO_TICKET_ID_SET';
 
-	static private function parseLinkedIds($prefix) {
-		$rawIds = router::getRoute(null, 'ids', '');
-		if (!$rawIds) return [];
-		$prefixLower = mb_strtolower($prefix . ':');
-		$prefixLen = strlen($prefixLower);
-		$result = [];
-		foreach (explode(',', $rawIds) as $token) {
-			$token = trim($token);
-			if ($token === '') continue;
-			if (mb_strtolower(substr($token, 0, $prefixLen)) !== $prefixLower) continue;
-			$id = (int)substr($token, $prefixLen);
-			if ($id > 0) $result[$id] = $id;
-		}
-		return array_values($result);
-	}
 
-	static private function getLinkedTicketIds() {
-		return static::parseLinkedIds('ticket');
-	}
-
-	static private function formatTicket($ticket) {
-		return [
-			'ID'=>$ticket['ID'], 
-			'RESPONSIBLE_USER_ID'=>$ticket['RESPONSIBLE_USER_ID'],
-			'LAMP'=>$ticket['LAMP'],
-			'DATE_CREATE'=>$ticket['DATE_CREATE'],
-			'STATUS_NAME'=>$ticket['STATUS_NAME'],
-			'LAST_MESSAGE_USER_ID'=>$ticket['LAST_MESSAGE_USER_ID'],
-			'LAST_MESSAGE_DATE'=>$ticket['LAST_MESSAGE_DATE'],
-			'DATE_CLOSE'=>$ticket['DATE_CLOSE'],
-			'DEADLINE_SOURCE_DATE'=>$ticket['DEADLINE_SOURCE_DATE'],
-			'OWNER_NAME'=>$ticket['OWNER_NAME'],
-			'OWNER_USER_ID'=>$ticket['OWNER_USER_ID'],
-			'LAST_MESSAGE_BY_SUPPORT_TEAM'=>$ticket['LAST_MESSAGE_BY_SUPPORT_TEAM'],
-			'TITLE'=>$ticket['TITLE'],
-			'HOLD_ON'=>$ticket['HOLD_ON']
-		];
-	}
 
 	static private function loadTicketsByIds(array $ids) {
-		$ids = array_values(array_filter(array_unique(array_map('intval', $ids))));
+		//$ids = array_values(array_filter(array_unique(array_map('intval', $ids))));
 		if (empty($ids)) return [];
 		$by = "s_id";
 		$order = "asc";
 		$is_filtered = true;
-		$filter = ['ID' => $ids];
+		$filter = [
+			'ID' => $ids,
+			'ID_EXACT_MATCH' => 'Y'
+		];
 		$tickets = [];
 		$rs = CTicket::GetList($by, $order, $filter, $is_filtered, 'N');
 		while ($ticket = $rs->GetNext()) {
-			$tickets[$ticket['ID']] = static::formatTicket($ticket);
+			$tickets[$ticket['ID']] = $ticket;
 		}
 		return $tickets;
 	}
@@ -164,21 +130,26 @@ class controller_ticket {
 		if (is_null($users= router::getRoute(5, 'users')))
 			router::haltJson(static::MSG_NO_USERS);
 
-		$tickets = static::loadPeriodUsers($from, $to, explode(',',$users));
-		$linkedTickets = static::loadTicketsByIds(static::getLinkedTicketIds());
+		$byIds=router::getIds();
 		$result = [];
+		$tickets = static::loadPeriodUsers($from, $to, explode(',',$users));
 		foreach ($tickets as $ticket) {
-			$result[$ticket['ID']] = $ticket;
+			$id=(int)$ticket['ID'];
+			$result[$id] = $ticket;
+			if (in_array($id,$byIds)) unset($byIds[$id]);
 		}
+
+		$linkedTickets = static::loadTicketsByIds($byIds);
 		foreach ($linkedTickets as $ticket) {
-			$result[$ticket['ID']] = $ticket;
+			$id=(int)$ticket['ID'];
+			$result[$id] = $ticket;
 		}
 		echo json_encode(array_values($result),JSON_UNESCAPED_UNICODE);
 	}
 
 	public function action_linked(){
 		// Возвращаем только объекты из ids, без фильтра по периодам/пользователям
-		$tickets = static::loadTicketsByIds(static::getLinkedTicketIds());
+		$tickets = static::loadTicketsByIds(router::getIds());
 		echo json_encode(array_values($tickets),JSON_UNESCAPED_UNICODE);
 	}
 

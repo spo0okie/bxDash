@@ -68,7 +68,7 @@ class TaskItem extends DashItem {
 	 */
 	loadData(item,recalc){
 		
-        if (!super.loadData(item)) return false;
+        if (!super.loadData(item,recalc)) return false;
 
 		this.parentUids = item.PARENT_ID ? ['task:'+Number(item.PARENT_ID)]:[];
 

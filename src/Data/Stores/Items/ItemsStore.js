@@ -10,10 +10,12 @@ import AbsentItem from 'Data/Items/AbsentItem';
 import TimeHelper from 'Helpers/TimeHelper';
 
 class ItemsStore {
-    items = new observable.map([],{deep:true});
+	items = new observable.map([],{deep:true});
 	type = 'dash';
 	isLoading=true;		//пока ничего не загрузили, считаем что еще загружаем
-	linkedLoadInProgress=false;	//флаг, чтобы не вызывать linked-загрузки одновременно
+	isLoadingLinked=false;	//флаг, чтобы не вызывать linked-загрузки одновременно
+	relatedIds=new Set();
+	pending={};
 
 	master;
     periods;
@@ -39,6 +41,10 @@ class ItemsStore {
 
 	setLoading(value) {
 		this.isLoading=value;
+	}
+
+	setLoadingLinked(value) {
+		this.isLoadingLinked=value;
 	}
 
 	//отправить произвольное сообщение
@@ -80,52 +86,65 @@ class ItemsStore {
 	}
 
     //создать/обновить элемент из JSON данных объекта из битрикс
-    initData(data){
-		const id = Number(data.ID);		
+	initData(data){
+		const id = Number(data.ID);
 		const className = this.classMap[this.type];
-        if (!has(this.items,id)) {
-			//console.log('creating new '+ this.type);
+		if (!has(this.items,id)) {
 			const Item = new className({}, data, this);
-			if (className === MemoItem) console.log(Item);
+			//if (className === MemoItem) console.log(Item);
 			this.setItem(Item);
-			this.master.buildReveseLinks(Item);
-        } else {
-			//console.log('updating '+id);
+		} else {
 			const Item = get(this.items, id)
 			Item.loadData(data,true);
-			//не вижу смысла повторно искать обратные ссылки при обновлении элемента с сохранением id
-			//this.master.buildReveseLinks(Item);
-        }
-        //console.log(this.tasks[id]);
-    }    
+		}
+		//console.log(this.tasks[id]);
+	}
 
 	/**
-	 * Ищем среди наших элементов родителя для переданного элемента
-	 * @param {*} item 
-	 *
-	findParentFor(child) {
-		this.items.forEach(item => child.checkParent(item));
+	 * Регистрирует идентификаторы, которые требуются `requester`.
+	 * Новые IDs попадают в связанный сет `relatedIds`, а если сам объект
+	 * уже загружен, сразу пробивает обратную ссылку.
+	 */
+	addRelatedRequest(ids, requester) {
+		if (!Array.isArray(ids) || !requester) return;
+		ids.forEach(rawId => {
+			const id = Number(rawId);
+			if (!id) return;
+			this.relatedIds.add(id);
+			if (has(this.items, id)) {
+				requester.reverseLinksCheck(get(this.items, id));
+				return;
+			}
+			const key = String(id);
+			if (!this.pending[key]) this.pending[key] = new Set();
+			this.pending[key].add(requester);
+		});
 	}
-
 
 	/**
-	 * Ищем среди наших элементов потомков для переданного элемента
-	 * @param {*} item 
-	 *
-	findChildrenFor(parent) {
-		this.items.forEach(item => item.checkParent(parent));
+	 * Уведомляет ожидающие объекты, когда `item` появился в сторе.
+	 */
+	resolvePending(item) {
+		if (!item) return;
+		const key = String(item.id);
+		const waiters = this.pending[key];
+		if (!waiters) return;
+		waiters.forEach(requester => {
+			if (typeof requester.reverseLinksCheck === 'function') {
+				requester.reverseLinksCheck(item);
+			}
+		});
+		delete this.pending[key];
 	}
 
-
-	findRelativesFor(item) {
-		this.findParentFor(item);
-		this.findChildrenFor(item);
-	}/** */
-
-	buildReveseLinks(item) {
-		this.items.forEach(test => test.reverseLinksCheck(item));
+	/**
+	 * Возвращает все `id`, которые ещё ждут загрузки из `pending`.
+	 */
+	getPendingIds() {
+		return Object.keys(this.pending)
+			.filter(key => this.pending[key] && this.pending[key].size)
+			.map(key => Number(key));
 	}
-
 
 	updateLoadRange(from,to) {
 		if (this.loadedFrom===undefined) {
@@ -147,18 +166,22 @@ class ItemsStore {
 		}
 	}
 
-	getLinkedIdsParam() {
-		const linkedIds = this.master.getLinkedUids();
-		if (!linkedIds.length) return '';
-		return '&ids=' + encodeURIComponent(linkedIds.join(','));
+	/**
+	 * Формирует `ids`-параметр для запросов из набора `relatedIds`,
+	 * чтобы явно загрузить связанные записи.
+	 */
+	getIdsParam() {
+		if (!this.relatedIds.size) return '';
+		const tokens = Array.from(this.relatedIds).map(id => `${this.type}:${id}`);
+		return '&ids=' + encodeURIComponent(tokens.join(','));
 	}
 
     //загрузить задачи из битрикс с отметки времени from и до отметки to
 	// первичный запрос по временным рамкам/пользователям + ids, затем инициируем linked fetch
 	loadItems(from,to,onComplete=null) {
 		console.log('loading ' + this.type + 's');
-		const linkedParam = this.getLinkedIdsParam();
-		const url = this.type + '/load/' + Math.round(from/1000) + '/' + (to ? Math.round(to/1000) : null) + '/' + keys(this.users.items).join(',') + '?random=' + TimeHelper.getTimestamp() + linkedParam;
+		const idsParam = this.getIdsParam();
+		const url = this.type + '/load/' + Math.round(from/1000) + '/' + (to ? Math.round(to/1000) : null) + '/' + keys(this.users.items).join(',') + '?random=' + TimeHelper.getTimestamp() + idsParam;
 		const store = this;
 		this.setLoading(true);
 		return when(() => this.main.bx.authStatus==='OK')
@@ -169,8 +192,8 @@ class ItemsStore {
 				data.forEach(function(item) { store.initData(item); });
 				if (onComplete) onComplete();
 				this.updateLoadRange(from,to);
-				//если в элементах могут быть ссылки на другие объекты - инициируем их дозагрузку
-				if (this.type in ['memo','job','plan']) this.master.requestLinkedFetch();
+				//после первичной загрузки пытаемся дозапросить pending-элементы
+				this.master.requestPendingLoad();
 				return true;
 			})
 			.catch(error => {
@@ -186,15 +209,15 @@ class ItemsStore {
 	loadItem(id,onComplete=null) {
 		const store=this;
 		console.log('loading ' + this.type + ' ID '+id);
-		const linkedParam = this.getLinkedIdsParam();
+		const idsParam = this.getIdsParam();
 		return when(()=>this.main.bx.authStatus==='OK')
-			.then(()=>this.main.bx.fetch(this.type + '/get/'+id+'?random='+TimeHelper.getTimestamp()+linkedParam))
+			.then(()=>this.main.bx.fetch(this.type + '/get/'+id+'?random='+TimeHelper.getTimestamp()+idsParam))
 			.then((response) => response.json())
 			.then((data) => {
 				console.log('got ' + data.length + ' ' + this.type + 's');
 				data.forEach(function (item) { store.initData(item) });
 				if (onComplete) onComplete();
-				//this.master.requestLinkedFetch();
+				this.loadPendingItems();
 				return true;
 			})
 			.catch(error => {
@@ -209,21 +232,28 @@ class ItemsStore {
 			});
 	}
 
-	// запрос только по ids (не зависит от временных границ) для дозагрузки ссылочных объектов
+	/**
+	 * Запрос по `ids`, используемый для дозагрузки связанных объектов,
+	 * принципиален момент что не загружает те элементы которые уже есть в сторе(!),
+	 * которые ещё не пришли в основной нагрузке.
+	 */
 	loadLinkedItems(ids) {
-		console.log('loadLinkedItems', ids);
-		if (!ids.length) return Promise.resolve(true);
-		const idsParam = encodeURIComponent(ids.join(','));
-		const url = this.type + '/linked?random=' + TimeHelper.getTimestamp() + '&ids=' + idsParam;
-		console.log('loading linked ' + this.type + 's: ' + idsParam);
-		this.linkedLoadInProgress = true;
-		const store = this;
-		return when(()=>this.main.bx.authStatus==='OK')
-			.then(()=>this.main.bx.fetch(url))
+		const cleaned = [...new Set(ids.map(Number))].filter(id => !!id);
+		const missing = cleaned.filter(id => !has(this.items, id));
+		const store=this;
+		if (!missing.length) return Promise.resolve(true);
+		return when(()=>store.main.bx.authStatus==='OK' && !store.isLoading && !store.isLoadingLinked)
+			.then(()=>{
+				store.setLoadingLinked(true);
+				const url = store.type + '/linked?random=' + TimeHelper.getTimestamp() + '&ids=' + encodeURIComponent(missing.join(','));
+				return this.main.bx.fetch(url);
+			})
 			.then(response => response.json())
 			.then(data => {
 				console.log('got ' + data.length + ' linked ' + this.type + 's');
-				data.forEach(function(item){store.initData(item)});
+				data.forEach(function(item){
+					store.initData(item)}
+				);
 				return true;
 			})
 			.catch(error => {
@@ -231,7 +261,22 @@ class ItemsStore {
 				return false;
 			})
 			.finally(()=>{
-				this.linkedLoadInProgress=false;
+				store.setLoadingLinked(false);
+			});
+	}
+
+	/**
+	 * Загружает все pending-элементы, ожидающие загрузки.
+	 * @returns 
+	 */
+	async loadPendingItems() {
+		const store=this;
+		//откладываем загрузку пока идет основная загрузка или linked-загрузка
+		return when(()=>store.main.bx.authStatus==='OK' && !store.isLoading && !store.isLoadingLinked)
+			.then(()=>{
+				const ids = store.getPendingIds();
+				if (!ids.length) return Promise.resolve(true);
+				return store.loadLinkedItems(ids);
 			});
 	}
 
@@ -250,8 +295,9 @@ class ItemsStore {
 
 	}
 
-    setItem(item){
+	setItem(item){
 		set(this.items, item.id, item);
+		this.resolvePending(item);
 	}
 
 	deleteItem(item) { 
@@ -261,8 +307,13 @@ class ItemsStore {
 		remove(this.items, item.id);
 	}
 
+	/**
+	 * Загружает все pending-периоды.
+	 * @param {*} onComplete 
+	 * @returns 
+	 */
 	loadPending(onComplete=null) {
-		let to=null;									//обозначаем что загружаем весь период времени
+		let to=null;									//обозначаем что загружаем весь период времени (правой границы нет)
 		let from=this.time.firstWeekStart();			//если у нас уже загружены данные и мы подгружаем предыдущий период
 		if (this.loadedTo===null && this.loadedFrom!==undefined && this.loadedFrom>from) {
 			to=this.loadedFrom;							//то ограничиваем сверху загруженный период 
@@ -315,8 +366,8 @@ class ItemsStore {
 	}
 
     constructor(type,master) {
-        console.log('Items construct');
-		this.type=type;
+        //console.log('Items construct');
+		this.type = type;
 		this.master = master;
 		this.main = master.main;
 		this.time = master.time;
@@ -325,11 +376,13 @@ class ItemsStore {
         makeObservable(this,{
 			items:observable,
 			isLoading:observable,
+			isLoadingLinked:observable,
 			initData:action,
 			setItem: action,
 			updateItem: action,
 			deleteItem:action,
 			setLoading:action,
+			setLoadingLinked:action,
 		});
         this.init();
     }

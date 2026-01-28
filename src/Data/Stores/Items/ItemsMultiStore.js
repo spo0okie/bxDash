@@ -4,19 +4,15 @@ import { get, values, has} from 'mobx';
 
 
 class ItemsMultiStore {
-	/*tasks;
-	tickets;
-	jobs;
-	plans;*/
-
-    periods;
-    time;
-    users;
-    main;
+	periods;
+	time;
+	users;
+	main;
 	ws;
 
 	types;
-	linkedPending={};	// cache requested ids to avoid repeated linked fetches
+	pendingLoadRunning=false;
+	pendingLoadQueued=false;
 
 	/*findRelativesFor(item) {
 		this.types.forEach(type => this[type].findRelativesFor(item))
@@ -46,106 +42,60 @@ class ItemsMultiStore {
 		return result;
 	}
 
-	//возвращает наборы всех ссылок по типам
-	getLinkedUidsMap() {
-		const map = {
-			task: new Set(),
-			ticket: new Set(),
-		};
-		this.types.forEach(type => { if (this[type]!==undefined) {
-			values(this[type].items).forEach(item => {
-				['parentUids', 'childUids'].forEach(key => {
-					const links = item[key];
-					if (!Array.isArray(links)) return;
-					links.forEach(uid => {
-						if (typeof uid !== 'string') return;
-						if (uid.startsWith('task:')) {
-							map.task.add(uid);
-						}
-						if (uid.startsWith('ticket:')) {
-							map.ticket.add(uid);
-						}
-					});
-				});
-			});
-		}});
-		return map;
-	}
-
-	// возвращает массив всех ссылок в одном массиве
-	getLinkedUids() {
-		const map = this.getLinkedUidsMap();
-		return [...map.task, ...map.ticket];
-	}
-
-	// возвращает UID текущих ссылок по конкретному типу
-	getLinkedUidsByType(type) {
-		const map = this.getLinkedUidsMap();
-		return Array.from(map[type] || []);
-	}
-
-	// определяет, каких ссылок типа еще нет в сторе и не запрошены ранее
-	getMissingLinkedUidsForType(type) {
-		const store = this[type];
-		if (!store) return [];
-		const referenced = this.getLinkedUidsByType(type);
-		//console.log('referenced', type, referenced);
-		if (!referenced.length) return [];
-		const pending = this.linkedPending[type] || new Set();
-		const missing = [];
-		referenced.forEach(uid => {
+	/**
+	 * Распределяет UID, заявленные элементом (`requester`), по типам и
+	 * инициирует загрузку недостающих объектов в соответствующих стор.
+	 */
+	requestRelated(requester, uids) {
+		if (!Array.isArray(uids) || !requester) return;
+		const bucket = {};
+		uids.forEach(uid => {
+			if (typeof uid !== 'string') return;
 			const tokens = uid.split(':');
 			if (tokens.length !== 2) return;
+			const type = tokens[0];
 			const id = Number(tokens[1]);
-			//console.log('checking', uid, id);
-			if (!id) return;
-			if (has(store.items, id)) return;
-			if (pending.has(uid)) return;
-			missing.push(id);
+			if (!id || !this[type]) return;
+			if (!bucket[type]) bucket[type] = new Set();
+			bucket[type].add(id);
 		});
-		return missing;
+		Object.keys(bucket).forEach(type => {
+			const store = this[type];
+			if (!store) return;
+			const ids = Array.from(bucket[type]);
+			store.addRelatedRequest(ids, requester);
+			//store.loadLinkedItems(ids);
+		});
 	}
 
-	markLinkedPending(type, uids) {
-		if (!this.linkedPending[type]) this.linkedPending[type] = new Set();
-		uids.forEach(uid => this.linkedPending[type].add(uid));
+	/**
+	 * Запускает единичную загрузку по `pending`-ID у каждого стора.
+	 */
+	loadPendingItems() {
+		return Promise.all(this.types.map(type => {
+			const store = this[type];
+			if (!store) return Promise.resolve(true);
+			return store.loadPendingItems();
+		}));
 	}
 
-	clearLinkedPending(type, uids) {
-		if (!this.linkedPending[type]) return;
-		uids.forEach(uid => this.linkedPending[type].delete(uid));
-	}
-
-	requestLinkedFetch(type = null) {
-		console.log('requestLinkedFetch', type);
-		const targets = type ? [type] : ['task', 'ticket'];
-		targets.forEach(target => this.requestLinkedFetchForType(target));
-	}
-
-	requestLinkedFetchForType(type) {
-		console.log('requestLinkedFetchForType', type);
-		const store = this[type];
-		if (!store) return;
-		const missing = this.getMissingLinkedUidsForType(type);
-		console.log('missing', missing);
-		if (!missing.length) return;
-		this.markLinkedPending(type, missing);
-		store.loadLinkedItems(missing)
-			.then(success => {
-				this.clearLinkedPending(type, missing);
-				if (!success) {
-					return;
+	/**
+	 * Обертка над `loadPendingItems`, предотвращающая параллельные вызовы.
+	 */
+	requestPendingLoad() {
+		if (this.pendingLoadRunning) {
+			this.pendingLoadQueued = true;
+			return;
+		}
+		this.pendingLoadRunning = true;
+		this.loadPendingItems()
+			.finally(() => {
+				this.pendingLoadRunning = false;
+				if (this.pendingLoadQueued) {
+					this.pendingLoadQueued = false;
+					this.requestPendingLoad();
 				}
-				//this.requestLinkedFetch();
-			})
-			.catch(error => {
-				console.error(error);
-				this.clearLinkedPending(type, missing);
 			});
-	}
-
-	buildReveseLinks(item) {
-		this.types.forEach(type => this[type].buildReveseLinks(item))
 	}
 
 	isLoading() {

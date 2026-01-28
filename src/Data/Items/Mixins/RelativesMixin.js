@@ -21,7 +21,8 @@ const RelativesMixin = {
 	},
 
 	/**
-	 * Проверяет, у элемента this ссылки на объект item
+	 * Проверяет, у элемента this ссылки на объект item, если этот элемент премок или потомок item, 
+	 * то строит ссылки в обе стороны
 	 * @param {*} item 
 	 */
 	reverseLinksCheck(item) {
@@ -37,17 +38,11 @@ const RelativesMixin = {
 	},
 
 	directLinkBuild() {
-		when(()=>!this.list.master.isLoading(),()=>{
-			//console.log('all loaded!');
-			this.list.master.getUidsItems(this.parentUids).forEach(item=>{
-				this.addParent(item);
-				item.addChild(this);
-			});
-			this.list.master.getUidsItems(this.childUids).forEach(item=>{
-				this.addChild(item);
-				item.addParent(this);
-			});	
-		})
+		this.detachLinks();
+		if (this.list && this.list.master && typeof this.list.master.requestRelated === 'function') {
+			const uids = [...this.parentUids, ...this.childUids];
+			this.list.master.requestRelated(this, uids);
+		}
 	},
 
 	/**
