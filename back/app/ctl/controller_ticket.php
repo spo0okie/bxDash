@@ -13,23 +13,41 @@ class controller_ticket {
 
 
 
-	static private function loadTicketsByIds(array $ids) {
+/*	static private function loadTicketsByIds(array $ids) {
 		//$ids = array_values(array_filter(array_unique(array_map('intval', $ids))));
 		if (empty($ids)) return [];
-		$by = "s_id";
-		$order = "asc";
-		$is_filtered = true;
-		$filter = [
-			'ID' => $ids,
-			'ID_EXACT_MATCH' => 'Y'
-		];
-		$tickets = [];
-		$rs = CTicket::GetList($by, $order, $filter, $is_filtered, 'N');
-		while ($ticket = $rs->GetNext()) {
-			$tickets[$ticket['ID']] = $ticket;
+		$tickets=[];
+		foreach($ids as $id) {
+			$rsTicket = CTicket::GetByID($id);
+			if ($arTicket = $rsTicket->GetNext())
+				$tickets[]=$id;
 		}
 		return $tickets;
-	}
+	}*/
+
+static private function loadTicketsByIds(array $ids)
+{
+    $ids = array_values(array_unique(array_map('intval', $ids)));
+    if (!$ids) return [];
+
+    $tickets = [];
+
+    foreach ($ids as $id) {
+        $rs = CTicket::GetList(
+            $by = 's_id',
+            $order = 'asc',
+            ['ID' => $id, 'ID_EXACT_MATCH' => 'Y'],
+            $is_filtered = true,
+            'N'
+        );
+
+        if ($ticket = $rs->GetNext()) {
+            $tickets[$ticket['ID']] = $ticket;
+        }
+    }
+
+    return $tickets;
+}
 
 	/**
 	 * загружает работы переданных пользователей за указанный период
@@ -149,7 +167,8 @@ class controller_ticket {
 
 	public function action_linked(){
 		// Возвращаем только объекты из ids, без фильтра по периодам/пользователям
-		$tickets = static::loadTicketsByIds(router::getIds());
+		$ids=router::getIds();
+		$tickets = static::loadTicketsByIds($ids);
 		echo json_encode(array_values($tickets),JSON_UNESCAPED_UNICODE);
 	}
 
