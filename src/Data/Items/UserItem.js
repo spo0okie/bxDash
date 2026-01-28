@@ -2,14 +2,15 @@ import TimeHelper from "Helpers/TimeHelper";
 import DashItem from "./DashItem";
 import { observable, action, makeObservable} from 'mobx';
 
+/**
+ * @property {Number} activityTimestamp
+ * @property {Number} connectionTimestamp
+ * @property {string} activityStatus
+ * @property {Array} realPhones
+ * @property {string} phoneStatus	//статус телефона (для звонков) - UNKNOWN, AVAILABLE, UNAVAILABLE, BUSY, OFFLINE
+ * @property {Array} realPhoneStatuses //статусы реальных телефонов (включая дублеров)
+ */
 class UserItem extends DashItem {
-	text;
-	activityTimestamp;
-	connectionTimestamp;
-	activityStatus;
-	realPhones;
-	phoneStatus;	//статус телефона (для звонков) - UNKNOWN, AVAILABLE, UNAVAILABLE, BUSY, OFFLINE
-	realPhoneStatuses; //статусы реальных телефонов (включая дублеров)
 
 	initDefaults() {
 		this.type = 'user';		//тип

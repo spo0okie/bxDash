@@ -43,7 +43,16 @@ class MainStore {
         this.zabbix.setUrl(url); 
     }
 
-
+	get hasErrors() {
+    return [
+		this.bx.availability,
+		this.bx.authStatus,
+		this.zabbix.availability,
+		this.zabbix.authStatus,
+		this.inventory.availability,
+		this.inventory.authStatus,
+    ].some(status => status !== 'OK');
+  }
 
 	async authenticate(user,password,onSuccess,onFail){
 		this.bx.setLoginCredentials(user,password);

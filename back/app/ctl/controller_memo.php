@@ -11,6 +11,15 @@ class controller_memo {
 	const MSG_NO_USERS='NO_USER_LIST_SET';
 	const MSG_NO_ITEM_ID='NO_ITEM_ID_SET';
 
+	static public $fieldsMap = [
+		'ID',
+		'DATE_ACTIVE_FROM',
+		'DATE_ACTIVE_TO',
+		'CREATED_DATE',
+		'SORT',
+		'DETAIL_TEXT',
+	];
+
 	static public function deleteItem($id) {
 		return CIBlockElement::Delete($id);
 	}

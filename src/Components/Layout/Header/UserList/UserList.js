@@ -5,6 +5,8 @@ import { get} from "mobx"
 import './UserList.css';
 import UserItem from "./UserItem";
 import { StoreContext } from "Data/Stores/StoreProvider";
+import MenuButton from "../Menu/MenuIButton";
+import "../Buttons/OptionsButton.css";
 
 
 @observer class UserList extends React.Component {
@@ -35,7 +37,9 @@ import { StoreContext } from "Data/Stores/StoreProvider";
                     </table>
 
                 </div>
-				<div className="dummyScrollBar" style={{width:this.context.layout.scrollbarWidth}}>&nbsp;</div>
+				<div className="dummyScrollBar" style={{width:this.context.layout.scrollbarWidth}}>
+					<MenuButton property='debugVisible' title='⚙️' classNames='optionsButton'/>
+				</div>					
             </div>
         )
     }

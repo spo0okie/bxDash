@@ -209,9 +209,8 @@ class ItemsStore {
 	loadItem(id,onComplete=null) {
 		const store=this;
 		console.log('loading ' + this.type + ' ID '+id);
-		const idsParam = this.getIdsParam();
 		return when(()=>this.main.bx.authStatus==='OK')
-			.then(()=>this.main.bx.fetch(this.type + '/get/'+id+'?random='+TimeHelper.getTimestamp()+idsParam))
+			.then(()=>this.main.bx.fetch(this.type + '/get/'+id+'?random='+TimeHelper.getTimestamp()))
 			.then((response) => response.json())
 			.then((data) => {
 				console.log('got ' + data.length + ' ' + this.type + 's');

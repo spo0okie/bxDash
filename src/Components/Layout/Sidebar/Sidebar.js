@@ -12,6 +12,7 @@ const Sidebar=observer((props)=>{
 	const [isResizing, setIsResizing] = useState(false);
 
 	const startResizing = React.useCallback((mouseDownEvent) => {
+		mouseDownEvent.preventDefault(); //запрещаяем стандартные действия, чтобы отключить стандартное выделение текста/DOM при drag’е мышью
 		setIsResizing(true);
 	}, []);
 
@@ -20,8 +21,9 @@ const Sidebar=observer((props)=>{
 	}, []);
 
 	const resize = React.useCallback(
-		(mouseMoveEvent) => {
+		(mouseMoveEvent) => {			
 			if (isResizing) {
+				mouseMoveEvent.preventDefault(); //запрещаяем стандартные действия, чтобы отключить стандартное выделение текста/DOM при drag’е мышью
 				layout.setSidebarWidth(
 					mouseMoveEvent.clientX -
 					sidebarRef.current.getBoundingClientRect().left+2 //+2 - ширина ресайзбара
@@ -45,12 +47,9 @@ const Sidebar=observer((props)=>{
 				ref={sidebarRef}
 				className="App-Sidebar"
 				style={{ width: layout.sidebarWidth }}
-				//onMouseDown={(e) => {if (isResizing) {e.preventDefault();e.stopPropagation()}}}
-				//
 			>
 			<div 
 				className="App-Sidebar-content"
-				//onMouseMove={(e) => {if (isResizing) {e.preventDefault();e.stopPropagation()}}}
 			>{props.children}</div>
 			<div className="App-Sidebar-resizer" onMouseDown={startResizing} />
 			</div>

@@ -23,7 +23,7 @@ const HomeButton = (props)=>{
 			
 			onClick={onClick}
 			
-		>⌂</span>
+		>🏠︎</span>
 	</Tooltip>);
 }
 export default HomeButton

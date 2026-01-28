@@ -1,10 +1,13 @@
 import DashItem from "./DashItem";
 import TimeHelper from "Helpers/TimeHelper";
 
+/**
+ * @property {Number} authStatus
+ * @property {Number} authUser
+ * @property {string} comments
+ */
 class PlanItem extends DashItem {
-	authStatus;
-	authUser;
-	comments;
+
 	initDefaults() {
 		this.type = 'plan';		//тип
 		this.confirmMove = false;

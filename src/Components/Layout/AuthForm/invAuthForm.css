@@ -1,14 +1,7 @@
 .invAuthForm {
 	position: fixed;
 	/*top: 100px;*/
-	background: repeating-linear-gradient(
-		-60deg,
-		rgba(120,0,0,0.7),
-		rgba(120,0,0,0.7) 25px,
-		rgba(00,0,0,0.7) 25px,
-		rgba(00,0,0,0.7) 50px
-	  );
-	border: 2px solid red;
+	background: rgba(00,0,0,0.7);
 	width: 100%;
 	padding-bottom: 1em;
 	text-align: center;
@@ -21,7 +14,45 @@
 	justify-content: space-between;
 }
 
+.invAuthForm.hasErrors {
+	/*top: 100px;*/
+	background: repeating-linear-gradient(
+		-60deg,
+		rgba(120,0,0,0.7),
+		rgba(120,0,0,0.7) 25px,
+		rgba(00,0,0,0.7) 25px,
+		rgba(00,0,0,0.7) 50px
+	  );
+	border: 2px solid red;
+}
+
 .invAuthForm > .section {
 	flex-grow: 1;
 	flex-basis: 600px;
+}
+
+
+.invAuthForm div.menu {
+	display: flex;
+	flex-direction: row;
+	text-align: left;
+	margin: 1em;
+	justify-content: center;
+}
+
+div.options button {
+	border-radius: 5px;
+	border-width: 1px;
+	margin: 3px;
+}
+div.options button.on {
+	background: #141;
+	border-color: limegreen;
+	color: limegreen;
+}
+
+div.options button.off {
+	background: #010;
+	border-color: green;
+	color:green
 }

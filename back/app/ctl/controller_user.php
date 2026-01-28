@@ -10,6 +10,14 @@ class controller_user {
 	const MSG_NO_USERS='NO_USER_LIST_SET';
 	const MSG_NO_JOB_ID='NO_JOB_ID_SET';
 
+	static public $fieldsMap = [
+		'auth',
+		'id',
+		'login',
+		'error',
+		'hash',
+	];
+
 	public $error=[];
 
 	function action_get() {

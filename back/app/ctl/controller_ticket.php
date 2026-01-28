@@ -11,6 +11,21 @@ class controller_ticket {
 	const MSG_NO_JOB_ID='NO_JOB_ID_SET';
 	const MSG_NO_TICKET_ID='NO_TICKET_ID_SET';
 
+	static public $fieldsMap = [
+		'ID',
+		'RESPONSIBLE_USER_ID',
+		'LAMP',
+		'STATUS_NAME',
+		'DEADLINE_SOURCE_DATE',
+		'HOLD_ON',
+		'LAST_MESSAGE_BY_SUPPORT_TEAM',
+		'LAST_MESSAGE_DATE',
+		'OWNER_NAME',
+		'TITLE',
+		'DATE_CLOSE',
+		'DATE_CREATE',
+	];
+
 
 
 /*	static private function loadTicketsByIds(array $ids) {
@@ -176,7 +191,7 @@ static private function loadTicketsByIds(array $ids)
 		if (is_null($id=router::getRoute(3, 'id')))
 			router::haltJson(static::MSG_NO_TICKET_ID);
 
-		$ids = static::getLinkedTicketIds();
+		$ids = router::getIds();
 		array_unshift($ids, $id);
 		$tickets = static::loadTicketsByIds($ids);
 		if (!isset($tickets[$id]))

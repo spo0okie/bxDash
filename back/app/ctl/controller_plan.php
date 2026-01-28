@@ -11,6 +11,20 @@ class controller_plan {
 	const MSG_NO_USERS='NO_USER_LIST_SET';
 	const MSG_NO_ITEM_ID='NO_ITEM_ID_SET';
 
+	static public $fieldsMap = [
+		'ID',
+		'DATE_ACTIVE_FROM',
+		'DATE_ACTIVE_TO',
+		'CREATED_DATE',
+		'SORT',
+		'PREVIEW_TEXT',
+		'DETAIL_TEXT',
+		'PROPERTY_USER',
+		'PROPERTY_AUTHORIZED',
+		'PROPERTY_STATUS',
+		'PROPERTY_AUTHSTATUS',
+	];
+
 	static public function deleteItem($id) {
 		return CIBlockElement::Delete($id);
 	}

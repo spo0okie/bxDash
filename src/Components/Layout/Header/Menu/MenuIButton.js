@@ -1,6 +1,5 @@
 import React  from "react";
 import {observer} from "mobx-react";
-import './Menu.css';
 import { StoreContext } from "Data/Stores/StoreProvider";
 
 @observer class MenuButton extends React.Component {
@@ -36,7 +35,7 @@ import { StoreContext } from "Data/Stores/StoreProvider";
         return (
             <button 
 			onClick={this.toggle} 
-			className={"small "+this.getClass()}
+			className={this.getClass()}
 			>{this.getTitle()}</button>
         )
     }

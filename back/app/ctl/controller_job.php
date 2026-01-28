@@ -10,6 +10,16 @@ class controller_job {
 	const MSG_NO_USERS='NO_USER_LIST_SET';
 	const MSG_NO_JOB_ID='NO_JOB_ID_SET';
 
+	static public $fieldsMap = [
+		'ID',
+		'DATE_ACTIVE_FROM',
+		'DATE_ACTIVE_TO',
+		'CREATED_DATE',
+		'SORT',
+		'PREVIEW_TEXT',
+		'PROPERTY_USER',
+	];
+
 	static public function deleteJob($id) {
 		return CIBlockElement::Delete($id);
 	}

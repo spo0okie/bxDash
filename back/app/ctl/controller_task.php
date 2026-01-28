@@ -11,6 +11,23 @@ class controller_task {
 	const MSG_NO_TASK_ID='NO_TASK_ID_SET';
 	static $arViewedDates=[];
 
+	static public $fieldsMap = [
+		'ID',
+		'PARENT_ID',
+		'TITLE',
+		'RESPONSIBLE_ID',
+		'ACCOMPLICES',
+		'REAL_STATUS',
+		'MARK',
+		'UPDATES_COUNT',
+		'DEADLINE',
+		'CREATED_DATE',
+		'CLOSED_DATE',
+		'XML_ID',
+		'PRIORITY',
+		'FAVORITE',
+	];
+
 
 	static public function initTaskData($arTask) {
 		global $globalTzOffset;
@@ -178,7 +195,7 @@ class controller_task {
 		if (is_null($id=router::getRoute(3, 'id')))
 			router::haltJson(static::MSG_NO_TASK_ID);
 
-		$ids = static::getLinkedTaskIds();
+		$ids = router::getIds();
 		array_unshift($ids,$id);
 		$tasks = static::loadTasksByIds($ids);
 		if (!isset($tasks[$id]))

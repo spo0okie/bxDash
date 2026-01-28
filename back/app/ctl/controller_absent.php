@@ -10,6 +10,13 @@ class controller_absent {
 	const MSG_NO_USERS='NO_USER_LIST_SET';
 	const MSG_NO_JOB_ID='NO_JOB_ID_SET';
 
+	static public $fieldsMap = [
+		'ID',
+		'DATE_ACTIVE_FROM',
+		'DATE_ACTIVE_TO',
+		'PROPERTY_USER',
+	];
+
 
 	/**
 	 * загружает работы переданных пользователей за указанный период

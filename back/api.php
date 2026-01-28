@@ -12,6 +12,7 @@ $dUTC = new DateTime('now', $tzUTC);
 $globalTzOffset=CTimeZone::GetOffset()+$tz->getOffset($dUTC);
 
 require_once 'app/router.php';
+require_once 'conf.php';
 
 router::init();
 

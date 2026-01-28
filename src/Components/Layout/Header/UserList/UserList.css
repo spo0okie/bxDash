@@ -18,4 +18,4 @@ div.AppUserList div.PeriodData table.UserCells td {
 }
 
 
-div.dummyScrollBar {display: table-cell;}
+div.dummyScrollBar {display: table-cell; vertical-align: top;}

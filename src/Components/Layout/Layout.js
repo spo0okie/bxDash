@@ -10,7 +10,9 @@ import "./Layout.css";
 import MemoCell from "../MemoCell/MemoCell";
 import Sidebar from "./Sidebar/Sidebar";
 import ScrollSection from "./ScrollSection/ScrollSection";
-import HomeButton from "./Header/Home/HomeButton";
+import HomeButton from "./Header/Buttons/HomeButton";
+import MenuButton from "./Header/Menu/MenuIButton";
+import "./Header/Buttons/HomeButton.css";
 
 
 //@withStore
@@ -53,6 +55,8 @@ class Layout extends Component {
 							<ModalWindow />
 							<AppHeader />
 							<HomeButton />
+							<MenuButton property='memosVisible' title='📝' classNames='memoButton'/>
+
 				
 				<div className="layout">
 				{layout.memosVisible && (<Sidebar><MemoCell /></Sidebar>)}
