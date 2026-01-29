@@ -16,7 +16,7 @@ const statusItem=function(status) {
 const ConnectionStates = observer(function InvAuthForm() {
     const context = useContext(StoreContext);
 
-    const wsConnectionStatus = context.ws.connectionStatus; // Получение статуса WebSocket
+    const wsConnectionStatus = context.ws?.connectionStatus || 'Uninitialized'; // Получение статуса WebSocket
 
 
     return (
@@ -35,7 +35,7 @@ const ConnectionStates = observer(function InvAuthForm() {
 					<td>Подключение WS channel</td>
 					<td className='status'>{statusItem(wsConnectionStatus)}</td>
 					<td className='status'>{statusItem(wsConnectionStatus)}</td>
-					<td className='id'>{context.ws.id}</td>
+					<td className='id'>{context.ws?.id || '-'}</td>
 				</tr>
 				<tr>
 					<td>Подключение Bitrix</td>

@@ -34,7 +34,7 @@ const periodsStore = new PeriodsStore(mainStore, layoutStore,timeStore);
 //элементы зависят от настроек, времени, пользователей и периодов
 const itemsStore = new ItemsMultiStore(mainStore,timeStore,usersStore,periodsStore); 
 
-const wsStore=new WsStore(wsUrl,mainStore,usersStore,itemsStore);
+const wsStore=wsUrl ? new WsStore(wsUrl,mainStore,usersStore,itemsStore) : null;
 
 const alertStore=new AlertsStore(mainStore);
 

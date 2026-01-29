@@ -127,7 +127,7 @@ yarn-debug.log*
 yarn-error.log*
 
 #private data
-src/config.priv.js
+src/config.priv.*
 docs
 dev/cert.*
 env.cmd

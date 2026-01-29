@@ -1,7 +1,17 @@
 {
-  "compilerOptions": {
-    "baseUrl": "src",
-    "experimentalDecorators": true
-  },
-  "include": ["src"]
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"baseUrl": ".",
+		"paths": {
+			"Components/*": ["src/Components/*"],
+			"Data/*": ["src/Data/*"],
+			"Helpers/*": ["src/Helpers/*"],
+			"config": ["src/config.priv.js"]
+		},
+		"experimentalDecorators": true,
+		"jsx": "react-jsx"
+	},
+	"include": ["src"]
 }

@@ -2,7 +2,7 @@ import React, { useContext }  from "react";
 import './AppHeader.css';
 
 import UserList from "./UserList/UserList";
-import { StoreContext } from "Data/Stores/StoreProvider.js";
+import { StoreContext } from "Data/Stores/StoreProvider";
 import { observer } from "mobx-react-lite";
 
 const AppHeader=observer((props)=> {
