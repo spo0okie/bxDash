@@ -159,8 +159,8 @@ const TaskCard = observer((props)=>{
 			ref={ref}
 			id={task.uid}
 		>
-			<div className="content"
-			><Element name={task.uid}>
+			<div className="content">
+				<Element name={task.uid}>
 				{task.isNew?
 				<EditItem item={task} items={context.items.tasks}/>
 				:
