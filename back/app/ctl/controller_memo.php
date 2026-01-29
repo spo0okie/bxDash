@@ -17,7 +17,7 @@ class controller_memo {
 		'DATE_ACTIVE_TO',
 		'CREATED_DATE',
 		'SORT',
-		'DETAIL_TEXT',
+		'~DETAIL_TEXT',
 	];
 
 	static public function deleteItem($id) {
@@ -111,7 +111,7 @@ class controller_memo {
 
 		while ($item = $search->GetNextElement()) {
 			//$item->fields['PROPERTY_USER']=$user;
-			$items[]=$item->fields;
+			$items[]=router::filterFields($item->fields,static::$fieldsMap);
 		}
 
 		return $items;
@@ -150,7 +150,7 @@ class controller_memo {
 		$items=[];
 
 		while ($item = $search->GetNextElement()) {
-			$items[]=$item->fields;
+			$items[]=router::filterFields($item->fields,static::$fieldsMap);
 		}
 		return $items;
 	}

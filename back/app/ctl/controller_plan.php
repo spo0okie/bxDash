@@ -17,12 +17,12 @@ class controller_plan {
 		'DATE_ACTIVE_TO',
 		'CREATED_DATE',
 		'SORT',
-		'PREVIEW_TEXT',
-		'DETAIL_TEXT',
-		'PROPERTY_USER',
-		'PROPERTY_AUTHORIZED',
-		'PROPERTY_STATUS',
-		'PROPERTY_AUTHSTATUS',
+		'~PREVIEW_TEXT',
+		'~DETAIL_TEXT',
+		'PROPERTY_USER_VALUE',
+		'PROPERTY_AUTHORIZED_VALUE',
+		'PROPERTY_STATUS_VALUE',
+		'PROPERTY_AUTHSTATUS_VALUE',
 	];
 
 	static public function deleteItem($id) {
@@ -113,7 +113,7 @@ class controller_plan {
 
 		while ($item = $search->GetNextElement()) {
 			//$item->fields['PROPERTY_USER']=$user;
-			$items[]=$item->fields;
+			$items[]=router::filterFields($item->fields,static::$fieldsMap);
 		}
 
 		return $items;
@@ -152,7 +152,7 @@ class controller_plan {
 		$items=[];
 
 		while ($item = $search->GetNextElement()) {
-			$items[]=$item->fields;
+			$items[]=router::filterFields($item->fields,static::$fieldsMap);
 		}
 		return $items;
 	}
@@ -280,11 +280,6 @@ class controller_plan {
 		if (!$id=static::createItem($data)) router::haltJson('error creating data',500,$data);
 
 		echo '{"result":"ok","id":'.$id.'}';
-	}
-
-	public function action_event(){
-		$body = file_get_contents('php://input');
-		error_log(print_r($body,true));
 	}
 	
 }

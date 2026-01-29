@@ -16,8 +16,8 @@ class controller_job {
 		'DATE_ACTIVE_TO',
 		'CREATED_DATE',
 		'SORT',
-		'PREVIEW_TEXT',
-		'PROPERTY_USER',
+		'~PREVIEW_TEXT',
+		'PROPERTY_USER_VALUE',
 	];
 
 	static public function deleteJob($id) {
@@ -108,7 +108,7 @@ class controller_job {
 
 		while ($item = $search->GetNextElement()) {
 			//$item->fields['PROPERTY_USER']=$user;
-			$jobs[]=$item->fields;
+			$jobs[]=router::filterFields($item->fields,static::$fieldsMap);
 		}
 
 		return $jobs;

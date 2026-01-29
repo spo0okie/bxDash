@@ -196,5 +196,15 @@ class router
 			static::$inputJson;
 	}
 
+	static function filterFields($data,$filter)
+	{
+		$result=[];
+		foreach ($filter as $field) {
+			if (isset($data[$field]))
+				$result[$field]=$data[$field];
+		}
+		return $result;
+	}
+
 }
 

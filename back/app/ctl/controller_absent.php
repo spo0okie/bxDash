@@ -45,7 +45,7 @@ class controller_absent {
 		$absents=[];
 
 		while ($item = $search->GetNextElement()) {
-			$absents[]=$item->fields;
+			$absents[]=router::filterFields($item->fields,static::$fieldsMap);
 		}
 
 		return $absents;
