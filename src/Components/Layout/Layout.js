@@ -56,6 +56,7 @@ class Layout extends Component {
 							<AppHeader />
 							<HomeButton />
 							<MenuButton property='memosVisible' title='📝' classNames='memoButton'/>
+							<MenuButton property='debugVisible' title='⚙️' classNames='optionsButton'/>
 
 				
 				<div className="layout">

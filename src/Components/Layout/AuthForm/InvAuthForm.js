@@ -20,7 +20,11 @@ const InvAuthForm = observer(function InvAuthForm() {
             setPassword(debugPassword);
             
             // Если включен автовход - сразу выполняем авторизацию
-            if (debugAutoLogin) {
+            if (debugAutoLogin 
+				&& context.main.bx.authStatus !== 'OK'
+				&& context.main.zabbix.authStatus !== 'OK'
+				&& context.main.inventory.authStatus !== 'OK'
+			) {
                 setStatus('submitting');
                 context.main.authenticate(
                     debugLogin,
