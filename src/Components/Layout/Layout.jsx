@@ -15,17 +15,7 @@ import MenuButton from "./Header/Menu/MenuIButton";
 import "./Header/Buttons/HomeButton.css";
 
 
-//@withStore
-@observer
-class Layout extends Component {
-  /*toggleTitle = () => {
-    const store = this.context.main;
-    if (store.testText === "как") {
-        store.setText("пук");
-    } else {
-        store.setText("как");
-    }
-  };*/
+@observer class Layout extends Component {
 
   authForm() {
     const store = this.context.main;
@@ -52,39 +42,40 @@ class Layout extends Component {
     return (<>
 			{(main.bx.authStatus!=='OK'||main.zabbix.authStatus!=='OK'|| main.inventory.authStatus!=='OK'||!ws.connectionStatus || layout.debugVisible) && <InvAuthForm />}
 			{(<>
-							<ModalWindow />
-							<AppHeader />
-							<HomeButton />
-							<MenuButton property='memosVisible' title='📝' classNames='memoButton'/>
-							<MenuButton property='debugVisible' title='⚙️' classNames='optionsButton'/>
-
+				<ModalWindow />
+				<AppHeader />
+				<HomeButton />
+				<MenuButton property='memosVisible' title='📝' classNames='memoButton'/>
+				<MenuButton property='debugVisible' title='⚙️' classNames='optionsButton'/>
+				<MenuButton property='expand' title={['📅','📆']} classNames='calendarButton'/>
 				
 				<div className="layout">
-				{layout.memosVisible && (<Sidebar><MemoCell /></Sidebar>)}
-				<div className="dashBoard">
-					{/*this.authForm()*/}
-					<ScrollSection 
-						className={classNames(
-							"Calendar",
-							{ 'ColumnScroller': personal && !layout.expand }
-						)} id='calendarGrid'
-						style={{
-							width: (personal && !layout.expand)?
-								(layout.windowDimensions.width - 200 - (layout.memosVisible?layout.sidebarWidth:0))+'px'
-								:null
-						}}
-					>
-						{time.weeksRange(!personal).map((i) => <Interval key={i} id={i} />)}
-					</ScrollSection>
-				</div>
-				{users.selected !== null && (
-					<div className="rightPane">
-						<Interval key={time.weekMax+1} id={time.weekMax+1} />
+					{layout.memosVisible && (<Sidebar><MemoCell /></Sidebar>)}
+					<div className="dashBoard">
+						{/*this.authForm()*/}
+						<ScrollSection 
+							className={classNames(
+								"Calendar",
+								{ 'ColumnScroller': personal && !layout.expand }
+							)} 
+							id='calendarGrid'
+							style={{
+								width: (personal && !layout.expand)?
+									(layout.windowDimensions.width - 200 - (layout.memosVisible?layout.sidebarWidth:0))+'px'
+									:null
+							}}
+						>
+							{time.weeksRange(!personal).map((i) => <Interval key={i} id={i} />)}
+						</ScrollSection>
 					</div>
-				)}
-			</div>
-			</>
-		)}
+					{users.selected !== null && (
+						<div className="rightPane">
+							<Interval key={time.weekMax+1} id={time.weekMax+1} />
+						</div>
+					)}
+				</div>
+				</>
+			)}
 		</>
     );    
   }

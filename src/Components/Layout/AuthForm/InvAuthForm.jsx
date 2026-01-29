@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import './invAuthForm.css';
 import { StoreContext } from 'Data/Stores/StoreProvider';
 import ConnectionStates from 'Components/Layout/ConnectionStates/ConnectionStates';
-import { debugLogin, debugPassword, debugAutoLogin } from 'config.priv';
+import { debugLogin, debugPassword, debugAutoLogin, showTimeDebugUI } from 'config.priv';
 import classNames from 'classnames';
 import MenuButton from '../Header/Menu/MenuIButton';
 
@@ -56,22 +56,20 @@ const InvAuthForm = observer(function InvAuthForm() {
     }
 
 	const planningMode=()=> {
-		this.context.layout.setPlansVisible(true);
-		this.context.layout.setJobsVisible(false);
-		this.context.layout.setExpand(false);
-		this.context.layout.setAccomplicesVisible(false);
-		this.context.layout.setTicketsVisible(false);
-		this.context.layout.setTasksVisible(false);
-		this.context.layout.setKeepPlanning(true);
+		context.layout.setPlansVisible(true);
+		context.layout.setJobsVisible(false);
+		context.layout.setAccomplicesVisible(false);
+		context.layout.setTicketsVisible(false);
+		context.layout.setTasksVisible(false);
+		context.layout.setKeepPlanning(true);
 	}
 	const defaultMode=()=> {
-		this.context.layout.setPlansVisible(true);
-		this.context.layout.setJobsVisible(true);
-		this.context.layout.setExpand(true);
-		this.context.layout.setAccomplicesVisible(false);
-		this.context.layout.setTicketsVisible(true);
-		this.context.layout.setTasksVisible(true);
-		this.context.layout.setKeepPlanning(false);
+		context.layout.setPlansVisible(true);
+		context.layout.setJobsVisible(true);
+		context.layout.setAccomplicesVisible(false);
+		context.layout.setTicketsVisible(true);
+		context.layout.setTasksVisible(true);
+		context.layout.setKeepPlanning(false);
 	}
 
 
@@ -135,10 +133,75 @@ const InvAuthForm = observer(function InvAuthForm() {
 					)}
 				</form>
 			</div>
-			<div className='section'>
+            <div className='section'>
 				<ConnectionStates/>
 				<p className='p-1'>Time: {context.time.strTime}</p>
+				{context.time.isOverridden && (
+					<p className='p-1 warning'>⚠️ Дата переопределена!</p>
+				)}
 			</div>
+			{showTimeDebugUI && (
+			<div className='section debug-section'>
+				<div className='debug-time-controls'>
+					<button
+						className="small"
+						onClick={() => {
+							//переключаем на следующий понедельник
+							const nextMonday = context.time.monday0 + 7 * 24 * 3600 * 1000;
+							context.time.overrideDate(nextMonday);
+						}}
+					>
+						+1 неделя
+					</button>
+					<button
+						className="small"
+						onClick={() => {
+							//переключаем на предыдущий понедельник
+							const prevMonday = context.time.monday0 - 7 * 24 * 3600 * 1000;
+							context.time.overrideDate(prevMonday);
+						}}
+					>
+						-1 неделя
+					</button>
+					<button
+						className="small"
+						onClick={() => {
+							//переключаем на следующий день
+							const nextDay = context.time.today + 24 * 3600 * 1000;
+							context.time.overrideDate(nextDay);
+						}}
+					>
+						+1 день
+					</button>
+					<button
+						className="small"
+						onClick={() => {
+							//переключаем на предыдущий день
+							const prevDay = context.time.today - 24 * 3600 * 1000;
+							context.time.overrideDate(prevDay);
+						}}
+					>
+						-1 день
+					</button>
+					<button
+						className="small reset"
+						onClick={() => context.time.resetToRealTime()}
+						disabled={!context.time.isOverridden}
+					>
+						Сбросить
+					</button>
+				</div>
+				<div className='debug-time-info'>
+					<h3>Отладка времени</h3>
+				
+					<small>
+						today: {context.time.today ? new Date(context.time.today).toLocaleDateString('ru-RU') : '—'}<br/>
+						monday0: {context.time.monday0 ? new Date(context.time.monday0).toLocaleDateString('ru-RU') : '—'}<br/>
+						overridden: {context.time.isOverridden ? 'да' : 'нет'}
+					</small>
+				</div>
+			</div>
+			)}
 
         </div>
     );

@@ -118,8 +118,8 @@ onMessage=(message)=>{
 	}
 
 sendMessage=(data)=>{
-		console.log('sending');
-		console.log(data);
+		//console.log('sending');
+		//console.log(data);
 		if (this.connectionStatus !== 'OK') {
 			console.log('cant send message, connection status is '+this.connectionStatus);
 			return;

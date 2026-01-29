@@ -95,12 +95,35 @@ class PeriodItem {
 		this.timeInit();
 		this.itemsIds = new ItemsIdsStore(interval.itemsTypes);
 
-		makeObservable(this,{
+        makeObservable(this,{
 			dragOverCell: observable,
 			setDragOverCell: action,
 			className: observable
 		})
     }
+
+	/**
+	 * Логирование основных параметров периода
+	 */
+	logInfo() {
+		const startStr = TimeHelper.strDateTime(this.start);
+		const endStr = this.end ? TimeHelper.strDateTime(this.end) : 'null (bucket)';
+		const lenStr = this.len ? `${this.len / TimeHelper.dayLen}d` : 'null';
+		const itemCount = this.countItems ? this.countItems() : 0;
+
+		console.log(
+			`  [Period ${this.type}] ` +
+			`start=${startStr}, ` +
+			`end=${endStr}, ` +
+			`len=${lenStr}, ` +
+			`title="${this.title}", ` +
+			`className=${this.className}, ` +
+			`isOpen=${this.isOpen}, ` +
+			`isClosed=${this.isClosed}, ` +
+			`isToday=${this.isToday}, ` +
+			`items=${itemCount}`
+		);
+	}
 }
 
 Object.assign(PeriodItem.prototype,PeriodItemsMixin);

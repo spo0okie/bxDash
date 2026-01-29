@@ -166,6 +166,27 @@ class IntervalItem {
 		this.init();
 		observe(layout,'expand',()=>{if (this.layout.expand !== this.expand) this.reinitPeriods()});
     }
+
+	/**
+	 * Логирование основных параметров интервала
+	 */
+	logInfo() {
+		const startStr = this.start ? TimeHelper.strDateTime(this.start) : 'null';
+		const endStr = this.end ? TimeHelper.strDateTime(this.end) : 'null (bucket)';
+		const todayStr = this.today ? TimeHelper.strDateTime(this.today) : 'null';
+		const itemCount = this.countItems ? this.countItems() : 0;
+		const periodCount = this.periodsIds ? this.periodsIds.length : 0;
+
+		console.log(
+			`[Interval ${this.id}] ` +
+			`start=${startStr}, ` +
+			`end=${endStr}, ` +
+			`today=${todayStr}, ` +
+			`expand=${this.expand}, ` +
+			`periods=${periodCount}, ` +
+			`items=${itemCount}`
+		);
+	}
 }
 
 Object.assign(IntervalItem.prototype,PeriodItemsMixin);

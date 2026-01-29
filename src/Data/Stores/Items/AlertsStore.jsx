@@ -19,13 +19,17 @@ class AlertsStore {
 	constructor(main) {
 		this.main=main;
 		this.loadItems();
+		makeObservable(this, {
+			isLoading: observable,
+			setLoading: action,
+			loadItems: action,
+		});
 	}
 
 
 	setLoading(value) {
 		this.isLoading=value;
 	}
-
 
     //загрузить задачи из битрикс с отметки времени from и до отметки to
     loadItems() {
@@ -51,7 +55,7 @@ class AlertsStore {
 			this.main.zabbix.fetch('api_jsonrpc.php',{body:JSON.stringify({jsonrpc: '2.0', method: 'problem.get', params: request, id: 1})})
 			.then((response) => response.json())
 			.then((data) => {
-				console.log(data);
+				//console.log(data);
 
 				const triggerIds = new Set();
 				data.result.forEach(event => {

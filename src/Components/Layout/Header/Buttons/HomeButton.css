@@ -38,3 +38,17 @@ button.optionsButton {
 button.optionsButton:hover {
 	background: greenyellow;
 }
+
+button.calendarButton {
+	position: fixed;
+	top: 25px;
+	right: -1px;
+	padding: 1px 1px;
+	z-index: 991;
+	border: none;
+	background: inherit;
+}
+
+button.calendarButton:hover {
+	background: greenyellow;
+}

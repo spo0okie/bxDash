@@ -3,7 +3,6 @@
 	/*top: 100px;*/
 	background: rgba(00,0,0,0.7);
 	width: 100%;
-	padding-bottom: 1em;
 	text-align: center;
 	z-index: 998;
 	color: white;
@@ -36,14 +35,14 @@
 	display: flex;
 	flex-direction: row;
 	text-align: left;
-	margin: 1em;
+	margin: 4px 0;
 	justify-content: center;
 }
 
 div.options button {
 	border-radius: 5px;
 	border-width: 1px;
-	margin: 3px;
+	margin: 2px;
 }
 div.options button.on {
 	background: #141;
@@ -55,4 +54,79 @@ div.options button.off {
 	background: #010;
 	border-color: green;
 	color:green
+}
+
+/* Debug time controls */
+.debug-section {
+	border-left: 1px solid rgba(255,255,255,0.2);
+	padding: 0 1em;
+	display: flex;
+	align-items: center;
+	flex-shrink: 1;
+	flex-grow: 0 !important;
+}
+
+.debug-section h3 {
+	margin: 0.5em 0;
+	font-size: 0.9em;
+	color: #aaa;
+}
+
+.debug-time-controls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+	justify-content: center;
+	margin-bottom: 0.5em;
+	flex-direction: column;
+  	align-items: center;
+}
+
+.debug-time-controls button {
+	border-radius: 5px;
+	border-width: 1px;
+	margin: 2px;
+	padding: 4px 8px;
+	font-size: 0.8em;
+	background: #222;
+	border-color: #666;
+	color: #ccc;
+	cursor: pointer;
+}
+
+.debug-time-controls button:hover {
+	background: #333;
+	border-color: #888;
+}
+
+.debug-time-controls button.reset {
+	background: #411;
+	border-color: #844;
+	color: #faa;
+}
+
+.debug-time-controls button.reset:hover:not(:disabled) {
+	background: #522;
+	border-color: #a55;
+}
+
+.debug-time-controls button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.debug-time-info {
+	color: #888;
+	text-align: left;
+	padding: 0 1em;
+}
+
+.debug-time-info small {
+	font-family: monospace;
+	font-size: 0.75em;
+}
+
+.warning {
+	color: #ffaa00;
+	font-weight: bold;
 }
