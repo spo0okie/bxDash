@@ -5,7 +5,7 @@
 ## Обзор системы тестирования
 
 bxDash использует:
-- **Jest** как тестовый фреймворк (встроен в Create React App)
+- **Jest** как тестовый фреймворк
 - **@testing-library/react** для тестирования компонентов React
 - **@testing-library/jest-dom** для дополнительных матчеров DOM
 - **Playwright** для E2E тестирования
@@ -52,7 +52,7 @@ npm run test:mock
 ### Конфигурация Babel
 Тесты используют специальную конфигурацию Babel для поддержки MobX decorators и ESM модулей:
 - `.babelrc` - основная конфигурация с loose mode для Babel плагинов
-- `config-overrides.js` - настройка для react-app-rewired
+- `jest.config.js` - настройка Jest для работы с Vite проектом
 - `setupTests.js` - глобальные mock и настройки
 
 ## Текущие тесты
@@ -344,8 +344,8 @@ npx tsc --noEmit
 
 ### Проблемы с Babel
 Если возникают ошибки 'loose' mode:
-- Проверьте `.babelrc.js` на consistent loose: true
-- Убедитесь в правильной настройке config-overrides.js
+- Проверьте `.babelrc` на consistent loose: true
+- Убедитесь в правильной настройке `jest.config.js`
 
 ### Проблемы с ESM
 - Добавьте mock в setupTests.js для новых ESM зависимостей

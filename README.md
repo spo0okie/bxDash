@@ -6,7 +6,7 @@
 для управления данными используется mobX  
 [https://habr.com/ru/articles/471048/]  
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project uses [Vite](https://vitejs.dev/) as the build tool.
 
 ### Cokies
 

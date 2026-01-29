@@ -22,7 +22,7 @@ class MemoItem extends DashItem {
 	parseTicketReplace(match) {return '[TicketLink]('+match[2]+')';}
 
 	onLostFocus() {
-		this.onCompleteEdit();
+		//this.onCompleteEdit();
 	}
 
 	isDraggable(cell) {
