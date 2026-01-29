@@ -17,7 +17,9 @@ class MemoItem extends DashItem {
 		this.isUnmovable = false;
 		this.isExpanded = false;
 	}
+
 	parseTaskReplace(match) {return '[TaskLink]('+match[2]+')';}
+	parseTicketReplace(match) {return '[TicketLink]('+match[2]+')';}
 
 	onLostFocus() {
 		this.onCompleteEdit();

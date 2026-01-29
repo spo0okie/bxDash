@@ -11,6 +11,7 @@ import { StoreContext } from "Data/Stores/StoreProvider";
 import EditItem from "../../EditItem/EditItem";
 import Markdown from 'react-markdown'
 import TaskLink from "../Task/TaskLink";
+import TicketLink from "../Ticket/TicketLink";
 import TimeHelper from "Helpers/TimeHelper";
 import { visit} from "unist-util-visit";
 import { Dropdown } from "antd";
@@ -57,7 +58,11 @@ const MemoCard = observer((props)=>{
 					node.children[0].value = node.properties.href;
 					node.tagName = 'tasklink';
 					node.properties.taskId = Number(node.properties.href)
-					//node=<TaskLink id={19033} />
+				}
+				if (node.children.length && node.children[0].type === 'text' && node.children[0].value === 'TicketLink') {
+					node.children[0].value = node.properties.href;
+					node.tagName = 'ticketlink';
+					node.properties.ticketId = Number(node.properties.href)
 				}
 				//console.log(node);
 			});
@@ -95,7 +100,8 @@ const MemoCard = observer((props)=>{
 			remarkPlugins={[remarkGfm]}
 			rehypePlugins={[remarkTasks]}
 			components={{
-				tasklink: (props) => {return (<TaskLink id={props.taskId}/>); }
+				tasklink: (props) => {return (<TaskLink id={props.taskId}/>); },
+				ticketlink: (props) => {return (<TicketLink id={props.ticketId}/>); }
 			}}
 		>{title.replace("\n","  \n")}</Markdown>;
 
