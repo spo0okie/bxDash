@@ -3,8 +3,8 @@ import DashItem from "./DashItem";
 import TimeHelper from "Helpers/TimeHelper";
 
 class TaskItem extends DashItem {
-	mark;	//оценка
-	strStatus;
+	//mark;	//оценка
+	//strStatus;
 
 	initDefaults() {
 		this.type = 'task';		//тип

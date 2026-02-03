@@ -58,6 +58,7 @@ if (typeof window !== 'undefined') {
 	window.mainStore = mainStore;
 	window.usersStore = usersStore;
 	window.itemsStore = itemsStore;
-	console.log('Stores exported to window: timeStore, layoutStore, periodsStore, mainStore, usersStore, itemsStore');
+	window.alertsStore = alertStore;
+	console.log('Stores exported to window: timeStore, layoutStore, periodsStore, mainStore, usersStore, itemsStore, alertsStore');
 }
 

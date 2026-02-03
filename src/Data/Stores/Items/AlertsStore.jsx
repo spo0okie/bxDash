@@ -15,6 +15,9 @@ class AlertsStore {
 
 	service = observable.map(); // Changed to observable.map
     support = observable.map(); // Changed to observable.map
+	
+	// Состояние фиксации тултипа: { username, type, severity } или null
+	pinnedAlertGroup = null;
 
 	constructor(main) {
 		this.main=main;
@@ -23,12 +26,22 @@ class AlertsStore {
 			isLoading: observable,
 			setLoading: action,
 			loadItems: action,
+			pinnedAlertGroup: observable,
+			setPinnedAlertGroup: action,
 		});
 	}
 
 
 	setLoading(value) {
 		this.isLoading=value;
+	}
+
+	/**
+	 * Устанавливает/сбрасывает фиксацию группы алертов
+	 * @param {Object|null} group - { username, type, severity } или null для сброса
+	 */
+	setPinnedAlertGroup(group) {
+		this.pinnedAlertGroup = group;
 	}
 
     //загрузить задачи из битрикс с отметки времени from и до отметки to

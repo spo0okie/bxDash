@@ -56,7 +56,7 @@ export default class EditItem extends React.Component {
 			const value = input.value;
 			const newline = "\r\n";
 			input.value = value.substring(0, cursorPos) + newline + value.substring(selectionEnd);
-			const newPos = cursorPos + newline.length;
+			const newPos = cursorPos + 1;
 			input.selectionStart = newPos;
 			input.selectionEnd = newPos;
 		}
