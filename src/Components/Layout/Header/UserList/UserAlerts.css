@@ -136,6 +136,47 @@ div.user-alerts > span.severity5 {background-color: #891515;color: /*#4b0c0c*/ #
 	transform: scale(1.1);
 }
 
+/* Элемент списка алертов с кнопкой создания заявки */
+ul.user-alerts li.alert-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin: 4px 0;
+}
+
+/* Ссылка внутри элемента списка */
+ul.user-alerts li.alert-item a {
+	flex: 1;
+	color: white;
+	display: block;
+	padding: 1px 4px;
+	margin: 0;
+	background-color: #333;
+	white-space: wrap;
+}
+
+ul.user-alerts li.alert-item a:hover {
+	background-color: #666;
+}
+
+/* Кнопка создания заявки из алерта */
+.create-ticket-from-alert {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 0;
+	font-size: 14px;
+	opacity: 0.6;
+	transition: opacity 0.2s, transform 0.2s;
+	flex-shrink: 0;
+	color: white;
+}
+
+.create-ticket-from-alert:hover {
+	opacity: 1;
+	transform: scale(1.2);
+}
+
 /* Зафиксированная группа - визуальное отличие 
 div.user-alerts > span.item.pinned {
 	transform: scale(1.1);

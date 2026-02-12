@@ -35,7 +35,7 @@ const TaskStatus=observer((props)=>{
 		case 3:     onclick=()=>task.changeStatus(2); break;
 		default:	onclick=null;
 	}
-	return (
+	return (<>
 	<span className="msgStatus">
 		<span className={classNames(
 			{'clickable':onclick!==null},	//можно кликнуть чтобы остановить/запустить
@@ -43,8 +43,11 @@ const TaskStatus=observer((props)=>{
 		)} onClick={onclick}>
 			{task.strStatus}
 		</span>
+	</span>
+	<span className="updates">
 		<TaskStatusUpdates task={task} />
-	</span>)
+	</span>
+	</>)
 });
 
 

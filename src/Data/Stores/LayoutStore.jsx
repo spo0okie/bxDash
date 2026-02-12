@@ -24,7 +24,8 @@ class LayoutStore {
 	keepPlanning = false;	//не скрывать относящееся к планам
 	keepFavorites = false;	//не скрывать относящееся к избранному
     
-	modalVisible = false;
+	modalVisible = false;		//модальное окно для iFrame
+	ticketModalVisible = false; //модальное окно для новой заявки
 	debugVisible = false;
     modal;
 
@@ -88,7 +89,12 @@ class LayoutStore {
 
     setModalVisible(visible) {
         this.modalVisible=visible;
-        console.log('visible '+visible);
+        //console.log('visible '+visible);
+    }
+
+    setTicketModalVisible(visible) {
+        this.ticketModalVisible=visible;
+        //console.log('ticket visible '+visible);
     }
 
     setModal(modal,visible=null) {
@@ -187,6 +193,7 @@ class LayoutStore {
 			jobsVisible: observable,
 			plansVisible: observable,
             modalVisible: observable,
+			ticketModalVisible: observable,
 			ticketsVisible: observable,
 			tasksVisible: observable,
 			memosVisible: observable,
@@ -199,6 +206,7 @@ class LayoutStore {
             
 			windowDimensions: observable.struct,
             setModalVisible: action,
+			setTicketModalVisible: action,
             setExpand: action,
 			setAccomplicesVisible: action,
 			setJobsVisible: action,

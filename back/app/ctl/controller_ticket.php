@@ -10,7 +10,10 @@ class controller_ticket {
 	const MSG_NO_USERS='NO_USER_LIST_SET';
 	const MSG_NO_JOB_ID='NO_JOB_ID_SET';
 	const MSG_NO_TICKET_ID='NO_TICKET_ID_SET';
-
+	const MSG_NO_TITLE='NO_TITLE_SET';
+	const MSG_NO_OWNER='NO_OWNER_SET';
+	const MSG_NO_RESPONSIBLE='NO_RESPONSIBLE_SET';
+	
 	static public $fieldsMap = [
 		'ID',
 		'RESPONSIBLE_USER_ID',
@@ -40,29 +43,29 @@ class controller_ticket {
 		return $tickets;
 	}*/
 
-static private function loadTicketsByIds(array $ids)
-{
-    $ids = array_values(array_unique(array_map('intval', $ids)));
-    if (!$ids) return [];
+	static private function loadTicketsByIds(array $ids)
+	{
+	    $ids = array_values(array_unique(array_map('intval', $ids)));
+	    if (!$ids) return [];
 
-    $tickets = [];
+	    $tickets = [];
 
-    foreach ($ids as $id) {
-        $rs = CTicket::GetList(
-            $by = 's_id',
-            $order = 'asc',
-            ['ID' => $id, 'ID_EXACT_MATCH' => 'Y'],
-            $is_filtered = true,
-            'N'
-        );
+	    foreach ($ids as $id) {
+	        $rs = CTicket::GetList(
+	            $by = 's_id',
+	            $order = 'asc',
+	            ['ID' => $id, 'ID_EXACT_MATCH' => 'Y'],
+	            $is_filtered = true,
+	            'N'
+	        );
 
-        if ($ticket = $rs->GetNext()) {
-            $tickets[$ticket['ID']] = $ticket;
-        }
-    }
+	        if ($ticket = $rs->GetNext()) {
+	            $tickets[$ticket['ID']] = $ticket;
+	        }
+	    }
 
-    return $tickets;
-}
+	    return $tickets;
+	}
 
 	/**
 	 * загружает работы переданных пользователей за указанный период
@@ -197,6 +200,54 @@ static private function loadTicketsByIds(array $ids)
 		if (!isset($tickets[$id]))
 			router::haltJson("Error loading Ticket");
 		echo json_encode(array_values($tickets),JSON_UNESCAPED_UNICODE);
+	}
+
+	/**
+	 * Создание новой заявки (тикета)
+	 * 
+	 * Параметры:
+	 * - text: текст (первая строка - заголовок, остальные - сообщение)
+	 * - owner: ID автора заявки (OWNER_USER_ID)
+	 * - responsible: ID ответственного (RESPONSIBLE_USER_ID)
+	 */
+	function action_create() {
+		// Получаем параметры
+		$text = router::getRoute(null, 'text');
+		if (!$text) router::haltJson(static::MSG_NO_TITLE);
+		
+		$owner = router::getRoute(null, 'owner');
+		if (!$owner) router::haltJson(static::MSG_NO_OWNER);
+		
+		$responsible = router::getRoute(null, 'responsible');
+		if (!$responsible) router::haltJson(static::MSG_NO_RESPONSIBLE);
+		
+		// Разбираем текст на заголовок и сообщение
+		$lines = explode("\n", $text);
+		$title = $lines[0];
+		$message = count($lines) > 1 ? implode("\n", array_slice($lines, 1)) : '';
+		
+		// Данные тикета
+		// SITE_ID, CATEGORY_ID, SLA_ID задаются константами в начале файла
+		// или можно получать их из параметров
+		$arFields = [
+			'SITE_ID' => defined('TICKET_SITE_ID') ? TICKET_SITE_ID : 's1',
+			'CATEGORY_ID' => defined('TICKET_CATEGORY_ID') ? TICKET_CATEGORY_ID : 43,
+			'SLA_ID' => defined('TICKET_SLA_ID') ? TICKET_SLA_ID : 1,
+			'OWNER_USER_ID' => $owner,
+			'TITLE' => $title,
+			'MESSAGE' => $message,
+			'RESPONSIBLE_USER_ID' => $responsible,
+			'SOURCE_ID' => 0,
+		];
+		
+		$MESSAGE_ID = 0;
+		$NEW_TICKET_ID = CTicket::Set($arFields, $MESSAGE_ID, 0, "N");
+		
+		if (!$NEW_TICKET_ID) {
+			router::haltJson('error creating ticket', 500);
+		}
+		
+		echo '{"result":"ok","id":'.$NEW_TICKET_ID.'}';
 	}
 
 }

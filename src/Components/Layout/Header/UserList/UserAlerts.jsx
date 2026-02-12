@@ -2,6 +2,7 @@ import {get, keys} from 'mobx';
 import { observer } from 'mobx-react';
 import React, { useContext, useState, useEffect, useCallback} from 'react';
 import { StoreContext } from 'Data/Stores/StoreProvider';
+import TicketItem from 'Data/Items/TicketItem';
 import './UserAlerts.css';
 import { Tooltip } from 'antd';
 
@@ -13,7 +14,7 @@ import { Tooltip } from 'antd';
  * @param {string} type - Тип алертов ('service' или 'support')
  */
 const AlertListButton = observer(({severity, list, username, type}) => {
-    const { alerts, main, layout } = useContext(StoreContext);
+    const { alerts, main, layout, items, users } = useContext(StoreContext);
     const severityTitles = {1:'Информация',2:'Предупреждение',3:'Средняя',4:'Высокая',5:'Критическая'};
     
     // Получаем высоту окна из layout store для ограничения высоты тултипа
@@ -71,6 +72,69 @@ const AlertListButton = observer(({severity, list, username, type}) => {
         }
     }, [isPinned, alerts, username, type, severity]);
     
+    /**
+     * Создает заявку из алерта
+     * @param {Object} alert - объект алерта
+     */
+    const createTicketFromAlert = useCallback((alert) => {
+        // Найти пользователя по username (полное имя, login или ID) в users.items
+        const usersItems = users.items;
+        let userId = null;
+        
+        // Сначала пробуем найти по login, затем по name, затем как ID
+        const usernameNum = Number(username);
+        
+        usersItems.forEach((user, id) => {
+            if (userId) return; // уже нашли
+            if (user.login === username || user.name === username || id === usernameNum) {
+                userId = id;
+            }
+        });
+        
+        // Если не нашли, пробуем найти по частичному совпадению в name
+        if (!userId) {
+            usersItems.forEach((user, id) => {
+                if (userId) return;
+                if (user.name && user.name.includes(username)) {
+                    userId = id;
+                }
+            });
+        }
+        
+        if (!userId) {
+            console.error('User not found for username:', username);
+            return;
+        }
+        
+        // Получить данные алерта
+        const triggerid = get(alert, 'objectid');
+        const eventid = get(alert, 'eventid');
+        const host = get(alert, 'host');
+        const name = get(alert, 'name');
+        
+        // Создать URL для ссылки на Zabbix
+        const href = main.zabbix.baseUrl + "tr_events.php?triggerid=" + triggerid + "&eventid=" + eventid;
+        
+        // Получить items для ticket
+        const ticketItems = items['ticket'];
+        
+        // Создать новый TicketItem
+        const item = new TicketItem({
+            id: ticketItems.getMaxId() + 64,
+            title: host + ': ' + name + '\n' + href,
+            user: userId,                    // пользователь на ком висит алерт
+            owner: main.bx.userId,          // авторизованный пользователь
+            isNew: true,
+            isEdit: true,
+        }, {}, ticketItems);
+        
+        // Добавить в store
+        ticketItems.setItem(item);
+        
+        // Открыть модальное окно создания заявки
+        layout.setTicketModalVisible(true);
+    }, [main, username, layout, items, users]);
+    
     // Формируем контент тултипа с кнопкой закрытия
     const tooltipContent = (
         <div className={`tooltip-content ${isPinned ? 'pinned' : ''}`}>
@@ -95,21 +159,35 @@ const AlertListButton = observer(({severity, list, username, type}) => {
                 style={{ maxHeight: maxListHeight }}
             >
                 <ul className="user-alerts">
-                    {list.map((item, index)=>{
-                        const trigerid=get(item,'objectid');
-                        const eventid=get(item,'eventid');
-                        const name=get(item,'host')+': '+get(item,'name');
-                        const keyId=`${severity}-${eventid||trigerid||name||index}`;
-                        return <li key={keyId}>
-                            <a 
-                                href={main.zabbix.baseUrl+"tr_events.php?triggerid="+trigerid+"&eventid="+eventid} 
-                                target='_blank' 
-                                rel="noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                {name}
-                            </a>
-                        </li>
+                    {list.map((item, index) => {
+                        const triggerid = get(item, 'objectid');
+                        const eventid = get(item, 'eventid');
+                        const host = get(item, 'host');
+                        const name = get(item, 'name');
+                        const keyId = `${severity}-${eventid || triggerid || name || index}`;
+                        
+                        return (
+                            <li key={keyId} className="alert-item">
+                                <a 
+                                    href={main.zabbix.baseUrl + "tr_events.php?triggerid=" + triggerid + "&eventid=" + eventid}
+                                    target='_blank' 
+                                    rel="noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    {host}: {name}
+                                </a>
+                                <button 
+                                    className="create-ticket-from-alert"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        createTicketFromAlert(item);
+                                    }}
+                                    title="Сформировать заявку"
+                                >
+                                    🎫
+                                </button>
+                            </li>
+                        );
                     })}
                 </ul>
             </div>

@@ -5,6 +5,7 @@ import AppHeader from "./Header/AppHeader";
 import InvAuthForm from "./AuthForm/InvAuthForm";
 import Interval from "./Interval/Interval";
 import ModalWindow from "./Modal/ModalWindow";
+import CreateTicketModal from "Components/Items/CreateTicketModal/CreateTicketModal";
 import classNames from "classnames";
 import "./Layout.css";
 import MemoCell from "../MemoCell/MemoCell";
@@ -43,6 +44,8 @@ import "./Header/Buttons/HomeButton.css";
 			{(main.bx.authStatus!=='OK'||main.zabbix.authStatus!=='OK'|| main.inventory.authStatus!=='OK'||!ws.connectionStatus || layout.debugVisible) && <InvAuthForm />}
 			{(<>
 				<ModalWindow />
+				<CreateTicketModal />
+
 				<AppHeader />
 				<HomeButton />
 				<MenuButton property='memosVisible' title='📝' classNames='memoButton'/>

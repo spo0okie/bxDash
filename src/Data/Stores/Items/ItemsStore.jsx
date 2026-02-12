@@ -279,41 +279,14 @@ class ItemsStore {
 			});
 	}
 
-	updateItem(item) {
-		if (has(this.items, item.id)) {
-			//console.log(get(this.items, item.id));
-			//если такой элемент есть - обновляем его поля (поштучно)
-			Object.keys(item).forEach((key) => {
-				console.log('Updating ' + this.type + ' ' + item.id + ': ' + key + ' => ' + item[key]);
-				get(this.items, item.id)[key] = item[key];
-			});
-		} else {
-			//иначе просто создаем новый
-			this.setItem(item);
-		}
-
-	}
-
-	setItem(item){
-		set(this.items, item.id, item);
-		this.resolvePending(item);
-	}
-
-	deleteItem(item) { 
-		item.unsetPeriod();
-		item.unsetInterval();
-		item.detachLinks();
-		remove(this.items, item.id);
-	}
-
 	/**
 	 * Загружает все pending-периоды.
 	 * @param {*} onComplete 
 	 * @returns 
 	 */
 	loadPending(onComplete=null) {
-		let to=null;									//обозначаем что загружаем весь период времени (правой границы нет)
-		let from=this.time.firstWeekStart();			//если у нас уже загружены данные и мы подгружаем предыдущий период
+		let	to=null;									//обозначаем что загружаем весь период времени (правой границы нет)
+		let	from=this.time.firstWeekStart();			//если у нас уже загружены данные и мы подгружаем предыдущий период
 		if (this.loadedTo===null && this.loadedFrom!==undefined && this.loadedFrom>from) {
 			to=this.loadedFrom;							//то ограничиваем сверху загруженный период 
 		}
@@ -358,6 +331,32 @@ class ItemsStore {
 		observe(this.time,'today',change=>{this.recalcPeriods()});
     }
 
+	updateItem(item) {
+		if (has(this.items, item.id)) {
+			//console.log(get(this.items, item.id));
+			//если такой элемент есть - обновляем его поля (поштучно)
+			Object.keys(item).forEach((key) => {
+				console.log('Updating ' + this.type + ' ' + item.id + ': ' + key + ' => ' + item[key]);
+				get(this.items, item.id)[key] = item[key];
+			});
+		} else {
+			//иначе просто создаем новый
+			this.setItem(item);
+		}
+	}
+
+	setItem(item){
+		set(this.items, item.id, item);
+		this.resolvePending(item);
+	}
+
+	deleteItem(item) { 
+		item.unsetPeriod();
+		item.unsetInterval();
+		item.detachLinks();
+		remove(this.items, item.id);
+	}
+
 	getMaxId() {
 		let max=0;
 		keys(this.items).forEach(i=>max=Math.max(max,i));		
@@ -385,10 +384,6 @@ class ItemsStore {
 		});
         this.init();
     }
-
-
-	
-
 }
 
 export default ItemsStore;

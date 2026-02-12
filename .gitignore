@@ -131,3 +131,5 @@ src/config.priv.*
 docs
 dev
 env.cmd
+
+.vscode

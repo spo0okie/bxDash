@@ -73,10 +73,13 @@ li.userTicket .userTaskFooter{
     width: 100%;
     font-size: 8pt;
     opacity: 70%;
+	white-space: nowrap;
 }
 
 .userTaskFooter span.deadline {
 	align-self: flex-start;
+	white-space: nowrap;
+	overflow-x: hidden;
 }
 
 
@@ -89,7 +92,10 @@ li.userTask .userTaskFooter .msgStatus,
 li.userTask .userTaskFooter .status {
     text-align: right;
 	align-self: flex-end;
+	flex-shrink:1;
+	overflow-x: hidden;
 }
+
 
 li.userTask span.midPriority {color: green;}
 li.userTask span.hiPriority {color: red;}

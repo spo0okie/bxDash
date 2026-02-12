@@ -3,11 +3,12 @@ import './CreateItemButton.css';
 import TaskItem from "Data/Items/TaskItem";
 import JobItem from "Data/Items/JobItem";
 import PlanItem from "Data/Items/PlanItem";
+import TicketItem from "Data/Items/TicketItem";
 import { StoreContext } from "Data/Stores/StoreProvider";
 import {get } from 'mobx';
-import ModalLink from "Components/Layout/Modal/ModalLink";
 import { observer } from "mobx-react";
 import TimeHelper from "Helpers/TimeHelper";
+import CreateTicketModal from "Components/Items/CreateTicketModal/CreateTicketModal";
 
 const CreateTaskButton=(props)=>{
 	const [label, setLabel] = useState('здч');
@@ -35,10 +36,30 @@ const CreateTicketButton=(props)=>{
 	const [label,setLabel]=useState('звк');
 	const onHover = () => { setLabel('заявка') }
 	const onLeave = () => { setLabel('звк') }
+	
+	const onClick = () => {
+		const items = props.context.items['ticket'];
+		// Создаем новый тикет как и другие элементы
+		const item = new TicketItem({
+			id: items.getMaxId() + 64,
+			user: props.cell.user,  // ответственный = пользователь блока
+			isNew: true,
+			isEdit: true,
+		}, {}, items);
+		items.setItem(item);
+		props.context.layout.setTicketModalVisible(true);
+	}
 
-	return (<span className="create ticket" onMouseEnter={onHover} onMouseLeave={onLeave}>
-		<ModalLink link={'/bitrix/admin/ticket_edit.php?RESPONSIBLE_USER_ID=' + props.cell.user } >{label}</ModalLink>
-	</span>);
+	return (
+		<span 
+			className="create ticket" 
+			onClick={onClick}
+			onMouseEnter={onHover} 
+			onMouseLeave={onLeave}
+		>
+			{label}
+		</span>
+	);
 }
 
 const CreateJobButton=(props)=>{

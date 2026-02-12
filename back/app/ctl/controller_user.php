@@ -39,6 +39,28 @@ class controller_user {
 		$this->action_get();
 	}
 
+	/**
+	 * Возвращает список активных пользователей битрикса
+	 * Используется для выбора автора при создании заявки
+	 */
+	function action_list() {
+		$rsUsers = CUser::GetList(
+			($by="id"),
+			($order="asc"),
+			["ACTIVE" => "Y"]
+		);
+		$users = [];
+		while ($arUser = $rsUsers->GetNext()) {
+			$users[] = [
+				'id' => (int)$arUser['ID'],
+				'name' => trim($arUser['NAME'] . ' ' . $arUser['LAST_NAME']),
+				'login' => $arUser['LOGIN'],
+				'email' => $arUser['EMAIL'],
+			];
+		}
+		echo json_encode($users, JSON_UNESCAPED_UNICODE);
+	}
+
 }
 
 

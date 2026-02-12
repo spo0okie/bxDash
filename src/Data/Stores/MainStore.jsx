@@ -1,4 +1,4 @@
-import {action, makeAutoObservable, when} from 'mobx';
+import {action, makeAutoObservable, when, observable, runInAction} from 'mobx';
 import Cookies from 'universal-cookie';
 import BackendSystem from './BackendSystem';
 import { bxAuthScheme } from 'Helpers/BxHelper';
@@ -11,6 +11,7 @@ class MainStore {
 		this.bx=new BackendSystem('Bitrix',	bxAuthScheme);
 		this.zabbix=new BackendSystem('Zabbix', zabbixAuthScheme);
 		this.inventory=new BackendSystem('Inventory', inventoryAuthScheme);
+		this.bxUsersList = [];  // Список пользователей битрикса для выбора автора заявки
         makeAutoObservable(this)
     }
 
@@ -65,6 +66,28 @@ class MainStore {
 				if (onFail) onFail();
 			}
 		});
+	}
+
+	/**
+	 * Загружает список активных пользователей битрикса для выбора автора заявки
+	 * @returns {Promise<Array>} Массив пользователей {id, name, login, email}
+	 */
+	async fetchBxUsersList() {
+		try {
+			const response = await this.bx.fetch('user/list');
+			if (!response.ok) {
+				console.error('Failed to fetch users list:', response.status);
+				return [];
+			}
+			const users = await response.json();
+			runInAction(() => {
+				this.bxUsersList = users;
+			});
+			return users;
+		} catch (error) {
+			console.error('Error fetching users list:', error);
+			return [];
+		}
 	}
 }
 

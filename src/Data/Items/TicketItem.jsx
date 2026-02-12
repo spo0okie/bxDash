@@ -1,11 +1,18 @@
+import { action, makeObservable, observable } from "mobx";
 import DashItem from "./DashItem";
 import TimeHelper from "Helpers/TimeHelper";
 
 class TicketItem extends DashItem {
+	
+	owner = null;        // автор заявки (OWNER_USER_ID)
+	message = '';         // сообщение (остальной текст после заголовка)
 
 	initDefaults() {
 		this.type = 'ticket';		//тип
 		this.isUnmovable = true;
+		this.editField = 'ticketText';  // кастомное поле для редактирования
+		this.defaultTitle = 'Новая заявка\nОписание заявки';
+		this.title = this.defaultTitle;
 	}
 
 	recalcTime() {
@@ -27,18 +34,15 @@ class TicketItem extends DashItem {
 	}
 
 	/**
-	 * Инициализация
+	 * Инициализация на данных из Bitrix
 	 * @param {*} item 
-	 * @param {*} options //сюда нужно передать {
-	 * 	today = отметка "сегодня" (для задач в работе и просроченных)
-	 * }
+	 * @param {*} recalc 
 	 */
 	loadData(item, recalc) {
-    //    console.log(item)
 		if (!super.loadData(item)) return false;
 
-
 		this.user = Number(item.RESPONSIBLE_USER_ID);		
+		this.owner = Number(item.OWNER_USER_ID);
 
 		this.status = item.LAMP === 'green' || item.LAMP === 'green_s'?'green':'red';
 		this.strStatus = item.STATUS_NAME;
@@ -51,8 +55,6 @@ class TicketItem extends DashItem {
 		if ( names.length && 2 in names.split(' ')) {
 			this.title = names.split(' ')[2] + ': ' + item.TITLE;
 		} else this.title = item.TITLE;
-
-
 
 		if (
 			(this.strStatus === 'Успешно решено' || this.strStatus === 'Не представляется возможным решить') 
@@ -77,5 +79,58 @@ class TicketItem extends DashItem {
 		return true;
 	}
 
+	/**
+	 * Переопределяем save() для специфичного формата данных тикета
+	 * Используем стандартный механизм DashItem.save() но с кастомными параметрами
+	 */
+	save(params, onSuccess = null, onFail = null) {
+		// Формируем текст из title и message
+		const text = this.title + '\n' + this.message;
+		
+		const ticketParams = {
+			text: text,
+			owner: this.owner,
+			responsible: this.user,
+		};
+
+		this.setUpdating(true);
+
+		// Используем стандартный механизм но с кастомным URL и параметрами
+		this.context.main.bx.fetch(this.type + '/create/' + this.id, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(ticketParams)
+		})
+			.then((response) => response.json())
+			.then((data) => {
+				if (data.id !== undefined && data.id) {
+					const id = Number(data.id);
+					// Стандартная логика: загружаем новый, удаляем временный
+					this.list.loadItem(id, () => { this.list.deleteItem(this) });
+					this.list.broadcastUpdate(id);
+					if (onSuccess !== null) onSuccess();
+				} else {
+					this.setUpdating(false);
+					this.alertItem();
+					if (onFail !== null) onFail();
+				}
+			})
+			.catch((error) => {
+				this.setUpdating(false);
+				this.alertItem();
+				if (onFail !== null) onFail();
+				console.error('Error creating ticket:', error);
+			});
+	}
+
+	constructor(item, data, list) {
+		super(item, data, list);
+		
+		makeObservable(this, {
+			owner: observable,
+			message: observable,
+		});
+	}
 }
+
 export default TicketItem;
