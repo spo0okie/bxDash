@@ -9,6 +9,7 @@ const { TextArea } = Input;
 /**
  * Модальное окно создания заявки (тикета) в битриксе
  * Использует стандартный жизненный цикл DashItem через ticketItem.save()
+ * Позволяет выбрать автора (owner) и исполнителя (responsible) заявки
  */
 const CreateTicketModal = observer((props) => {
     const context = useContext(StoreContext);
@@ -16,7 +17,8 @@ const CreateTicketModal = observer((props) => {
     
     // Состояние формы
     const [text, setText] = useState('');
-    const [owner, setOwner] = useState(null);
+    const [owner, setOwner] = useState(null);           // Автор заявки (из bxUsersList)
+    const [responsible, setResponsible] = useState(null); // Исполнитель (из users дашборда)
     const [loading, setLoading] = useState(false);
     const [usersLoading, setUsersLoading] = useState(false);
     
@@ -30,7 +32,7 @@ const CreateTicketModal = observer((props) => {
 		ticketItem?.delete();
 	}
     
-    // При открытии модального окна загружаем список пользователей
+    // При открытии модального окна загружаем список пользователей и инициализируем значения
     useEffect(() => {
         if (visible) {
             setUsersLoading(true);
@@ -44,6 +46,11 @@ const CreateTicketModal = observer((props) => {
                 setOwner(context.main.bx.userId);
             }
             
+            // Инициализируем исполнителя из ticketItem.user (пользователь секции)
+            if (ticketItem && ticketItem.user && !responsible) {
+                setResponsible(ticketItem.user);
+            }
+            
             // Инициализируем текст если тикет только что создан
             if (ticketItem && !text) {
                 ticketItem.editValue = ticketItem.title + 
@@ -53,10 +60,17 @@ const CreateTicketModal = observer((props) => {
         }
     }, [visible]);
     
-    // При изменении ticketItem обновляем owner
+    // При изменении ticketItem обновляем owner и responsible
     useEffect(() => {
-        if (ticketItem && ticketItem.owner) {
-            setOwner(ticketItem.owner);
+        if (ticketItem) {
+            // Обновляем автора если задан
+            if (ticketItem.owner) {
+                setOwner(ticketItem.owner);
+            }
+            // Обновляем исполнителя из пользователя секции
+            if (ticketItem.user && !responsible) {
+                setResponsible(ticketItem.user);
+            }
         }
     }, [ticketItem]);
     
@@ -65,6 +79,7 @@ const CreateTicketModal = observer((props) => {
         if (!visible) {
             setText('');
             setOwner(null);
+            setResponsible(null);
         }
     }, [visible]);
     
@@ -79,6 +94,10 @@ const CreateTicketModal = observer((props) => {
         }
         if (!owner) {
             message.error('Выберите автора заявки');
+            return;
+        }
+        if (!responsible) {
+            message.error('Выберите исполнителя заявки');
             return;
         }
         if (!ticketItem) {
@@ -99,6 +118,7 @@ const CreateTicketModal = observer((props) => {
             ticketItem.title = lines[0];
             ticketItem.message = lines.length > 1 ? lines.slice(1).join('\n') : '';
             ticketItem.owner = owner;
+            ticketItem.user = responsible;  // Устанавливаем выбранного исполнителя
             
             // Вызываем стандартный save() из DashItem
             ticketItem.save({}, 
@@ -118,9 +138,9 @@ const CreateTicketModal = observer((props) => {
         }
     };
     
-    // Получаем имя пользователя блока для отображения в заголовке
-    const responsibleUserName = ticketItem?.user 
-        ? (context.users.items.get(ticketItem.user)?.name || `Пользователь ${ticketItem.user}`)
+    // Получаем имя выбранного исполнителя для отображения в заголовке
+    const responsibleUserName = responsible 
+        ? (context.users.items.get(responsible)?.name || `Пользователь ${responsible}`)
         : '';
     
     // Формируем заголовок с именем ответственного
@@ -170,6 +190,38 @@ const CreateTicketModal = observer((props) => {
                             {user.name} ({user.login})
                         </Select.Option>
                     ))}
+                </Select>
+            </div>
+            
+            {/* Выбор исполнителя (ответственного) - из сотрудников дашборда */}
+            <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>
+                    Исполнитель (ответственный) *
+                </label>
+                <Select
+                    value={responsible}
+                    onChange={setResponsible}
+                    showSearch
+                    optionFilterProp="label"
+                    filterOption={(input, option) => {
+                        const label = option.label;
+                        return typeof label === 'string' && label.toLowerCase().includes(input.toLowerCase());
+                    }}
+                    style={{ width: '100%' }}
+                    placeholder="Выберите исполнителя"
+                >
+                    {context.users.order.map(userId => {
+                        const user = context.users.items.get(userId);
+                        return (
+                            <Select.Option 
+                                key={userId} 
+                                value={userId}
+                                label={user?.name || `Пользователь ${userId}`}
+                            >
+                                {user?.name || `Пользователь ${userId}`}
+                            </Select.Option>
+                        );
+                    })}
                 </Select>
             </div>
             
