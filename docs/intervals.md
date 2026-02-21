@@ -37,17 +37,20 @@
 **Назначение:** Хранит текущее время и вычисляет границы недель.
 
 **Ключевые поля:**
+
 - `today` — timestamp начала текущего дня (00:00 МСК)
 - `monday0` — timestamp начала текущей недели (00:00 понедельника)
 - `sunday0` — timestamp конца текущей недели (00:00 воскресенья)
 - `weekMin`, `weekMax` — диапазон отображаемых недель (по умолчанию -4..+4)
 
 **Методы:**
+
 - `weekStart(id)` = `monday0 + weekLen * id`
 - `weekEnd(id)` = `sunday0 + weekLen * id`
 - `weeksRange()` — возвращает массив id недель [weekMin..weekMax+1] (bucket)
 
 **Жизненный цикл:**
+
 1. Создается при старте приложения
 2. `updateTime()` вызывается каждую секунду
 3. При смене дня пересчитываются `today`, `monday0`, `sunday0`
@@ -63,6 +66,7 @@
 **Жизненный цикл:**
 
 ### Инициализация (constructor)
+
 ```javascript
 constructor(main, layout, time) {
     this.weeksInit();  // Создает IntervalItem для всех недель
@@ -75,6 +79,7 @@ constructor(main, layout, time) {
 ```
 
 ### weeksInit()
+
 ```javascript
 weeksInit() {
     const weeks = this.time.weeksRange(true);  // [-4, -3, ..., 4, 5]
@@ -102,6 +107,7 @@ weeksInit() {
 **Назначение:** Группирует элементы по неделям, управляет периодами внутри недели.
 
 **Ключевые поля:**
+
 - `id` — номер недели относительно текущей (0 = текущая, -1 = прошлая, +1 = следующая)
 - `start`, `end` — границы интервала в timestamp
 - `today` — копия time.today на момент инициализации
@@ -112,6 +118,7 @@ weeksInit() {
 **Жизненный цикл:**
 
 ### Создание (constructor)
+
 ```javascript
 constructor(id, main, time, items, layout, periods) {
     this.id = id;
@@ -132,6 +139,7 @@ constructor(id, main, time, items, layout, periods) {
 ```
 
 ### init() — обновление границ
+
 ```javascript
 init() {
     const start = this.time.weekStart(this.id);
@@ -157,6 +165,7 @@ init() {
 ```
 
 ### reinitPeriods() — пересоздание периодов
+
 ```javascript
 reinitPeriods() {
     this.expand = this.layout.expand;
@@ -187,6 +196,7 @@ reinitPeriods() {
 ```
 
 ### reintervalItems() — перераспределение элементов по интервалам
+
 ```javascript
 reintervalItems(search = null) {
     // Берем все элементы этого интервала
@@ -201,6 +211,7 @@ reintervalItems(search = null) {
 ```
 
 ### filterItem(item) — проверка попадания элемента
+
 ```javascript
 filterItem(item) {
     if (this.emeregency) return false;
@@ -222,6 +233,7 @@ filterItem(item) {
 **Назначение:** Отображает временной период (день или неделю) и содержит элементы.
 
 **Ключевые поля:**
+
 - `start` — начало периода
 - `len` — длина периода (dayLen, weekLen или null для bucket)
 - `end` = start + len (или null)
@@ -234,6 +246,7 @@ filterItem(item) {
 **Жизненный цикл:**
 
 ### Создание (constructor)
+
 ```javascript
 constructor(start, len, interval) {
     this.start = start;
@@ -248,6 +261,7 @@ constructor(start, len, interval) {
 ```
 
 ### timeInit() — вычисление отображаемых свойств
+
 ```javascript
 timeInit() {
     if (this.len === null) {
@@ -300,6 +314,7 @@ timeInit() {
 **Назначение:** Представляет бизнес-сущности (задачи, работы, заявки, планы).
 
 **Ключевые поля для позиционирования:**
+
 - `t` — timestamp, к которому элемент относится (deadline или closedDate)
 - `intervalId` — id интервала, в котором находится элемент
 - `periodId` — start периода, в котором находится элемент
@@ -307,6 +322,7 @@ timeInit() {
 **Жизненный цикл позиционирования:**
 
 ### 1. recalcTime() — вычисление t
+
 ```javascript
 recalcTime() {
     if (this.closedDate) {
@@ -329,6 +345,7 @@ recalcTime() {
 ```
 
 ### 2. findInterval() — поиск интервала
+
 ```javascript
 findInterval(ids = null) {
     if (ids === null) {
@@ -348,6 +365,7 @@ findInterval(ids = null) {
 ```
 
 ### 3. setInterval() — привязка к интервалу
+
 ```javascript
 setInterval(id) {
     const interval = get(this.context.periods.intervals, id);
@@ -364,6 +382,7 @@ setInterval(id) {
 ```
 
 ### 4. findPeriod() — поиск периода внутри интервала
+
 ```javascript
 findPeriod(ids = null) {
     if (ids === null) {
@@ -381,6 +400,7 @@ findPeriod(ids = null) {
 ```
 
 ### 5. setPeriod() — привязка к периоду
+
 ```javascript
 setPeriod(id) {
     this.unsetPeriod();  // Отцепляемся от старого
@@ -425,6 +445,7 @@ setPeriod(id) {
 ### 1. PeriodItem не обновляется при смене today
 
 `PeriodItem.timeInit()` вызывается только в constructor. При смене `today`:
+
 - PeriodItem пересоздаются через `reinitPeriods()`
 - Но их свойства (`title`, `className`, `isOpen`, etc.) вычисляются на момент создания
 - Если `today` меняется, а PeriodItem не пересоздаются — они показывают устаревшие данные
@@ -434,6 +455,7 @@ setPeriod(id) {
 ### 2. Элементы могут "потеряться" при смене today
 
 Если элемент был в интервале 0, а `today` сдвинулся так, что элемент теперь должен быть в интервале -1:
+
 - `reintervalItems()` вызывается только для элементов текущего интервала
 - Элемент остается привязанным к старому `intervalId`
 - Но `filterItem()` уже не сработает для этого интервала
@@ -471,6 +493,7 @@ setPeriod(id) {
 ```
 
 **Почему это работает:**
+
 - `observe(time, 'today')` срабатывает только при изменении `today`
 - К этому моменту `monday0` и `sunday0` уже содержат актуальные значения
 - `weeksInit()` читает корректные `monday0`/`sunday0` при вычислении границ интервалов
@@ -480,6 +503,7 @@ setPeriod(id) {
 ## Рекомендации по отладке
 
 1. **Следить за порядком обновлений:**
+
 ```javascript
 // В консоли
 window.timeStore.overrideDate(new Date('2026-02-15').getTime());
@@ -487,6 +511,7 @@ window.timeStore.overrideDate(new Date('2026-02-15').getTime());
 ```
 
 2. **Проверить состояние интервалов:**
+
 ```javascript
 // В консоли
 window.periodsStore.intervals.forEach((interval, id) => {
@@ -495,6 +520,7 @@ window.periodsStore.intervals.forEach((interval, id) => {
 ```
 
 3. **Проверить привязку элементов:**
+
 ```javascript
 // В консоли
 const task = window.itemsStore.task.items.get(123);
