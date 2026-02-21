@@ -14,7 +14,7 @@ class controller_absent {
 		'ID',
 		'DATE_ACTIVE_FROM',
 		'DATE_ACTIVE_TO',
-		'PROPERTY_USER',
+		'PROPERTY_USER_VALUE',
 	];
 
 
