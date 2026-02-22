@@ -1,36 +1,145 @@
 import TimeHelper from "Helpers/TimeHelper";
-import { observable, action, makeAutoObservable, when, values } from "mobx";
+import { observable, action, makeObservable, when } from "mobx";
 
-//https://developer.mozilla.org/en-US/docs/Web/API/WebSocket
+/**
+ * WsStore - хранилище для управления WebSocket соединением
+ * Обеспечивает реальное время обновлений для dashboard
+ * 
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/WebSocket
+ */
 export class WsStore {
+	// === Свойства, которые НЕ должны быть observable ===
+	/** @type {MainStore} Ссылка на главное хранилище */
 	main;
+	/** @type {Object} Ссылка на хранилище элементов */
 	items;
+	/** @type {UsersStore} Ссылка на хранилище пользователей */
 	users;
-	socket;
+	/** @type {string} URL WebSocket сервера */
 	url;
-	
-	@observable id=null;
-	@observable connectionStatus = "disconnected"; // статус соединения: 'connected', 'disconnected', 'connecting'
-	activityTimestamp=0;	//отметка последнего оповещения об активности
+
+	// === Observable свойства ===
+	/** @type {WebSocket|null} Ссылка на WebSocket объект */
+	socket = null;
+	/** @type {number|null} ID соединения */
+	id = null;
+	/** @type {string} Статус соединения: 'connected', 'disconnected', 'connecting', 'OK', 'Pending', 'Disconnected' */
+	connectionStatus = "disconnected";
+	/** @type {number} Отметка последнего оповещения об активности */
+	activityTimestamp = 0;
+	/** @type {Array} Массив интервалов для очистки */
 	intervals = [];
 
-	@action setConnectionStatus(status) {
-        this.connectionStatus = status;
-    }
+	/**
+	 * Конструктор WsStore
+	 * @param {string} url - URL WebSocket сервера
+	 * @param {MainStore} main - Ссылка на главное хранилище
+	 * @param {UsersStore} users - Ссылка на хранилище пользователей
+	 * @param {Object} items - Ссылка на хранилище элементов
+	 */
+	constructor(url, main, users, items) {
+		// Явное объявление реактивных свойств согласно стандарту MobX
+		makeObservable(this, {
+			// Observable свойства
+			socket: observable.ref,  // ref - для хранения ссылки без глубокой реакции
+			id: observable,
+			connectionStatus: observable,
+			activityTimestamp: observable,
+			intervals: observable,
+			// Actions - методы, изменяющие observable свойства
+			setConnectionStatus: action,
+			setId: action,
+			connect: action,
+			activityUpdate: action,
+		});
 
-	@action setId(id) {
-        this.id = id;
-    }
-  
-onMessage=(message)=>{
+		console.log("connecting " + url);
+		this.main = main;
+		this.items = items;
+		items.ws = this;
+		this.users = users;
+		this.connect(url);
+
+		// Собрать все телефоны из realPhones всех пользователей
+		const pingInterval = setInterval(() => this.ping(), 10000);
+		const checkConnectionInterval = setInterval(() => this.checkConnection(), 15000); // Проверка соединения каждые 15 секунд
+		this.intervals.push(pingInterval, checkConnectionInterval);
+	}
+
+	// === Actions ===
+
+	/**
+	 * Установить статус соединения
+	 * @param {string} status - Новый статус соединения
+	 */
+	setConnectionStatus(status) {
+		this.connectionStatus = status;
+	}
+
+	/**
+	 * Установить ID соединения
+	 * @param {number|null} id - ID соединения
+	 */
+	setId(id) {
+		this.id = id;
+	}
+
+	/**
+	 * Подключиться к WebSocket серверу
+	 * @param {string} url - URL WebSocket сервера
+	 */
+	connect(url) {
+		this.url = url;
+		this.setConnectionStatus("Pending");
+		this.socket = new WebSocket(url);
+
+		this.socket.addEventListener("open", () => {
+			this.setConnectionStatus("OK");
+			console.log("WebSocket connected");
+		});
+
+		this.socket.addEventListener("close", () => {
+			this.setConnectionStatus("Disconnected");
+			console.log("WebSocket disconnected");
+		});
+
+		this.socket.addEventListener("message", this.onMessage);
+
+		this.socket.addEventListener("error", (error) => {
+			console.error("WebSocket error:", error);
+			this.setConnectionStatus("Disconnected");
+		});
+
+		// Отправить запрос на получение статусов телефонов
+		when(() => this.connectionStatus === 'OK', () => {
+			this.sendMessage({
+				action: 'getPhonesStates',
+				numbers: this.users ? this.users.allPhones : []
+			})
+		});
+	}
+
+	/**
+	 * Обновить отметку времени активности
+	 */
+	activityUpdate() {
+		this.activityTimestamp = TimeHelper.getTimestamp();
+	}
+
+	// === Методы обработки сообщений ===
+
+	/**
+	 * Обработчик входящих WebSocket сообщений
+	 * @param {MessageEvent} message - Входящее сообщение
+	 */
+	onMessage = (message) => {
 		try {
-			const data=JSON.parse(message.data);
+			const data = JSON.parse(message.data);
 
 			switch (data.event) {
 				case 'wsConnected':
 					this.setId(Number(data.connection));
-					//$globDashConnections[0].id=$globWsId;
-					console.log('WS Connection ID set to '+this.id);
+					console.log('WS Connection ID set to ' + this.id);
 					break;
 				case 'taskUpdate':
 					if (this.items && this.items['task']) {
@@ -53,7 +162,6 @@ onMessage=(message)=>{
 					}
 					break;
 				case 'ping':
-					//console.log(this.users);
 					if (this.users) {
 						this.users.updateConnection(data.connection);
 					}
@@ -76,7 +184,7 @@ onMessage=(message)=>{
 						});
 					}
 					break;
-							/*
+				/*
 				case 'jobRemove':
 					userJobRemove(data.jobId);
 					break;
@@ -91,37 +199,37 @@ onMessage=(message)=>{
 			console.error('Error parsing WebSocket message:', error);
 		}
 	}
-	
-	activityUpdate() {
-		this.activityTimestamp=TimeHelper.getTimestamp();
-	}
 
+	/**
+	 * Отправить ping на сервер
+	 */
 	ping() {
 		if (!this.main.bx.userId) {
 			console.log('cant ping without user ID');
-			//console.log(this.main);
 			return;
 		}
-		const connection={
-			id:this.id,
-			userId:this.main.bx.userId,
-			login:this.main.bx.login,
-			activityTimestamp:this.activityTimestamp,
-			pingTimestamp:TimeHelper.getTimestamp()
+		const connection = {
+			id: this.id,
+			userId: this.main.bx.userId,
+			login: this.main.bx.login,
+			activityTimestamp: this.activityTimestamp,
+			pingTimestamp: TimeHelper.getTimestamp()
 		}
-		const message={
-			event:'ping',
-			connection:connection
+		const message = {
+			event: 'ping',
+			connection: connection
 		}
 		this.sendMessage(message);
 		this.users.updateConnection(connection);
 	}
 
-sendMessage=(data)=>{
-		//console.log('sending');
-		//console.log(data);
+	/**
+	 * Отправить сообщение через WebSocket
+	 * @param {Object} data - Данные для отправки
+	 */
+	sendMessage = (data) => {
 		if (this.connectionStatus !== 'OK') {
-			console.log('cant send message, connection status is '+this.connectionStatus);
+			console.log('cant send message, connection status is ' + this.connectionStatus);
 			return;
 		}
 		try {
@@ -131,66 +239,31 @@ sendMessage=(data)=>{
 		}
 	}
 
-connect(url) {
-        this.url = url;
-        this.setConnectionStatus("Pending");
-        this.socket = new WebSocket(url);
-
-        this.socket.addEventListener("open", () => {
-            this.setConnectionStatus("OK");
-            console.log("WebSocket connected");
-        });
-
-        this.socket.addEventListener("close", () => {
-            this.setConnectionStatus("Disconnected");
-            console.log("WebSocket disconnected");
-        });
-
-        this.socket.addEventListener("message", this.onMessage);
-
-        this.socket.addEventListener("error", (error) => {
-            console.error("WebSocket error:", error);
-            this.setConnectionStatus("Disconnected");
-        });
-
-		// Отправить запрос на получение статусов телефонов
-        when(()=>this.connectionStatus === 'OK',()=>{this.sendMessage({
-            action: 'getPhonesStates',
-            numbers: values(this.users ? this.users.allPhones : [])
-        })});
-    }
-
+	/**
+	 * Проверить соединение и переподключиться при необходимости
+	 */
 	checkConnection() {
-        if (this.connectionStatus === "Disconnected") {
-            console.log("Reconnecting WebSocket...");
-            this.connect(this.url); // Переподключение
-        }
-    }
+		if (this.connectionStatus === "Disconnected") {
+			console.log("Reconnecting WebSocket...");
+			this.connect(this.url); // Переподключение
+		}
+	}
 
-constructor(url, main, users, items) {
-        makeAutoObservable(this); // Автоматическое создание наблюдаемых свойств и действий
-        console.log("connecting " + url);
-        this.main = main;
-        this.items = items;
-        items.ws = this;
-        this.users = users;
-        this.connect(url);
+	/**
+	 * Очистить все интервалы
+	 */
+	clearIntervals() {
+		this.intervals.forEach(interval => clearInterval(interval));
+		this.intervals = [];
+	}
 
-        // Собрать все телефоны из realPhones всех пользователей
-        const pingInterval = setInterval(() => this.ping(), 10000);
-        const checkConnectionInterval = setInterval(() => this.checkConnection(), 15000); // Проверка соединения каждые 15 секунд
-        this.intervals.push(pingInterval, checkConnectionInterval);
-    }
-
-    clearIntervals() {
-        this.intervals.forEach(interval => clearInterval(interval));
-        this.intervals = [];
-    }
-
-    destroy() {
-        this.clearIntervals();
-        if (this.socket) {
-            this.socket.close();
-        }
-    }
-};
+	/**
+	 * Уничтожить хранилище и освободить ресурсы
+	 */
+	destroy() {
+		this.clearIntervals();
+		if (this.socket) {
+			this.socket.close();
+		}
+	}
+}

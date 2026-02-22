@@ -1,23 +1,45 @@
-import {action, makeAutoObservable, when, observable, runInAction} from 'mobx';
+import {action, makeObservable, when, observable, computed, runInAction} from 'mobx';
 import Cookies from 'universal-cookie';
 import BackendSystem from './BackendSystem';
 import { bxAuthScheme } from 'Helpers/BxHelper';
 import { zabbixAuthScheme } from 'Helpers/ZabbixHelper';
 import { inventoryAuthScheme } from 'Helpers/InventoryHelper';
 
+/**
+ * MainStore - главное хранилище приложения bxDash
+ * Управляет бэкенд-системами (Bitrix, Zabbix, Inventory) и общими данными
+ */
 class MainStore {
 
-    constructor() {
-		this.bx=new BackendSystem('Bitrix',	bxAuthScheme);
-		this.zabbix=new BackendSystem('Zabbix', zabbixAuthScheme);
-		this.inventory=new BackendSystem('Inventory', inventoryAuthScheme);
-		this.bxUsersList = [];  // Список пользователей битрикса для выбора автора заявки
-        makeAutoObservable(this)
-    }
+	// === Ссылки на другие хранилища — НЕ observable ===
+	bx;           // BackendSystem для Bitrix
+	zabbix;       // BackendSystem для Zabbix
+	inventory;    // BackendSystem для Inventory
 
-	itemsTypes = ['task', 'ticket', 'job', 'plan', 'memo','absent'];
+	// === Свойства, которые НЕ должны быть observable ===
+	cookies = new Cookies(null, { path: '/' });  // Работа с cookies
 
-	cookies= new Cookies(null, { path: '/' });
+	// === Observable свойства ===
+	/** Список типов элементов дашборда */
+	itemsTypes = ['task', 'ticket', 'job', 'plan', 'memo', 'absent'];
+	/** Список пользователей битрикса для выбора автора заявки */
+	bxUsersList = [];
+
+	constructor() {
+		// Инициализация бэкенд-систем
+		this.bx = new BackendSystem('Bitrix', bxAuthScheme);
+		this.zabbix = new BackendSystem('Zabbix', zabbixAuthScheme);
+		this.inventory = new BackendSystem('Inventory', inventoryAuthScheme);
+
+		// Явное объявление реактивных свойств (стандарт MobX проекта)
+		makeObservable(this, {
+			// Observable свойства
+			itemsTypes: observable,
+			bxUsersList: observable,
+			// Computed свойства
+			hasErrors: computed,
+		});
+	}
 
     loadOption(name) {
 		return this.cookies.get(name);

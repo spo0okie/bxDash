@@ -123,26 +123,56 @@ export default Sidebar;
 #### Интеграция MobX
 - Используйте `observer` из `mobx-react` для реактивных компонентов
 - Доступ к хранилищам через `useContext(StoreContext)`
-- Используйте декораторы `@observable` и `@action` в классах хранилищ
+- Используйте `makeObservable` с явным объявлением в классах хранилищ
 
 ### Управление состоянием
 
 #### Структура хранилища
 ```javascript
-import { observable, action, makeAutoObservable } from 'mobx';
+import { observable, action, makeObservable, computed } from 'mobx';
 
-class MainStore {
-  @observable itemsTypes = ['task', 'ticket', 'job', 'plan', 'memo','absent'];
-
-  constructor() {
-    makeAutoObservable(this);
-  }
-
-  @action setInventoryUrl(url) {
-    this.inventory.setUrl(url);
-  }
+class ExampleStore {
+    // Свойства, которые НЕ должны быть observable
+    cookies = null;
+    baseUrl = '';
+    
+    // Свойства, которые должны быть observable
+    isLoading = false;
+    items = observable.map();
+    selectedId = null;
+    
+    constructor() {
+        makeObservable(this, {
+            isLoading: observable,
+            items: observable,
+            selectedId: observable,
+            setLoading: action,
+            setItems: action,
+            setSelectedId: action,
+            count: computed,  // геттеры помечаются как computed
+        });
+    }
+    
+    setLoading(value) { this.isLoading = value; }
+    setItems(items) { this.items = items; }
+    setSelectedId(id) { this.selectedId = id; }
+    
+    get count() { return this.items.size; }
 }
 ```
+
+#### Правила MobX
+
+1. **Использовать только `makeObservable`** с явным объявлением реактивных свойств
+2. **Не использовать декораторы** `@observable`, `@action`, `@computed`
+3. **Не использовать `makeAutoObservable`** — делает все свойства реактивными
+4. **Явно указывать тип** каждого свойства: `observable`, `action`, `computed`
+5. **Секретные данные** (password, token) не должны быть observable
+
+##### Модификаторы для особых случаев:
+- `observable.struct` — для объектов, где важно глубокое сравнение
+- `observable.ref` — для хранения ссылок без глубокой реакции
+- `action.bound` — для методов, которые передаются как колбэки
 
 #### Использование контекста
 ```javascript

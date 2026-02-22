@@ -26,7 +26,7 @@ const PlanCard = observer((props)=>{
 		default: strAuthStatus='???'
 	}
 	const items= [
-		context.users.isAdmin()?{
+		context.users.isAdmin?{
 			label: 'Согласование',			
 			key: '1',
 			type: 'group',
