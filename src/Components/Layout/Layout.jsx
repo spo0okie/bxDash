@@ -1,6 +1,6 @@
-import React, { Component } from "react";
-import {observer} from "mobx-react";
-import {StoreContext} from "Data/Stores/StoreProvider";
+import React, { useContext } from "react";
+import { observer } from "mobx-react";
+import { StoreContext } from "Data/Stores/StoreProvider";
 import AppHeader from "./Header/AppHeader";
 import InvAuthForm from "./AuthForm/InvAuthForm";
 import Interval from "./Interval/Interval";
@@ -15,74 +15,75 @@ import HomeButton from "./Header/Buttons/HomeButton";
 import MenuButton from "./Header/Menu/MenuIButton";
 import "./Header/Buttons/HomeButton.css";
 
-
-@observer class Layout extends Component {
-
-  authForm() {
-    const store = this.context.main;
-    if (!store.bxAuth) return (<div className="App">
-      <InvAuthForm />
-    </div>);
-  }
-
-  intervals() {
-    let output='';
-    const time = this.context.time;
-    for(let i=time.weekMin; i<=time.weekMax;i++) {output+=(<Interval key={i} id={i} />)}
-    return output;
-  }
-
-  render() {
-    const time = this.context.time;
-    const users = this.context.users;
-    const layout = this.context.layout;
-	const main = this.context.main;
-	const ws = this.context.ws;
+/**
+ * Главный компонент layout приложения
+ * Отвечает за отображение структуры страницы: сайдбар, календарь, модальные окна
+ */
+const Layout = observer(() => {
+	// Получаем контекст хранилищ
+	const context = useContext(StoreContext);
+	const time = context.time;
+	const users = context.users;
+	const layout = context.layout;
+	const main = context.main;
+	const ws = context.ws;
+	
+	// Флаг персонального режима (выбран конкретный пользователь)
 	const personal = (users.selected !== null);
-    console.log('layout render');
-    return (<>
-			{(main.bx.authStatus!=='OK'||main.zabbix.authStatus!=='OK'|| main.inventory.authStatus!=='OK'||!ws.connectionStatus || layout.debugVisible) && <InvAuthForm />}
-			{(<>
+	
+	console.log('layout render');
+	
+	return (
+		<>
+			{/* Форма авторизации показывается при проблемах с аутентификацией или в режиме отладки */}
+			{(main.bx.authStatus !== 'OK' || main.zabbix.authStatus !== 'OK' || main.inventory.authStatus !== 'OK' || !ws.connectionStatus || layout.debugVisible) && <InvAuthForm />}
+			
+			<>
 				<ModalWindow />
 				<CreateTicketModal />
 
 				<AppHeader />
 				<HomeButton />
-				<MenuButton property='memosVisible' title='📝' classNames='memoButton'/>
-				<MenuButton property='debugVisible' title='⚙️' classNames='optionsButton'/>
-				<MenuButton property='expand' title={['📅','📆']} classNames='calendarButton'/>
+				<MenuButton property='memosVisible' title='📝' classNames='memoButton' />
+				<MenuButton property='debugVisible' title='⚙️' classNames='optionsButton' />
+				<MenuButton property='expand' title={['📅', '📆']} classNames='calendarButton' />
 				
 				<div className="layout">
-					{layout.memosVisible && (<Sidebar><MemoCell /></Sidebar>)}
+					{/* Сайдбар с заметками */}
+					{layout.memosVisible && (
+						<Sidebar>
+							<MemoCell />
+						</Sidebar>
+					)}
+					
 					<div className="dashBoard">
-						{/*this.authForm()*/}
-						<ScrollSection 
+						{/* Основная область календаря */}
+						<ScrollSection
 							className={classNames(
 								"Calendar",
 								{ 'ColumnScroller': personal && !layout.expand }
-							)} 
+							)}
 							id='calendarGrid'
 							style={{
-								width: (personal && !layout.expand)?
-									(layout.windowDimensions.width - 200 - (layout.memosVisible?layout.sidebarWidth:0))+'px'
-									:null
+								width: (personal && !layout.expand)
+									? (layout.windowDimensions.width - 200 - (layout.memosVisible ? layout.sidebarWidth : 0)) + 'px'
+									: null
 							}}
 						>
 							{time.weeksRange(!personal).map((i) => <Interval key={i} id={i} />)}
 						</ScrollSection>
 					</div>
+					
+					{/* Правая панель для персонального режима */}
 					{users.selected !== null && (
 						<div className="rightPane">
-							<Interval key={time.weekMax+1} id={time.weekMax+1} />
+							<Interval key={time.weekMax + 1} id={time.weekMax + 1} />
 						</div>
 					)}
 				</div>
-				</>
-			)}
+			</>
 		</>
-    );    
-  }
-}
-Layout.contextType=StoreContext;
+	);
+});
 
 export default Layout;
