@@ -1,4 +1,4 @@
-import React, {useContext} from "react";
+import React, {useCallback, useContext} from "react";
 import { observer } from "mobx-react";
 import { get } from 'mobx';
 import { StoreContext } from "Data/Stores/StoreProvider";
@@ -12,8 +12,14 @@ const UserCell= observer((props)=>{
     const users=context.users;
 	const period=get(context.periods.periods,props.period);
 
-    const mouseIn = () => {context.users.setHover(props.user);};
-    const mouseOut = () => {context.users.setHover(null);};
+	// Обработчики событий с useCallback для оптимизации
+	const mouseIn = useCallback(() => {
+		context.users.setHover(props.user);
+	}, [props.user, context.users]);
+
+	const mouseOut = useCallback(() => {
+		context.users.setHover(null);
+	}, [context.users]);
 
 	//console.log(period.dragOverCell);
     return (

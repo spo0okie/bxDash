@@ -1,4 +1,4 @@
-import React, {useRef,useContext} from "react";
+import React, {useRef,useContext,useCallback} from "react";
 import {observer} from "mobx-react";
 import { get } from "mobx"
 import { Dropdown } from 'antd';
@@ -90,7 +90,10 @@ const PlanCard = observer((props)=>{
 		}
 	}
 
-
+	// Оптимизированные обработчики событий для избежания лишних ре-рендеров
+	const handleMouseEnter = useCallback(() => item.mouseIn(), [item]);
+	const handleMouseLeave = useCallback(() => item.mouseOut(), [item]);
+	const handleClick = useCallback(() => item.startEdit(), [item]);
 
 	return( <li 
 		className={classNames(
@@ -112,9 +115,9 @@ const PlanCard = observer((props)=>{
 			{ 'denied': item.authStatus === 2 },		
 		)}
 
-		onMouseEnter={()=>item.mouseIn()}
-		onMouseLeave={()=>item.mouseOut()}
-		onClick={()=>{item.startEdit()}}
+		onMouseEnter={handleMouseEnter}
+		onMouseLeave={handleMouseLeave}
+		onClick={handleClick}
 
 		ref={ref}
 		//title={item.sorting}

@@ -73,6 +73,22 @@ const AlertListButton = observer(({severity, list, username, type}) => {
     }, [isPinned, alerts, username, type, severity]);
     
     /**
+     * Обработчик закрытия pinned тултипа
+     */
+    const handlePinClose = useCallback((e) => {
+        e.stopPropagation();
+        alerts.setPinnedAlertGroup(null);
+        setTooltipVisible(false);
+    }, [alerts]);
+    
+    /**
+     * Обработчик клика по ссылке алерта (предотвращает всплытие)
+     */
+    const handleAlertLinkClick = useCallback((e) => {
+        e.stopPropagation();
+    }, []);
+    
+    /**
      * Создает заявку из алерта
      * @param {Object} alert - объект алерта
      */
@@ -135,6 +151,15 @@ const AlertListButton = observer(({severity, list, username, type}) => {
         layout.setTicketModalVisible(true);
     }, [main, username, layout, items, users]);
     
+    /**
+     * Обработчик клика по кнопке создания заявки из алерта
+     * @param {Object} alert - объект алерта
+     */
+    const handleCreateTicketClick = useCallback((e, alert) => {
+        e.stopPropagation();
+        createTicketFromAlert(alert);
+    }, [createTicketFromAlert]);
+    
     // Формируем контент тултипа с кнопкой закрытия
     const tooltipContent = (
         <div className={`tooltip-content ${isPinned ? 'pinned' : ''}`}>
@@ -143,11 +168,7 @@ const AlertListButton = observer(({severity, list, username, type}) => {
                 {isPinned && (
                     <button 
                         className='pin-close' 
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            alerts.setPinnedAlertGroup(null);
-                            setTooltipVisible(false);
-                        }}
+                        onClick={handlePinClose}
                         title="Закрыть"
                     >
                         ✕
@@ -172,16 +193,13 @@ const AlertListButton = observer(({severity, list, username, type}) => {
                                     href={main.zabbix.baseUrl + "tr_events.php?triggerid=" + triggerid + "&eventid=" + eventid}
                                     target='_blank' 
                                     rel="noreferrer"
-                                    onClick={(e) => e.stopPropagation()}
+                                    onClick={handleAlertLinkClick}
                                 >
                                     {host}: {name}
                                 </a>
                                 <button 
                                     className="create-ticket-from-alert"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        createTicketFromAlert(item);
-                                    }}
+                                    onClick={(e) => handleCreateTicketClick(e, item)}
                                     title="Сформировать заявку"
                                 >
                                     🎫

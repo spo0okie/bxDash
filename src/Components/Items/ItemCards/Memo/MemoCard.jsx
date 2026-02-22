@@ -1,4 +1,4 @@
-import React, {useRef,useEffect,useState,useContext} from "react";
+import React, {useRef,useEffect,useState,useContext,useCallback} from "react";
 import {observer} from "mobx-react";
 import { dashItemDragLogic } from "Helpers/DndHelper";
 import { get } from "mobx"
@@ -91,6 +91,11 @@ const MemoCard = observer((props)=>{
 		e.domEvent.stopPropagation();
 	}
 
+	// Оптимизированные обработчики событий для избежания лишних ре-рендеров
+	const handleMouseEnter = useCallback(() => item.mouseIn(), [item]);
+	const handleMouseLeave = useCallback(() => item.mouseOut(), [item]);
+	const handleClick = useCallback(() => item.startEdit(), [item]);
+
 	let title = item.title;
 	if (item.isExpanded) {
 		title = item.parsedTitle;
@@ -125,9 +130,9 @@ const MemoCard = observer((props)=>{
 			{ 'compact': !item.isExpanded },
 		)}
 
-		onMouseEnter={()=>item.mouseIn()}
-		onMouseLeave={()=>item.mouseOut()}
-		onClick={() => { item.startEdit() }}
+		onMouseEnter={handleMouseEnter}
+		onMouseLeave={handleMouseLeave}
+		onClick={handleClick}
 		ref={ref}
 		//title={String(item.t)}
 

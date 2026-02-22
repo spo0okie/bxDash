@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useCallback } from "react";
 import './CreateItemButton.css';
 import TaskItem from "Data/Items/TaskItem";
 import JobItem from "Data/Items/JobItem";
@@ -12,9 +12,10 @@ import CreateTicketModal from "Components/Items/CreateTicketModal/CreateTicketMo
 
 const CreateTaskButton=(props)=>{
 	const [label, setLabel] = useState('здч');
-	const onHover = () => { setLabel('задача') }
-	const onLeave = () => { setLabel('здч') }
-	const onClick=()=>{
+	// Обработчики с useCallback для предотвращения лишних ре-рендеров
+	const onHover = useCallback(() => { setLabel('задача') }, []);
+	const onLeave = useCallback(() => { setLabel('здч') }, []);
+	const onClick = useCallback(() => {
 		const items = props.context.items['task']
 		//console.log('new task');
 		//console.log(props.cell);
@@ -28,16 +29,17 @@ const CreateTaskButton=(props)=>{
 		}, {}, items);
 		//console.log(task);
 		items.setItem(item);
-	}
+	}, [props.context.items, props.cell]);
 	return <span className="create task" onClick={onClick} onMouseEnter={onHover} onMouseLeave={onLeave}>{label}</span>
 }
 
 const CreateTicketButton=(props)=>{
 	const [label,setLabel]=useState('звк');
-	const onHover = () => { setLabel('заявка') }
-	const onLeave = () => { setLabel('звк') }
+	// Обработчики с useCallback для предотвращения лишних ре-рендеров
+	const onHover = useCallback(() => { setLabel('заявка') }, []);
+	const onLeave = useCallback(() => { setLabel('звк') }, []);
 	
-	const onClick = () => {
+	const onClick = useCallback(() => {
 		const items = props.context.items['ticket'];
 		// Создаем новый тикет как и другие элементы
 		const item = new TicketItem({
@@ -48,7 +50,7 @@ const CreateTicketButton=(props)=>{
 		}, {}, items);
 		items.setItem(item);
 		props.context.layout.setTicketModalVisible(true);
-	}
+	}, [props.context.items, props.cell.user, props.context.layout]);
 
 	return (
 		<span 
@@ -64,9 +66,10 @@ const CreateTicketButton=(props)=>{
 
 const CreateJobButton=(props)=>{
 	const [label, setLabel] = useState('раб');
-	const onHover = () => { setLabel('работа') }
-	const onLeave = () => { setLabel('раб') }
-	const onClick = () => {
+	// Обработчики с useCallback для предотвращения лишних ре-рендеров
+	const onHover = useCallback(() => { setLabel('работа') }, []);
+	const onLeave = useCallback(() => { setLabel('раб') }, []);
+	const onClick = useCallback(() => {
 		const items = props.context.items['job']
 		//console.log('new task');
 		//console.log(props.cell);
@@ -82,15 +85,16 @@ const CreateJobButton=(props)=>{
 		}, {}, items);
 		//console.log(job);
 		items.setItem(item);
-	}
+	}, [props.context.items, props.cell.user, props.cell.dropT, props.cell.maxSorting, props.period.isToday]);
 	return <span className="create job" onClick={onClick} onMouseEnter={onHover} onMouseLeave={onLeave}>{label}</span>
 }
 
 const CreateClosedJobButton = (props) => {
 	const [label, setLabel] = useState('гот');
-	const onHover = () => { setLabel('готово') }
-	const onLeave = () => { setLabel('гот') }
-	const onClick = () => {
+	// Обработчики с useCallback для предотвращения лишних ре-рендеров
+	const onHover = useCallback(() => { setLabel('готово') }, []);
+	const onLeave = useCallback(() => { setLabel('гот') }, []);
+	const onClick = useCallback(() => {
 		const items = props.context.items['job']
 		//console.log('new task');
 		//console.log(props.cell);
@@ -106,12 +110,13 @@ const CreateClosedJobButton = (props) => {
 		}, {}, items);
 		//console.log(job);
 		items.setItem(item);
-	}
+	}, [props.context.items, props.cell.user, props.cell.dropT, props.cell.maxSorting, props.period.isToday]);
 	return <span className="create closedJob" onClick={onClick} onMouseEnter={onHover} onMouseLeave={onLeave}>{label}</span>
 }
 
 const CreatePlanButton = (props) => {
-	const onClick = () => {
+	// Обработчик с useCallback для предотвращения лишних ре-рендеров
+	const onClick = useCallback(() => {
 		const items = props.context.items['plan']
 		//console.log('new task');
 		//console.log(props.cell);
@@ -125,7 +130,7 @@ const CreatePlanButton = (props) => {
 		}, {}, items);
 		//console.log(job);
 		items.setItem(item);
-	}
+	}, [props.context.items, props.cell.user, props.cell.period.end, props.cell.maxSorting]);
 	return <span className="create plan" onClick={onClick}>план</span>
 }
 

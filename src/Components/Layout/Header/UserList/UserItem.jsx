@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { observer } from "mobx-react";
 import { get, values } from 'mobx';
 import { StoreContext } from "Data/Stores/StoreProvider";
@@ -30,21 +30,22 @@ const UserItem = observer((props)=>{
 	const ref = useRef(null);
 	const [closestEdge, setClosestEdge] = useState(null);
 
-	const mouseIn = () => {
-        context.users.setHover(id);
-    };
+	// Обработчики событий с useCallback для оптимизации
+	const mouseIn = useCallback(() => {
+		context.users.setHover(id);
+	}, [id, context.users]);
 
-    const mouseOut = () => {
-        context.users.setHover(null);
-    };
+	const mouseOut = useCallback(() => {
+		context.users.setHover(null);
+	}, [context.users]);
 
-    const toggleUser = () => {
-        if (users.selected===null) {
-            users.setSelect(id);
-        } else {
-            users.setSelect(null);
-        }
-    }
+	const toggleUser = useCallback(() => {
+		if (users.selected === null) {
+			users.setSelect(id);
+		} else {
+			users.setSelect(null);
+		}
+	}, [id, users]);
 	
 	let title=null;
 	let absentClass=null;

@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useCallback } from "react";
 import { observer } from "mobx-react";
 import { StoreContext } from "Data/Stores/StoreProvider";
 import { Modal, Input, Select, message } from 'antd';
@@ -26,11 +26,12 @@ const CreateTicketModal = observer((props) => {
     const ticketItem = Array.from(context.items['ticket'].items.values())
         .find(item => item.isNew && item.isEdit);
 
-	const onClose = () => {
+	// Мемоизированный обработчик закрытия модального окна
+	const handleClose = useCallback(() => {
 		setLoading(false);
 		context.layout.setTicketModalVisible(false);
 		ticketItem?.delete();
-	}
+	}, [context.layout, ticketItem]);
     
     // При открытии модального окна загружаем список пользователей и инициализируем значения
     useEffect(() => {
@@ -124,7 +125,7 @@ const CreateTicketModal = observer((props) => {
             ticketItem.save({}, 
                 () => {
                     message.success('Заявка создана успешно');
-                	onClose();
+                	handleClose();
                 },
                 (error) => {
                     message.error(error?.message || 'Ошибка при создании заявки');
@@ -152,10 +153,7 @@ const CreateTicketModal = observer((props) => {
         <Modal
             title={modalTitle}
             open={visible}
-            onCancel={()=>{
-				context.layout.setTicketModalVisible(false);
-				ticketItem?.delete();
-			}}
+            onCancel={handleClose}
             onOk={handleSubmit}
             confirmLoading={loading}
             okText="Создать"

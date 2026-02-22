@@ -1,4 +1,4 @@
-import React, {useRef,useEffect,useState,useContext} from "react";
+import React, {useRef,useEffect,useState,useContext,useCallback} from "react";
 import {observer} from "mobx-react";
 import { dashItemDragLogic } from "Helpers/DndHelper";
 import {get,values} from "mobx"
@@ -93,6 +93,10 @@ const TaskCard = observer((props)=>{
 	const index = props.index;
 	const [closestEdge, setClosestEdge] = useState(null);
 
+	// Оптимизированные обработчики событий для избежания лишних ре-рендеров
+	const handleMouseEnter = useCallback(() => task.mouseIn(), [task]);
+	const handleMouseLeave = useCallback(() => task.mouseOut(), [task]);
+
 	const visible=layout.accomplicesVisible || task.user===cell.user;
 	//console.log(ref.current);
 	useEffect(()=>
@@ -157,8 +161,8 @@ const TaskCard = observer((props)=>{
 				{'closeMe':task.status===4}		//признак что требует закрытия (подтверждения)
 			)}
 
-			onMouseEnter={()=>task.mouseIn()}
-			onMouseLeave={()=>task.mouseOut()}
+			onMouseEnter={handleMouseEnter}
+			onMouseLeave={handleMouseLeave}
 			ref={ref}
 			id={task.uid}
 		>

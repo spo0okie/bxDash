@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useCallback } from "react";
 import { Modal } from "antd";
 import { observer } from "mobx-react";
 import { StoreContext } from "Data/Stores/StoreProvider";
@@ -6,13 +6,14 @@ import './ModalWindow.css'
 const ModalWindow=observer((props)=> {
 	const context=useContext(StoreContext);
 	const layout=context.layout;
-	const onClose=()=>{
+	// Обработчик закрытия модального окна
+	const onClose=useCallback(()=>{
 		console.log('closin modal');
 		console.log(layout.modal);
 		if (layout.modal!==null && typeof layout.modal.onClose === 'function') 
 			layout.modal.onClose();
 		layout.setModal(null);
-	}
+	}, [layout])
 
 	console.log ('render.modal '+layout.modalVisible);
 	return (<Modal

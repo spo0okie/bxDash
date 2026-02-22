@@ -1,4 +1,4 @@
-import React, {useContext} from "react";
+import React, {useContext, useCallback} from "react";
 import {observer} from "mobx-react";
 import { StoreContext } from "Data/Stores/StoreProvider";
 import { dashItemsSort,dashClosedItemsSort } from "Helpers/SortHelper";
@@ -21,24 +21,26 @@ const MemoCell= observer((props)=>{
 		if (item.isClosed) closedItems.push(item);
 	});
 
-	const CreateMemoButton = (props) => {
-		const onClick = () => {
-			const items = props.context.items['memo']
-			//console.log('new task');
-			//console.log(props.cell);
-			const item = new MemoItem({
-				id: items.getMaxId() + 64,
-				user: 1,
-				deadline: TimeHelper.getTimestamp(),
-				isNew: true,
-				isEdit: true,
-				sorting: maxSorting ? maxSorting + 20 : null,
-			}, {}, items);
-			//console.log(job);
-			items.setItem(item);
-		}
-		return <span className="create memo" onClick={onClick}>добавить</span>
-	}
+	// Сортируем элементы до использования в cell и CreateMemoButton
+	openedItems = openedItems.sort((a, b) => dashItemsSort(b, a));
+	closedItems = closedItems.sort((a, b) => dashClosedItemsSort(b, a));
+
+	// Максимальное значение sorting для новых элементов
+	const maxSorting = openedItems.length ? openedItems[0].sorting : null;
+
+	// Мемоизированный обработчик создания нового memo
+	const handleCreateMemo = useCallback(() => {
+		const memoItems = context.items['memo'];
+		const item = new MemoItem({
+			id: memoItems.getMaxId() + 64,
+			user: 1,
+			deadline: TimeHelper.getTimestamp(),
+			isNew: true,
+			isEdit: true,
+			sorting: maxSorting ? maxSorting + 20 : null,
+		}, {}, memoItems);
+		memoItems.setItem(item);
+	}, [context.items, maxSorting]);
 
 	//описание ячейки для дочерних объектов
 	const cell = {
@@ -48,21 +50,17 @@ const MemoCell= observer((props)=>{
 		dropT: null,			//на какое время ставить задачи падающие в эту ячейку
 		isToday: true,
 		period: null,
-		maxSorting: openedItems.length ? openedItems[0].sorting : null,
+		maxSorting: maxSorting,
 		dragOver: (state) => {}
 	}
 
-	openedItems=openedItems.sort((a,b)=>dashItemsSort(b,a));
-
-	closedItems=closedItems.sort((a,b)=>dashClosedItemsSort(b,a));
-	const maxSorting=openedItems.length?openedItems[0].sorting: null
-
-   
-    //console.log('userCell render '+cell.id+'('+TimeHelper.strDateHuman(cell.t)+'): '+tasks.length);
-    return (
+	//console.log('userCell render '+cell.id+'('+TimeHelper.strDateHuman(cell.t)+'): '+tasks.length);
+	return (
         <div className="userCellContent memoCell">
 			<CardsBlock key={'closedMemo'} items={closedItems} cell={cell} dnd={false} />
-			<span className="CreateItemButton"><CreateMemoButton context={context}/></span>
+			<span className="CreateItemButton">
+				<span className="create memo" onClick={handleCreateMemo}>добавить</span>
+			</span>
 			<CardsBlock
 				key={'openMemo'}
 				items={openedItems}

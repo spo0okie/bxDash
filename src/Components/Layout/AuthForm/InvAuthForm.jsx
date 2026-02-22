@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import './invAuthForm.css';
 import { StoreContext } from 'Data/Stores/StoreProvider';
@@ -55,22 +55,58 @@ const InvAuthForm = observer(function InvAuthForm() {
         setPassword(e.target.value);
     }
 
-	const planningMode=()=> {
+	/** Переключение в режим планирования */
+	const planningMode = useCallback(() => {
 		context.layout.setPlansVisible(true);
 		context.layout.setJobsVisible(false);
 		context.layout.setAccomplicesVisible(false);
 		context.layout.setTicketsVisible(false);
 		context.layout.setTasksVisible(false);
 		context.layout.setKeepPlanning(true);
-	}
-	const defaultMode=()=> {
+	}, [context.layout]);
+
+	/** Сброс настроек отображения к значениям по умолчанию */
+	const defaultMode = useCallback(() => {
 		context.layout.setPlansVisible(true);
 		context.layout.setJobsVisible(true);
 		context.layout.setAccomplicesVisible(false);
 		context.layout.setTicketsVisible(true);
 		context.layout.setTasksVisible(true);
 		context.layout.setKeepPlanning(false);
-	}
+	}, [context.layout]);
+
+	/** Переключение на следующую неделю */
+	const handleNextWeek = useCallback(() => {
+		//переключаем на следующий понедельник
+		const nextMonday = context.time.monday0 + 7 * 24 * 3600 * 1000;
+		context.time.overrideDate(nextMonday);
+	}, [context.time]);
+
+	/** Переключение на предыдущую неделю */
+	const handlePrevWeek = useCallback(() => {
+		//переключаем на предыдущий понедельник
+		const prevMonday = context.time.monday0 - 7 * 24 * 3600 * 1000;
+		context.time.overrideDate(prevMonday);
+	}, [context.time]);
+
+	/** Переключение на следующий день */
+	const handleNextDay = useCallback(() => {
+		//переключаем на следующий день
+		const nextDay = context.time.today + 24 * 3600 * 1000;
+		context.time.overrideDate(nextDay);
+	}, [context.time]);
+
+	/** Переключение на предыдущий день */
+	const handlePrevDay = useCallback(() => {
+		//переключаем на предыдущий день
+		const prevDay = context.time.today - 24 * 3600 * 1000;
+		context.time.overrideDate(prevDay);
+	}, [context.time]);
+
+	/** Сброс переопределения даты */
+	const handleResetTime = useCallback(() => {
+		context.time.resetToRealTime();
+	}, [context.time]);
 
 
     return (
@@ -143,49 +179,21 @@ const InvAuthForm = observer(function InvAuthForm() {
 			{showTimeDebugUI && (
 			<div className='section debug-section'>
 				<div className='debug-time-controls'>
-					<button
-						className="small"
-						onClick={() => {
-							//переключаем на следующий понедельник
-							const nextMonday = context.time.monday0 + 7 * 24 * 3600 * 1000;
-							context.time.overrideDate(nextMonday);
-						}}
-					>
+					<button className="small" onClick={handleNextWeek}>
 						+1 неделя
 					</button>
-					<button
-						className="small"
-						onClick={() => {
-							//переключаем на предыдущий понедельник
-							const prevMonday = context.time.monday0 - 7 * 24 * 3600 * 1000;
-							context.time.overrideDate(prevMonday);
-						}}
-					>
+					<button className="small" onClick={handlePrevWeek}>
 						-1 неделя
 					</button>
-					<button
-						className="small"
-						onClick={() => {
-							//переключаем на следующий день
-							const nextDay = context.time.today + 24 * 3600 * 1000;
-							context.time.overrideDate(nextDay);
-						}}
-					>
+					<button className="small" onClick={handleNextDay}>
 						+1 день
 					</button>
-					<button
-						className="small"
-						onClick={() => {
-							//переключаем на предыдущий день
-							const prevDay = context.time.today - 24 * 3600 * 1000;
-							context.time.overrideDate(prevDay);
-						}}
-					>
+					<button className="small" onClick={handlePrevDay}>
 						-1 день
 					</button>
 					<button
 						className="small reset"
-						onClick={() => context.time.resetToRealTime()}
+						onClick={handleResetTime}
 						disabled={!context.time.isOverridden}
 					>
 						Сбросить

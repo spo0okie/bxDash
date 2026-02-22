@@ -1,4 +1,4 @@
-import React, {useRef,useContext} from "react";
+import React, {useRef,useContext,useCallback} from "react";
 import {observer} from "mobx-react";
 import { get } from "mobx"
 import { Element} from 'react-scroll';
@@ -18,6 +18,10 @@ const TicketCard = observer((props)=>{
 	const ref = useRef(null);
 	const context=useContext(StoreContext);
 	const item = get(context.items['ticket'].items,props.item.id);
+
+	// Мемоизированные обработчики событий для предотвращения лишних ре-рендеров
+	const handleMouseEnter = useCallback(() => item.mouseIn(), [item]);
+	const handleMouseLeave = useCallback(() => item.mouseOut(), [item]);
 
 	//console.log(item);
 
@@ -58,8 +62,8 @@ const TicketCard = observer((props)=>{
 			{ 'blue': item.status === 'blue' },		//красный
 		)}
 
-		onMouseEnter={()=>item.mouseIn()}
-		onMouseLeave={()=>item.mouseOut()}
+		onMouseEnter={handleMouseEnter}
+		onMouseLeave={handleMouseLeave}
 		//onClick={()=>{item.startEdit()}}
 		ref={ref}
 		//title={item.sorting}

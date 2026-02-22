@@ -1,4 +1,4 @@
-import React, {useRef,useEffect,useState,useContext} from "react";
+import React, {useRef,useEffect,useState,useContext,useCallback} from "react";
 import {observer} from "mobx-react";
 import { dashItemDragLogic } from "Helpers/DndHelper";
 import { get } from "mobx"
@@ -24,6 +24,11 @@ const JobCard = observer((props)=>{
 	const cell = props.cell;
 	const index = props.index;
 	const [closestEdge, setClosestEdge] = useState(null);
+
+	// Оптимизированные обработчики событий для избежания лишних ре-рендеров
+	const handleMouseEnter = useCallback(() => item.mouseIn(), [item]);
+	const handleMouseLeave = useCallback(() => item.mouseOut(), [item]);
+	const handleClick = useCallback(() => item.startEdit(), [item]);
 
 	//console.log('job');
 
@@ -64,9 +69,9 @@ const JobCard = observer((props)=>{
 			{'open':item.isOpen},		//признак что закрыта
 		)}
 
-		onMouseEnter={()=>item.mouseIn()}
-		onMouseLeave={()=>item.mouseOut()}
-		onClick={()=>{item.startEdit()}}
+		onMouseEnter={handleMouseEnter}
+		onMouseLeave={handleMouseLeave}
+		onClick={handleClick}
 		ref={ref}
 	>
 		<span className="jobToggle" onClick={onToggleClick}></span>
