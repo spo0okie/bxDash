@@ -12,7 +12,7 @@ import { Element } from "react-scroll";
  * @param {Object} props - Свойства компонента
  * @param {number} props.id - Идентификатор интервала (номер недели)
  */
-const Interval = observer(({ id }) => {
+const Interval = observer(({ id, priority=null }) => {
 	// Получаем контекст хранилищ
 	const context = useContext(StoreContext);
 	const layout = context.layout;
@@ -44,7 +44,7 @@ const Interval = observer(({ id }) => {
 				// Фильтруем периоды, попадающие в интервал, и рендерим их
 				keys(periods.periods)
 					.filter((t) => (t >= start) && (t < end))
-					.map((t) => <Period id={t} key={t} />)
+					.map((t) => <Period id={t} key={t} priority={priority} />)
 			}
 		</Element>
 	);

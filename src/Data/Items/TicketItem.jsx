@@ -13,6 +13,7 @@ class TicketItem extends DashItem {
 		this.editField = 'ticketText';  // кастомное поле для редактирования
 		this.defaultTitle = 'Новая заявка\nОписание заявки';
 		this.title = this.defaultTitle;
+		this.priority = 2; // по умолчанию - высокий
 	}
 
 	recalcTime() {

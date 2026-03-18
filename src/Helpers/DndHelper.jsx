@@ -126,6 +126,10 @@ function dashItemDropOnItem(item,targetItem,targetCell,sourceCell) {
         newParams.user=targetCell.data.cell.user
     }
 
+    if (targetCell.data.cell.priority !== null && targetCell.data.cell.priority !== undefined) {
+        newParams.priority = targetCell.data.cell.priority;
+    }
+
     item.movePosition(newParams);
 }
 
@@ -191,6 +195,10 @@ function dashItemDropOnCell(item,targetCell,sourceCell) {
     if (targetCell.data.cell.user !== sourceCell.data.cell.user) {
         console.log('changing user => '+targetCell.data.cell.user);
         newParams.user=targetCell.data.cell.user
+    }
+
+    if (targetCell.data.cell.priority !== null && targetCell.data.cell.priority !== undefined) {
+        newParams.priority = targetCell.data.cell.priority;
     }
 
     item.movePosition(newParams);

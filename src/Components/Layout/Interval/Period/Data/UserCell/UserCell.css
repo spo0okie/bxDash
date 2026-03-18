@@ -25,6 +25,8 @@ div.userCellContent div.workArea {
 }
 div.userCellContent ul.droppableBlock {
     flex-grow: 1;
+	overflow-y: scroll;
+	scrollbar-width: none;
 }
 
 td.userCell.draggedOver {

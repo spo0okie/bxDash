@@ -27,11 +27,13 @@ const Layout = observer(() => {
 	const layout = context.layout;
 	const main = context.main;
 	const ws = context.ws;
+
 	
 	// Флаг персонального режима (выбран конкретный пользователь)
 	const personal = (users.selected !== null);
-	
-	console.log('layout render');
+	const splitBucket = layout.useSplitBucket;
+
+	//console.log('layout render');
 	
 	return (
 		<>
@@ -70,14 +72,33 @@ const Layout = observer(() => {
 									: null
 							}}
 						>
-							{time.weeksRange(!personal).map((i) => <Interval key={i} id={i} />)}
+							{time.weeksRange(false).map((i) => <Interval key={i} id={i} />)}
+							{!personal&&(splitBucket?
+								[2,1,0].map((i) => (<Interval 
+									key={(time.weekMax + 1)+'-'+i} 
+									id={time.weekMax + 1} 
+									priority={i}
+								/>)):(<Interval 
+									key={(time.weekMax + 1)} 
+									id={time.weekMax + 1} 
+								/>)
+							)}
 						</ScrollSection>
 					</div>
 					
 					{/* Правая панель для персонального режима */}
-					{users.selected !== null && (
-						<div className="rightPane">
-							<Interval key={time.weekMax + 1} id={time.weekMax + 1} />
+					{personal && (
+						<div className={classNames("rightPane", { 'x3': layout.useSplitBucket })}>
+							{(splitBucket?
+								[2,1,0].map((i) => (<Interval 
+									key={(time.weekMax + 1)+'-'+i} 
+									id={time.weekMax + 1} 
+									priority={i}
+								/>)):(<Interval 
+									key={(time.weekMax + 1)} 
+									id={time.weekMax + 1} 
+								/>)
+							)}
 						</div>
 					)}
 				</div>

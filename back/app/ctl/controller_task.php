@@ -222,7 +222,7 @@ class controller_task {
 				$oTaskItem->Update(['ACCOMPLICES'=>$accomplices]);
 			}
 		}
-		$deadline=router::getRoute('##UNSET','deadline');
+		$deadline=router::getRoute(null,'deadline','##UNSET');
 		if ($deadline!=='##UNSET') {
 			if ($deadline=='null' || !$deadline) {
 				$deadline='';
@@ -239,6 +239,11 @@ class controller_task {
 
 		if ($sorting=router::getRoute(null,'sorting')) {
 			$oTaskItem->Update(['XML_ID' => $sorting]);
+		}
+
+		$priority=router::getRoute(null,'priority','##UNSET')
+		if ($priority!=='##UNSET') {
+			$oTaskItem->Update(['PRIORITY' => $priority]);
 		}
 
 		echo '{"result":"ok","id":'.$id.'}';

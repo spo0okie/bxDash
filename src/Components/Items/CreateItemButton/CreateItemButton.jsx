@@ -19,6 +19,8 @@ const CreateTaskButton=(props)=>{
 		const items = props.context.items['task']
 		//console.log('new task');
 		//console.log(props.cell);
+		const priority = props.cell.priority;
+		const priorityData = priority !== null && priority !== undefined ? { priority } : {};
 		const item=new TaskItem({
 			id: items.getMaxId()+64,
 			user:props.cell.user,
@@ -26,6 +28,7 @@ const CreateTaskButton=(props)=>{
 			isNew:true,
 			isEdit:true,
 			sorting:props.cell.maxSorting?props.cell.maxSorting+20:null,
+			...priorityData,
 		}, {}, items);
 		//console.log(task);
 		items.setItem(item);
@@ -41,12 +44,15 @@ const CreateTicketButton=(props)=>{
 	
 	const onClick = useCallback(() => {
 		const items = props.context.items['ticket'];
+		const priority = props.cell.priority;
+		const priorityData = priority !== null && priority !== undefined ? { priority } : {};
 		// Создаем новый тикет как и другие элементы
 		const item = new TicketItem({
 			id: items.getMaxId() + 64,
 			user: props.cell.user,  // ответственный = пользователь блока
 			isNew: true,
 			isEdit: true,
+			...priorityData,
 		}, {}, items);
 		items.setItem(item);
 		props.context.layout.setTicketModalVisible(true);
@@ -71,6 +77,8 @@ const CreateJobButton=(props)=>{
 	const onLeave = useCallback(() => { setLabel('раб') }, []);
 	const onClick = useCallback(() => {
 		const items = props.context.items['job']
+		const priority = props.cell.priority;
+		const priorityData = priority !== null && priority !== undefined ? { priority } : {};
 		//console.log('new task');
 		//console.log(props.cell);
 		const item = new JobItem({
@@ -82,6 +90,7 @@ const CreateJobButton=(props)=>{
 			isNew: true,
 			isEdit: true,
 			sorting: props.cell.maxSorting ? props.cell.maxSorting + 20 : null,
+			...priorityData,
 		}, {}, items);
 		//console.log(job);
 		items.setItem(item);
@@ -96,6 +105,8 @@ const CreateClosedJobButton = (props) => {
 	const onLeave = useCallback(() => { setLabel('гот') }, []);
 	const onClick = useCallback(() => {
 		const items = props.context.items['job']
+		const priority = props.cell.priority;
+		const priorityData = priority !== null && priority !== undefined ? { priority } : {};
 		//console.log('new task');
 		//console.log(props.cell);
 		const item = new JobItem({
@@ -107,6 +118,7 @@ const CreateClosedJobButton = (props) => {
 			isNew: true,
 			isEdit: true,
 			sorting: props.cell.maxSorting ? props.cell.maxSorting + 20 : null,
+			...priorityData,
 		}, {}, items);
 		//console.log(job);
 		items.setItem(item);

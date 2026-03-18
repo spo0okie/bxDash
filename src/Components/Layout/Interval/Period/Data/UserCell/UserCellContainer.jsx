@@ -36,7 +36,8 @@ const UserCellContainer = observer(({
 	openedTickets,
 	plans,
 	layout,
-	items
+	items,
+	priority
 }) => {
 	// Мемоизированная фильтрация по пользователю
 	// Выполняется только при изменении входных данных
@@ -76,7 +77,7 @@ const UserCellContainer = observer(({
 	}, [userId, closedTasks, openedTasks, closedJobs, openedJobs, closedTickets, openedTickets, plans, layout.accomplicesVisible]);
 
 	// Формируем уникальный ID ячейки
-	const cellId = 'cell' + period.start + '/' + userId;
+	const cellId = 'cell' + period.start + '/' + userId + (priority===null?'':('/'+priority));
 	
 	// Вычисляем градиент фона на основе отсутствий
 	// items['absent'] — ItemsStore с данными об отсутствиях пользователей
@@ -94,6 +95,7 @@ const UserCellContainer = observer(({
 		id: cellId,                   // Ключ
 		dropT: period.dropTime,       // Время для падающих задач
 		period: period,
+		priority: priority,
 		maxSorting: userItems.openedItems.length ? userItems.openedItems[0].sorting : null,
 		minSorting: userItems.openedItems.length ? userItems.openedItems[userItems.openedItems.length - 1].sorting : null,
 		dragOver: (value) => {

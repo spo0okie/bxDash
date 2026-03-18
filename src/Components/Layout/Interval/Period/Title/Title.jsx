@@ -14,6 +14,9 @@ const PeriodTitle = observer((props) => {
 	const period = get(context.periods.periods, id);
 	const time = context.time;
 	const layout = context.layout;
+	const priority = props.priority??null;
+
+	const priorityTitles=['Отложено', 'Средний приоритет', 'Высокий приоритет'];
 
 	// Обработчики событий с useCallback для оптимизации
 	const handleDecWeekMin = useCallback(() => time.decWeekMin(), [time]);
@@ -41,7 +44,7 @@ const PeriodTitle = observer((props) => {
 				</span>
 			)}
 			<Tooltip title={period.toolTip}>
-				<h3>{period.title}</h3>
+				<h3>{priority !== null ? priorityTitles[priority] : period.title}</h3>
 			</Tooltip>
 			{period.end === time.lastWeekEnd() && (
 				<span className="nextWeekButton">

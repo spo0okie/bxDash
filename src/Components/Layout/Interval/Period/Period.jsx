@@ -13,8 +13,9 @@ import { Element } from "react-scroll";
  * Отображает заголовок и данные периода
  * @param {Object} props - Свойства компонента
  * @param {number} props.id - Идентификатор периода (timestamp начала дня)
+ * @param {number} props.priority - Приоритет периода (для разделения корзины)
  */
-const Period = observer(({ id }) => {
+const Period = observer(({ id, priority=null }) => {
 	// Получаем контекст хранилищ
 	const context = useContext(StoreContext);
 	
@@ -33,8 +34,8 @@ const Period = observer(({ id }) => {
 	return (
 		<Element className={"Period " + layoutClass() + ' ' + period.className} name={'period' + id}>
 			<div className="periodContent">
-				<PeriodTitle id={id} key={id + '.title'} />
-				<PeriodData id={id} key={id} />
+				<PeriodTitle id={id} priority={priority} key={id + '.title'+(priority? '-' + priority : '')} />
+				<PeriodData id={id} priority={priority} key={id+(priority? '-' + priority : '')} />
 			</div>
 		</Element>
 	);

@@ -102,22 +102,22 @@ class TaskItem extends DashItem {
 		
 		this.createdAt=TimeHelper.bitrixDateTimeToJs(item.CREATED_DATE);
 
-        this.closedDate=TimeHelper.bitrixDateTimeToJs(item.CLOSED_DATE);
+         this.closedDate=TimeHelper.bitrixDateTimeToJs(item.CLOSED_DATE);
 
 
-		const defaultSorting = Math.floor(this.createdAt / 1000);
-		this.sorting = item.XML_ID ? Number(item.XML_ID) : defaultSorting;
-		if (isNaN(this.sorting) || this.sorting>this.maxSort) {
-			this.sorting = defaultSorting;
-		}
+ 		const defaultSorting = Math.floor(this.createdAt / 1000);
+ 		this.sorting = item.XML_ID ? Number(item.XML_ID) : defaultSorting;
+ 		if (isNaN(this.sorting) || this.sorting>this.maxSort) {
+ 			this.sorting = defaultSorting;
+ 		}
 
-		this.priority=Number(item.PRIORITY);
+		this.setPriority(Number(item.PRIORITY));
 
         this.favorite=item.FAVORITE==='Y';
 
-		this.viewUrl='/company/personal/user/'+this.user+'/tasks/task/view/'+this.id+'/';
+ 		this.viewUrl='/company/personal/user/'+this.user+'/tasks/task/view/'+this.id+'/';
 
-		if (recalc) this.recalcTime();
+ 		if (recalc) this.recalcTime();
 		this.setUpdating(false);
 		return true;
 	}

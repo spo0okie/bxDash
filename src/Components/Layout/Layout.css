@@ -17,7 +17,9 @@ div.rightPane {
 	flex-shrink: 0;
 }
 
-div.memo {
+div.rightPane.x3 {
+	width: 450px;
+	flex-shrink: 0;
 }
 
 div.dashBoard {

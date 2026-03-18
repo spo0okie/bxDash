@@ -157,7 +157,8 @@ class BackendSystem {
 		}
 		try {
 			const response = await fetch(checkUrl, options);
-			if (!response.ok && !response.redirected) {
+			// 401/403 указывают на доступность ресурса (просто требуется аутентификация)
+			if (!response.ok && !response.redirected && ![401, 403].includes(response.status)) {
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 			}
 			this.setAvailability(STATUS.OK);

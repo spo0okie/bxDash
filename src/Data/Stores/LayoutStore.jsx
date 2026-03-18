@@ -11,15 +11,16 @@ class LayoutStore {
 	time;
 	users;
 
-    expand = true;  //разбивать недели по дням
-	accomplicesVisible = false; //показывать задачи у соисполнителей
-	plansVisible = true; //показывать планы
-	jobsVisible = true; //показывать работы
-	tasksVisible = true; //показывать задачи
-	ticketsVisible = true; //показывать заявки
-	memosVisible = true; //показывать напоминания
-	sidebarWidth = 300;
-	scrollbarWidth = 0;
+  expand = true;  //разбивать недели по дням
+  accomplicesVisible = false; //показывать задачи у соисполнителей
+  plansVisible = true; //показывать планы
+  jobsVisible = true; //показывать работы
+  tasksVisible = true; //показывать задачи
+  ticketsVisible = true; //показывать заявки
+  memosVisible = true; //показывать напоминания
+  sidebarWidth = 300;
+  scrollbarWidth = 0;
+  useSplitBucket = false; //разделить длинный ящик на три приоритета
 
 	keepPlanning = false;	//не скрывать относящееся к планам
 	keepFavorites = false;	//не скрывать относящееся к избранному
@@ -164,6 +165,11 @@ class LayoutStore {
 		this.debugVisible = value;
 	}
 
+	setUseSplitBucket(value) {
+		this.useSplitBucket = value;
+		this.saveOption('useSplitBucket', value);
+	}
+
     loadOption(name) {return this.main.loadOption('layout.'+name);}
     saveOption(name,value) {return this.main.saveOption('layout.'+name,value,);}
 
@@ -185,39 +191,42 @@ class LayoutStore {
 		this.keepPlanning = this.loadOption('keepPlanning') ?? false;
 
 		this.sidebarWidth = this.loadOption('sidebarWidth') ?? 300;
+		this.useSplitBucket = this.loadOption('useSplitBucket') ?? false;
 
         this.setModal(null);
         makeObservable(this,{
             expand: observable,
-			accomplicesVisible: observable,
-			jobsVisible: observable,
-			plansVisible: observable,
+            accomplicesVisible: observable,
+            jobsVisible: observable,
+            plansVisible: observable,
             modalVisible: observable,
-			ticketModalVisible: observable,
-			ticketsVisible: observable,
-			tasksVisible: observable,
-			memosVisible: observable,
-			debugVisible: observable,
-			
-			keepFavorites: observable,
-			keepPlanning: observable,
-
-			sidebarWidth: observable,
+            ticketModalVisible: observable,
+            ticketsVisible: observable,
+            tasksVisible: observable,
+            memosVisible: observable,
+            debugVisible: observable,
             
-			windowDimensions: observable.struct,
+            keepFavorites: observable,
+            keepPlanning: observable,
+            useSplitBucket: observable,
+
+            sidebarWidth: observable,
+             
+            windowDimensions: observable.struct,
             setModalVisible: action,
-			setTicketModalVisible: action,
+            setTicketModalVisible: action,
             setExpand: action,
-			setAccomplicesVisible: action,
-			setJobsVisible: action,
-			setPlansVisible: action,
-			setTasksVisible: action,
-			setTicketsVisible: action,
-			setKeepFavorites: action,
-			setKeepPlanning: action,
-			setMemosVisible: action,
-			setSidebarWidth: action,
-			setDebugVisible: action,
+            setAccomplicesVisible: action,
+            setJobsVisible: action,
+            setPlansVisible: action,
+            setTasksVisible: action,
+            setTicketsVisible: action,
+            setKeepFavorites: action,
+            setKeepPlanning: action,
+            setMemosVisible: action,
+            setSidebarWidth: action,
+            setDebugVisible: action,
+            setUseSplitBucket: action,
         });
         window.onresize = () => {
             console.log('height => '+window.innerHeight);

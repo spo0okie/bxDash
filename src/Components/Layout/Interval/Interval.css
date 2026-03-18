@@ -15,6 +15,10 @@ div.Interval.columnBucket {
 	display: inline-flex;
 }
 
+div.rightPane.x3 div.Interval.columnBucket {
+	width: 33.33%;
+}
+
 div.Interval.column {
 	width: 200px;
 	height: 100%;

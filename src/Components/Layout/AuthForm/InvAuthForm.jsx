@@ -136,6 +136,9 @@ const InvAuthForm = observer(function InvAuthForm() {
 						<button onClick={planningMode} className="small">Режим планирования</button>
 						<br/>
 						<button onClick={defaultMode} className="small">Сброс</button>
+						<br/>
+						<MenuButton property='useSplitBucket' title={['1 корзина', '3 корзины']} />
+
 					</div>
 				</div>
 			</div>

@@ -4,67 +4,78 @@ import RelativesMixin from './Mixins/RelativesMixin';
 
 export default class DashItem {
     id;						//id внутри класса элементов (id задачи, заявки, работы)
-	list=null;				//ссылка на хранилище всех элементов этого типа
-	context=null;			//остальные хранилища
-    
-	type='dash';			//тип элемента (task|job|ticket|plan)
-    uid;					//unique id type+id (чисто по id может совпасть задача1 и работа1, а вместе с типом нет)
-	
-	parentUids = [];		//родительские элементы (uid)
-	childUids = [];			//подчиненные элементы (uid)
-	linksAttr='title';		//откуда берем текст элемента чтобы поискать ссылки на другие объекты
-	titleLinks='childUids';	//кем являются ссылки в тексте (родителями или потомками)
-	
-	parents = [];			//родительские элементы (объект)
-	children = [];			//подчиненные элементы (объекты)
+ 	list=null;				//ссылка на хранилище всех элементов этого типа
+ 	context=null;			//остальные хранилища
+     
+ 	type='dash';			//тип элемента (task|job|ticket|plan)
+     uid;					//unique id type+id (чисто по id может совпасть задача1 и работа1, а вместе с типом нет)
+ 	
+ 	parentUids = [];		//родительские элементы (uid)
+ 	childUids = [];			//подчиненные элементы (uid)
+ 	linksAttr='title';		//откуда берем текст элемента чтобы поискать ссылки на другие объекты
+ 	titleLinks='childUids';	//кем являются ссылки в тексте (родителями или потомками)
+ 	
+ 	parents = [];			//родительские элементы (объект)
+ 	children = [];			//подчиненные элементы (объекты)
+ 
+ 	intervalId=null;		//в какой интервал попадает элемент
+ 	periodId=null;			//в какой период попадает элемент
+ 
+     title='';				//заголовок (что будет писаться на доске)
+ 	defaultTitle='';		//какой заголовок у элементов по умолчанию
+ 
+ 	user=null;				//к какому пользователю относится
+ 
+     createdAt=null;			//отметка когда создан элемент
+     deadline=null;			//плановый срок выполнения элемента
+     closedDate=null;		//реальный срок закрытия элемента
+     t;						//в какую временную отметку нужно поместить элемент (в зависимости от статусов объекта)
+     
+ 	isClosed = false;		//завершено
+ 	isOpen = true;			//открыто
+     isNow=false;			//[прямо сейчас] для съезжающих по дате на сегодня: выполняемые, просроченные
+ 	
+ 	isNew = true;			//признак, что это не загруженный элемент, а новый
+ 	
+ 	isEdit = false;			//признак что в настоящее время элемент редактируется
+ 	editField = 'title';	//какой аттрибут редактируется
+ 	editValue = '';			//временное значение редактируемого поля
+ 	deleteOnEmpty=true;		//удалять элемент если его содержимое удалили при редактировании
+ 
+     sorting=null;			//сортировочный индекс
+ 	maxSort = 2147483647;	//максимальное значение для INT в mysql
+ 
+     favorite=false;			//избранное (звездочка)
+ 	semiFavorite=false;		//потомк избранного
+ 
+     isUpdating=false;		//признак промежуточного состояния: обновляется, загружается, сохраняется...
+     isAlert=null;			//нужно ругнуться что с этим элементом ошибка (сохранения или типа того). После того как ругнулись - надо будет снять флажок
+ 	isFlash=false;			//нужно обратить на себя внимание
+ 
+ 	isExpanded=false;		//развернут
+ 
+ 	isHovered=false;		//над элементом мышка
+ 	isHoveredParent = false;//мышка над потомком элемента
+ 	isHoveredChild = false;	//мышка над предком элемента
+ 
+     isDragging=false;		//признак, что сейчас элемент перетаскивается
+     dragCell=null;			//над какой ячейкой элемент тащат
+ 	isUnmovable=false;
+ 
+ 	confirmMove = true;		//подтверждать изменение параметров при передвигании ячейки
+ 	confirmCancelEditNew = '';		//какой вопрос задавать если нажали ESC при создании (редактировании текста) нового элемента (не задавать вопрос если пусто)
+ 	confirmCancelEditUpdate = '';	//какой вопрос задавать если нажали ESC при редактировании сузествующего элемента (не задавать вопрос если пусто)
+ 	
+ 	/** Приоритет элемента для разделения долгого ящика на три приоритета:
+ 	  * 1 - низкий приоритет (верхняя часть долгого ящика)
+ 	  * 2 - средний приоритет (средняя часть долгого ящика) - значение по умолчанию
+ 	  * 3 - высокий приоритет (нижняя часть долгого ящика)
+ 	  */
+ 	priority = 1;		//средний приоритет по умолчанию
 
-	intervalId=null;		//в какой интервал попадает элемент
-	periodId=null;			//в какой период попадает элемент
-
-    title='';				//заголовок (что будет писаться на доске)
-	defaultTitle='';		//какой заголовок у элементов по умолчанию
-
-	user=null;				//к какому пользователю относится
-
-    createdAt=null;			//отметка когда создан элемент
-    deadline=null;			//плановый срок выполнения элемента
-    closedDate=null;		//реальный срок закрытия элемента
-    t;						//в какую временную отметку нужно поместить элемент (в зависимости от статусов объекта)
-    
-	isClosed = false;		//завершено
-	isOpen = true;			//открыто
-    isNow=false;			//[прямо сейчас] для съезжающих по дате на сегодня: выполняемые, просроченные
-	
-	isNew = true;			//признак, что это не загруженный элемент, а новый
-	
-	isEdit = false;			//признак что в настоящее время элемент редактируется
-	editField = 'title';	//какой аттрибут редактируется
-	editValue = '';			//временное значение редактируемого поля
-	deleteOnEmpty=true;		//удалять элемент если его содержимое удалили при редактировании
-
-    sorting=null;			//сортировочный индекс
-	maxSort = 2147483647;	//максимальное значение для INT в mysql
-
-    favorite=false;			//избранное (звездочка)
-	semiFavorite=false;		//потомк избранного
-
-    isUpdating=false;		//признак промежуточного состояния: обновляется, загружается, сохраняется...
-    isAlert=null;			//нужно ругнуться что с этим элементом ошибка (сохранения или типа того). После того как ругнулись - надо будет снять флажок
-	isFlash=false;			//нужно обратить на себя внимание
-
-	isExpanded=false;		//развернут
-
-	isHovered=false;		//над элементом мышка
-	isHoveredParent = false;//мышка над потомком элемента
-	isHoveredChild = false;	//мышка над предком элемента
-
-    isDragging=false;		//признак, что сейчас элемент перетаскивается
-    dragCell=null;			//над какой ячейкой элемент тащат
-	isUnmovable=false;
-
-	confirmMove = true;		//подтверждать изменение параметров при передвигании ячейки
-	confirmCancelEditNew = '';		//какой вопрос задавать если нажали ESC при создании (редактировании текста) нового элемента (не задавать вопрос если пусто)
-	confirmCancelEditUpdate = '';	//какой вопрос задавать если нажали ESC при редактировании сузествующего элемента (не задавать вопрос если пусто)
+ 	setPriority(value) {
+ 		this.priority = value;
+ 	}
 
 
 	isDraggable(cell) {
@@ -315,7 +326,8 @@ export default class DashItem {
 			if (params.closedDate === undefined)	params.closedDate = this.closedDate;
 			if (params.user === undefined) 			params.user = this.user;
 			if (params.title === undefined) 		params.title = this.title;
-			if (params.sorting === undefined)		params.sorting = this.sorting;			
+			if (params.sorting === undefined)		params.sorting = this.sorting;
+			if (params.priority === undefined)		params.priority = this.priority;			
 		}
 
 		//смена крайнего срока и даты закрытия
@@ -412,7 +424,13 @@ export default class DashItem {
 			confirm.push("Выставляем ответственным " + user.name);
 		}
 
-		if (!this.confirmMove || !confirm.length || window.confirm(confirm.join("\n"))) {
+		if (
+			!this.confirmMove 
+			|| 
+			!confirm.length 
+			||
+			window.confirm(confirm.join("\n"))
+		) {
 			this.update(params,true);
 		}
 	}
@@ -550,51 +568,53 @@ export default class DashItem {
 		this.loadData(data,false);
 		this.recalcTime();
 
-		makeObservable(this,{
-			title:observable,
-			user:observable,
+  		makeObservable(this,{
+  			title:observable,
+  			user:observable,
 
-            deadline:observable,
-            closedDate:observable,
-			t: observable,
+              deadline:observable,
+              closedDate:observable,
+  			t: observable,
 
-            isClosed:observable,
-            isNow:observable,
-        
-            sorting:observable,
-        
-            favorite:observable,
-        
-            isUpdating:observable,
-			isAlert: observable,
-			isFlash: observable,
-            isHovered:observable,
-            isHoveredParent:observable,
-            isHoveredChild:observable,
-			isExpanded:observable,
-                    
-            setUpdating:action,
-            setAlert:action,
-			setFlash:action,
-            setDragging:action,
-			setHover: action,
-			setParentHover: action,
-			setChildHover: action,
-			setEdit: action,
-			setExpanded: action,
-			recalcTime: action,
+              isClosed:observable,
+              isNow:observable,
+          
+              sorting:observable,
+          
+              favorite:observable,
+          
+              isUpdating:observable,
+  			isAlert: observable,
+  			isFlash: observable,
+              isHovered:observable,
+              isHoveredParent:observable,
+              isHoveredChild:observable,
+  			isExpanded:observable,
+  			priority: observable,
+                      
+  			setUpdating:action,
+  			setAlert:action,
+  			setFlash:action,
+  			setDragging:action,
+  			setHover: action,
+  			setParentHover: action,
+  			setChildHover: action,
+  			setEdit: action,
+  			setExpanded: action,
+  			setPriority: action,
+  			recalcTime: action,
 
-			addParent:action,
-			addChild:action,
-			removeParent:action,
-			removeChild:action,
+  			addParent:action,
+  			addChild:action,
+  			removeParent:action,
+  			removeChild:action,
 
-			isDragging: observable,
-			isEdit: observable,
-		})
+  			isDragging: observable,
+  			isEdit: observable,
+  		})
 
 		//console.log(this);
-    }
+    	}
 }
 
 Object.assign(DashItem.prototype,RelativesMixin);

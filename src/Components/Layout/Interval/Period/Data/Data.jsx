@@ -12,13 +12,14 @@ import UserCellContainer from "./UserCell/UserCellContainer";
  * 
  * @param {Object} props - Свойства компонента
  * @param {number} props.id - Идентификатор периода (timestamp начала дня)
+ * @param {number} props.priority - Приоритет (для разбиения корзины)
  */
-const PeriodData = observer(({ id }) => {
+const PeriodData = observer(({ id, priority=null }) => {
 	// Получаем контекст хранилищ
 	const context = useContext(StoreContext);
 	const users = context.users;
 	const period = get(context.periods.periods, id);
-	const layout = context.layout;
+	const layout = context.layout;	
 
 	// Используем computed-свойства из PeriodItem
 	// Это позволяет избежать повторных вычислений при каждом рендере
@@ -29,6 +30,16 @@ const PeriodData = observer(({ id }) => {
 	const closedTickets = period.closedTickets;
 	const openedTickets = period.openedTickets;
 	const plans = period.plans;
+
+	let priorityTasks=openedTasks;
+	let priorityTickets=openedTickets;
+	let priorityJobs=openedJobs;
+
+	if (priority!==null && priority !== undefined) {
+		priorityTasks= openedTasks.filter(item => item.priority === priority);
+		priorityTickets= openedTickets.filter(item => item.priority === priority);
+		priorityJobs= openedJobs.filter(item => item.priority === priority);
+	}
 
 	return (
 		<div className="PeriodData">
@@ -41,14 +52,15 @@ const PeriodData = observer(({ id }) => {
 								userId={userId}
 								period={period}
 								closedTasks={closedTasks}
-								openedTasks={openedTasks}
+								openedTasks={priorityTasks}
 								closedJobs={closedJobs}
-								openedJobs={openedJobs}
+								openedJobs={priorityJobs}
 								closedTickets={closedTickets}
-								openedTickets={openedTickets}
+								openedTickets={priorityTickets}
 								plans={plans}
 								layout={layout}
 								items={context.items}
+								priority={priority}
 							/>
 						))}
 					</tr>
