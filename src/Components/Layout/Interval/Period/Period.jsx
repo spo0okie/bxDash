@@ -31,8 +31,11 @@ const Period = observer(({ id, priority=null }) => {
 	// Получаем данные периода
 	const period = get(context.periods.periods, id);
 
+	let className=period.className;
+	if (priority!=null) className=Math.min(className+2-priority,7);
+
 	return (
-		<Element className={"Period " + layoutClass() + ' ' + period.className} name={'period' + id}>
+		<Element className={"Period " + layoutClass() + ' period' + className} name={'period' + id}>
 			<div className="periodContent">
 				<PeriodTitle id={id} priority={priority} key={id + '.title'+(priority? '-' + priority : '')} />
 				<PeriodData id={id} priority={priority} key={id+(priority? '-' + priority : '')} />

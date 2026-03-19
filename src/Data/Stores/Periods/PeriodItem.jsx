@@ -63,14 +63,14 @@ class PeriodItem {
 			this.title+=' ('+TimeHelper.getWeek(this.start)+')';
         }
 
-        this.className='period0';
+        this.className=0;
         if (this.start < this.time.monday0) {
             let week=Math.floor((this.time.monday0-this.start-1)/TimeHelper.weekLen)+1;
-            this.className='period'+Math.min(week,7);
+            this.className=Math.min(week,7);
         }
         if (this.start > this.time.sunday0-1) {
             let week=Math.floor((this.start-this.time.sunday0)/TimeHelper.weekLen)+1;
-            this.className='period'+Math.min(week,7);
+            this.className=Math.min(week,7);
         }
         //console.log(time.today);
         this.isClosed=(this.start <= this.time.today);

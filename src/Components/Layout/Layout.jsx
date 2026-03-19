@@ -68,7 +68,7 @@ const Layout = observer(() => {
 							id='calendarGrid'
 							style={{
 								width: (personal && !layout.expand)
-									? (layout.windowDimensions.width - 200 - (layout.memosVisible ? layout.sidebarWidth : 0)) + 'px'
+									? (layout.windowDimensions.width - (layout.useSplitBucket?450:200) - (layout.memosVisible ? layout.sidebarWidth : 0)) + 'px'
 									: null
 							}}
 						>
