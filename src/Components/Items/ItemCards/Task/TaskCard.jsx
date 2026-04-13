@@ -89,6 +89,7 @@ const TaskCard = observer((props)=>{
 	//console.log(context);
 	const items = context.items;
 	const layout = context.layout;
+	const users = context.users;
 	const cell = props.cell;
 	const index = props.index;
 	const [closestEdge, setClosestEdge] = useState(null);
@@ -97,7 +98,8 @@ const TaskCard = observer((props)=>{
 	const handleMouseEnter = useCallback(() => task.mouseIn(), [task]);
 	const handleMouseLeave = useCallback(() => task.mouseOut(), [task]);
 
-	const visible=layout.accomplicesVisible || task.user===cell.user;
+	// Для режима поиска cell может быть null - в таком случае показываем задачу всегда
+	const visible = !cell || layout.accomplicesVisible || task.user === cell.user;
 	//console.log(ref.current);
 	useEffect(()=>
 	{	//описание для DND
@@ -108,12 +110,12 @@ const TaskCard = observer((props)=>{
 			index: index,		//порядок элемента в списке
 			cell: cell,			//ячейка в которой и список и элемент
 		};
-			if (visible) return dashItemDragLogic(dropData,ref,setClosestEdge)
+		if (visible) return dashItemDragLogic(dropData,ref,setClosestEdge)
 	}
 	, [ref,visible,cell,index,task]);
 
 	
-	const contextMenuClick=(e)=>{
+	/*const contextMenuClick=(e)=>{
 		console.log(e.key);
 		switch(e.key) {
 			case 'toTop': task.update({ sorting: cell.maxSorting?cell.maxSorting+100:100 }, true); break;
@@ -136,13 +138,13 @@ const TaskCard = observer((props)=>{
 			case 'partial': task.update({ status: 1 }, true); break;
 			case 'complete': task.update({ status: 2 }, true); break;
 
-			default: console.log('unknown menu item');
+			default: console.log('unknown menu item: '+e.key);
 		}
-	}
+	}*/
 
-	if (visible) return( 
-	<Dropdown menu={{ items:items.contextMenu(task),onClick:items.contextMenuHandler(task,cell) }} trigger={['contextMenu']}>
-		<li 
+	if (visible) return(
+	<Dropdown menu={{ items:[...items.contextMenu(task),...users.contextMenu(task)],onClick:cell?items.contextMenuHandler(task,cell):undefined }} trigger={['contextMenu']}>
+		<li
 			className={classNames(
 				'userItem',		//это понятно
 				'userTask',		//это тоже
@@ -150,7 +152,7 @@ const TaskCard = observer((props)=>{
 				{'updating':task.isUpdating},
 				{ 'alert': task.isAlert },
 				{ 'flash': task.isFlash },
-				{'dimmedOut':task.user!==cell.user},	//не своя задача (помогает)
+				{'dimmedOut':cell && task.user!==cell.user},	//не своя задача (помогает)
 				{'hovered':task.isHovered},
 				{'parentTask':task.isHoveredParent},
 				{'childTask': task.isHoveredChild },

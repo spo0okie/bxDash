@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { observable, when, makeObservable, runInAction, get, set, action, computed, keys, has, observe } from 'mobx';
-import UserItem from 'Data/Items/UserItem';
+import UserItem from 'Data/Models/UserItem';
 
 
 const STATE_PRIORITY_REVERSE = {
@@ -298,6 +298,19 @@ class UsersStore {
 			user.setPhoneStatus(maxState);
 		}
 	}
+
+	contextMenu=(item)=>[{
+		label: 'Передать сотруднику',
+		disabled: item.isClosed,
+		children: this.order.map((i,index) => {
+			const user=get(this.items,i);
+			return {
+				label: user.name,
+				key: 'toUser:'+user.id,
+				disabled: item.isClosed,
+			}
+		})
+	}];
 
 	/**
 	 * Конструктор хранилища пользователей

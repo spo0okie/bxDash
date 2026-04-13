@@ -191,6 +191,95 @@ class controller_task {
 		echo json_encode(array_values($tasks),JSON_UNESCAPED_UNICODE);
 	}
 
+	/**
+	 * Полнотекстовый поиск задач по названию и описанию
+	 * GET /task/search?q={searchQuery}
+	 */
+	public function action_search() {
+		// PHP 5 совместимость: заменен оператор ?? на isset()
+		$query = isset($_GET['q']) ? $_GET['q'] : '';
+		$queryLower = mb_strtolower($query, 'UTF-8');
+		
+		// Проверка минимальной длины запроса (минимум 3 символа)
+		if (strlen($query) < 3) {
+			router::haltJson('Query too short');
+		}
+			
+		$tasks=[];
+
+		
+
+		// Использовать поиск для нахождения сообщений с "klg-ns1"
+		$arFilter = array(
+	    	"MODULE_ID" => "forum",
+	    	"SITE_ID" => SITE_ID,
+		    "QUERY" => $query
+		);
+
+		$obSearch = new CSearch();
+		$obSearch->Search($arFilter, array("DATE_CHANGE" => "DESC"));
+
+		$found = false;
+
+		while ($arSearch = $obSearch->GetNext()) {
+    		// Для форума ITEM_ID - это MESSAGE_ID
+	    	$messageId = $arSearch["ITEM_ID"];
+    
+    		// Получить сообщение
+		    $arMessage = CForumMessage::GetByID($messageId);
+	    	if ($arMessage && strpos($arMessage["POST_MESSAGE"], $query) !== false) {
+        		$topicId = $arMessage["TOPIC_ID"];
+				//echo $topicId;
+        
+	    	    // Найти задачу
+    		    $rsTask = CTasks::GetList(array(), array("FORUM_TOPIC_ID" => $topicId), array("ID"));
+	        	if ($arTask = $rsTask->Fetch()) {
+	        	    $tasks[$arTask["ID"]] = $arTask["ID"];
+					//echo $arTask["ID"];
+    		    }
+		    }
+		}
+
+		// Теперь поиск по тексту задач
+		$arFilterTasks = array(
+    		"MODULE_ID" => "tasks",
+	    	"SITE_ID" => SITE_ID,
+    		"QUERY" => $query
+		);
+
+		$obSearchTasks = new CSearch();
+		$obSearchTasks->Search($arFilterTasks, array("DATE_CHANGE" => "DESC"));
+
+		while ($arSearchTask = $obSearchTasks->GetNext()) {
+	    	// Для задач ITEM_ID - это TASK_ID
+	    	$taskId = $arSearchTask["ITEM_ID"];
+    
+		    // Проверить, что задача существует и содержит $query
+	    	$rsTask = CTasks::GetList(array(), array("ID" => $taskId), array("ID", "TITLE", "DESCRIPTION"));
+	    	if ($arTask = $rsTask->Fetch()) {
+    		    $text = $arTask["TITLE"] . " " . $arTask["DESCRIPTION"];
+	        	if (strpos($text, $query) !== false) {
+            		$tasks[$arTask["ID"]] = $arTask["ID"];
+	        	}
+    		}
+		}
+		
+		// Ограничиваем общее количество результатов до 100
+		$tasks = array_slice($tasks, 0, 100, true);
+		
+		// Если нет результатов - возвращаем пустой массив
+		if (empty($tasks)) {
+			echo json_encode(array(), JSON_UNESCAPED_UNICODE);
+			return;
+		}
+		
+		// Загружаем полные данные задач через существующие методы
+		$tasks = static::loadTasksByIds(array_values($tasks));
+		
+		// Возвращаем в том же формате, что и action_load
+		echo json_encode(array_values($tasks), JSON_UNESCAPED_UNICODE);
+	}
+
 	public function action_get(){
 		if (is_null($id=router::getRoute(3, 'id')))
 			router::haltJson(static::MSG_NO_TASK_ID);
@@ -241,7 +330,7 @@ class controller_task {
 			$oTaskItem->Update(['XML_ID' => $sorting]);
 		}
 
-		$priority=router::getRoute(null,'priority','##UNSET')
+		$priority=router::getRoute(null,'priority','##UNSET');
 		if ($priority!=='##UNSET') {
 			$oTaskItem->Update(['PRIORITY' => $priority]);
 		}

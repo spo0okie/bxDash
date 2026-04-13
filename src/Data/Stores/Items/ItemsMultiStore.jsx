@@ -18,6 +18,66 @@ class ItemsMultiStore {
 		this.types.forEach(type => this[type].findRelativesFor(item))
 	}*/
 
+	// ========================================
+	// Проксирование свойств и методов поиска от task store
+	// ========================================
+	// Позволяет обращаться к методам поиска через items.searchQuery, items.searchResults и т.д.
+
+	/**
+	 * Геттер для строки поиска задач
+	 * @returns {string} Текущая строка поиска
+	 */
+	get searchQuery() { return this.task?.searchQuery || ''; }
+
+	/**
+	 * Геттер для результатов поиска задач
+	 * @returns {Array} Массив ID найденных задач
+	 */
+	get searchResults() { return this.task?.searchResults || []; }
+
+	/**
+	 * Геттер для флага выполнения поиска
+	 * @returns {boolean} Флаг загрузки
+	 */
+	get isSearching() { return this.task?.isSearching || false; }
+
+	/**
+	 * Геттер для режима поиска
+	 * @returns {boolean} Активен ли режим поиска
+	 */
+	get searchMode() { return this.task?.searchMode || false; }
+
+	/**
+	 * Устанавливает строку поиска
+	 * @param {string} query - Строка поиска
+	 */
+	setSearchQuery(query) {
+		if (this.task) this.task.setSearchQuery(query);
+	}
+
+	/**
+	 * Устанавливает режим поиска
+	 * @param {boolean} value - Включить/выключить режим поиска
+	 */
+	setSearchMode(value) {
+		if (this.task) this.task.setSearchMode(value);
+	}
+
+	/**
+	 * Очищает все параметры поиска
+	 */
+	clearSearch() {
+		if (this.task) this.task.clearSearch();
+	}
+
+	/**
+	 * Асинхронный поиск задач по строке запроса
+	 * @param {string} query - Строка поиска (минимум 3 символа)
+	 */
+	searchTasks(query) {
+		if (this.task) this.task.searchTasks(query);
+	}
+
 	//возвращает элемент по UID
 	getUidItem(uid) {
 		const tokens=uid.split(':');
@@ -131,55 +191,61 @@ class ItemsMultiStore {
 			disabled: task.isClosed,
 		},
 		{
-			label: 'Отодвинуть срок',			
-			type: 'group',
+			label: 'Отодвинуть срок',
 			disabled: task.isClosed,
 			children: [
 				{
-					label: '>> на 1 неделю',
+					label: 'на 1 неделю',
 					key: 'weekLater1',
 					disabled: task.isClosed,
 				},
 				{
-					label: '>> на 2 недели',
+					label: 'на 2 недели',
 					key: 'weekLater2',
 					disabled: task.isClosed,
 				},
 				{
-					label: '>> на 1 месяц',
+					label: 'на 1 месяц',
 					key: 'monthLater1',
 					disabled: task.isClosed,
 				},
 				{
-					label: '>> на 2 месяца',
+					label: 'на 2 месяца',
 					key: 'monthLater2',
 					disabled: task.isClosed,
 				},
 			]
 		},
 		{
-			label: 'В долгий ящик',			
-			type: 'group',
+			label: 'В долгий ящик',
 			disabled: task.isClosed,
 			children: [
 				{
-					label: '>> на верх',
+					label: 'на верх',
 					key: 'bucketTop',
 					disabled: task.isClosed,
 				},
 				{
-					label: '>> на дно',
+					label: 'на дно',
 					key: 'bucketBottom',
 					disabled: task.isClosed,
 				},
 			]
 		},
+		
 	];
 
 	contextMenuHandler=(task,cell)=>(e)=>{
 			//console.log(e.key);
 			const week=7*24*3600*1000;
 			const month=30*24*3600*1000;
+			if (e.key.startsWith("toUser:")) {				
+				console.log(e.key.split(':'));
+				const userId=Number(e.key.split(':')[1]);
+				console.log(userId);
+				task.update({ user: userId }, true);
+				return;
+			}
 			switch(e.key) {
 				case 'toTop': task.update({ sorting: cell.maxSorting?cell.maxSorting+100:100 }, true); break;
 				case 'toBottom': task.update({ sorting: cell.minSorting?cell.minSorting-100:100 }, true); break;
@@ -205,7 +271,7 @@ class ItemsMultiStore {
 				case 'partial': task.update({ status: 1 }, true); break;
 				case 'complete': task.update({ status: 2 }, true); break;
 	
-				default: console.log('unknown menu item');
+				default: console.log('unknown menu item: '+e.key);
 			}
 		}
 }

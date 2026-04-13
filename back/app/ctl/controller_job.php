@@ -16,8 +16,10 @@ class controller_job {
 		'DATE_ACTIVE_TO',
 		'CREATED_DATE',
 		'SORT',
+		'XML_ID',
 		'~PREVIEW_TEXT',
 		'PROPERTY_USER_VALUE',
+		'PROPERTY_PRIORITY_VALUE',
 	];
 
 	static public function deleteJob($id) {
@@ -41,7 +43,7 @@ class controller_job {
 
 		$el = new CIBlockElement;
 
-		return $el->Add($data);
+		return $el->Add($data);		
 	}
 
 	/**
@@ -101,7 +103,7 @@ class controller_job {
 			$filter,
 			false,
 			false,
-			['*','PROPERTY_USER']
+			['*','PROPERTY_USER','PROPERTY_PRIORITY']
 		);
 
 		$jobs=[];
@@ -141,7 +143,7 @@ class controller_job {
 			$filter,
 			false,
 			false,
-			['*','PROPERTY_USER']
+			['*','PROPERTY_USER','PROPERTY_PRIORITY']
 		);
 
 		$jobs=[];
@@ -198,17 +200,13 @@ class controller_job {
 		$start=router::getRoute(null,'deadline',-1);
 		if ($start!==-1) {
 			$data['DATE_ACTIVE_FROM']=$start?ConvertTimeStamp($start,'FULL'):'';
-			$result['changes'][]='changing deadline to =>'.$data['DATE_ACTIVE_FROM'];
+			//$result['changes'][]='changing deadline to =>'.$data['DATE_ACTIVE_FROM'];
 		}
 
 		$end=router::getRoute(null,'closedDate',-1);
 		if ($end!==-1) {
 			$data['DATE_ACTIVE_TO']=$end?ConvertTimeStamp($end,'FULL'):'';
-			$result['changes'][]='changing cllosedDate to =>'.$data['DATE_ACTIVE_TO'];
-		}
-
-		if ($user=router::getRoute(null,'user')) {
-			$data['PROPERTY_VALUES']=['USER'=>$user];
+			//$result['changes'][]='changing cllosedDate to =>'.$data['DATE_ACTIVE_TO'];
 		}
 
 		if ($sort=router::getRoute(null,'sorting')) {
@@ -218,6 +216,20 @@ class controller_job {
 		if (!count($data)) router::haltJson('no data to commit');
 
 		if (!static::updateJob($id,$data)) router::haltJson('error updating data',500,$data);
+
+		$props = [];
+
+		if ($user=router::getRoute(null,'user')) {
+			$props['USER'] = $user;
+		}
+
+		if (!is_null($priority=router::getRoute(null,'priority'))) {
+			$props['PRIORITY'] = $priority;
+		}
+
+		if (!empty($props)) {
+			CIBlockElement::SetPropertyValuesEx($id, $data['IBLOCK_ID'], $props);
+		}
 
 		//echo '{"result":"ok","id":'.$id.'}';
 		echo json_encode($result);
@@ -236,7 +248,10 @@ class controller_job {
 			'IBLOCK_ID' => 90,
 			'PREVIEW_TEXT_TYPE'=>'text',
 			'DETAIL_TEXT_TYPE'=>'text',
-			'PROPERTY_VALUES'=> ['USER'=>$user],
+			'PROPERTY_VALUES'=> [
+				'USER'=> $user,
+				'PRIORITY'=>router::getRoute(1,'priority'),
+			],
 		];
 
 		$data["PREVIEW_TEXT"] = $text;

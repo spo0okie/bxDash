@@ -3,7 +3,7 @@ import {observer} from "mobx-react";
 import { StoreContext } from "Data/Stores/StoreProvider";
 import { dashItemsSort,dashClosedItemsSort } from "Helpers/SortHelper";
 import CardsBlock from "Components/Layout/Interval/Period/Data/UserCell/CardsBlock";
-import MemoItem from "Data/Items/MemoItem";
+import MemoItem from "Data/Models/MemoItem";
 import TimeHelper from "Helpers/TimeHelper";
 
 const MemoCell= observer((props)=>{

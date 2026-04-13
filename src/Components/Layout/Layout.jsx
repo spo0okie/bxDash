@@ -8,12 +8,15 @@ import ModalWindow from "./Modal/ModalWindow";
 import CreateTicketModal from "Components/Items/CreateTicketModal/CreateTicketModal";
 import classNames from "classnames";
 import "./Layout.css";
-import MemoCell from "../MemoCell/MemoCell";
+import MemoCell from "./Sidebar/MemoCell";
 import Sidebar from "./Sidebar/Sidebar";
 import ScrollSection from "./ScrollSection/ScrollSection";
-import HomeButton from "./Header/Buttons/HomeButton";
+import HomeButton from "./Header/HomeButton";
 import MenuButton from "./Header/Menu/MenuIButton";
-import "./Header/Buttons/HomeButton.css";
+import "./Header/HomeButton.css";
+// Импорт компонентов поиска задач
+import TaskSearch from "./TaskSearch/TaskSearch";
+import SearchResults from "./SearchResults/SearchResults";
 
 /**
  * Главный компонент layout приложения
@@ -27,6 +30,7 @@ const Layout = observer(() => {
 	const layout = context.layout;
 	const main = context.main;
 	const ws = context.ws;
+	const items = context.items; // Хранилище элементов для доступа к task store (поиск)
 
 	
 	// Флаг персонального режима (выбран конкретный пользователь)
@@ -45,6 +49,7 @@ const Layout = observer(() => {
 				<CreateTicketModal />
 
 				<AppHeader />
+				<TaskSearch /> {/* Компонент поиска задач в шапке */}
 				<HomeButton />
 				<MenuButton property='memosVisible' title='📝' classNames='memoButton' />
 				<MenuButton property='debugVisible' title='⚙️' classNames='optionsButton' />
@@ -72,8 +77,12 @@ const Layout = observer(() => {
 									: null
 							}}
 						>
-							{time.weeksRange(false).map((i) => <Interval key={i} id={i} />)}
-							{!personal&&(splitBucket?
+							{/* SearchResults отображается поверх календаря через absolute positioning */}
+							{items.task.searchMode && <SearchResults />}
+							{/* Показываем календарь только когда поиск неактивен */}
+							{!items.task.searchMode && time.weeksRange(false).map((i) => <Interval key={i} id={i} />)}
+							{/* Bucket отображается только когда поиск неактивен */}
+							{!personal && !items.task.searchMode && (splitBucket?
 								[2,1,0].map((i) => (<Interval 
 									key={(time.weekMax + 1)+'-'+i} 
 									id={time.weekMax + 1} 

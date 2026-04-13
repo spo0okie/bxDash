@@ -275,14 +275,14 @@ const DraggableItem = ({ item }) => {
 ```
 src/
 ├── Components/          # React компоненты
-│   ├── Layout/         # Компоненты layout
+│   ├── Layout/         # Компоненты layout (включая MemoCell в Layout/Sidebar/)
 │   └── Items/          # Компоненты элементов
 ├── Data/               # Уровень данных
-│   ├── Stores/         # MobX хранилища элементов
-│   └── Items/          # Модели данных элементов
+│   ├── Stores/         # MobX хранилища
+│   └── Models/         # Модели данных элементов (TaskItem, JobItem и др.)
 ├── Helpers/            # Вспомогательные функции
 ├── back/               # Bitrix backend сервис
-└── config.priv.js      # Конфигурация
+└── config.priv.jsx     # Конфигурация
 ```
 
 #### Структура файлов компонентов

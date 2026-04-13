@@ -2,7 +2,7 @@ import {get, keys} from 'mobx';
 import { observer } from 'mobx-react';
 import React, { useContext, useState, useEffect, useCallback} from 'react';
 import { StoreContext } from 'Data/Stores/StoreProvider';
-import TicketItem from 'Data/Items/TicketItem';
+import TicketItem from 'Data/Models/TicketItem';
 import './UserAlerts.css';
 import { Tooltip } from 'antd';
 

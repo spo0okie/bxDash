@@ -32,6 +32,8 @@ export default defineConfig({
 			Components: path.resolve(__dirname, './src/Components'),
 			Data: path.resolve(__dirname, './src/Data'),
 			Helpers: path.resolve(__dirname, './src/Helpers'),
+			// Алиас для быстрого доступа к моделям данных
+			'Data/Models': path.resolve(__dirname, './src/Data/Models'),
 			// Алиас для модуля-обёртки, который читает window.__CONFIG__
 			'config.priv': path.resolve(__dirname, './src/config.priv.jsx'),
 		},

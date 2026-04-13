@@ -1,12 +1,12 @@
 import 'reflect-metadata';
 import {observable, when, makeObservable, keys , get, set, action, has, remove, observe} from 'mobx';
-import TaskItem from 'Data/Items/TaskItem';
-import JobItem from 'Data/Items/JobItem';
-import DashItem from 'Data/Items/DashItem';
-import PlanItem from 'Data/Items/PlanItem';
-import TicketItem from 'Data/Items/TicketItem';
-import MemoItem from 'Data/Items/MemoItem';
-import AbsentItem from 'Data/Items/AbsentItem';
+import TaskItem from 'Data/Models/TaskItem';
+import JobItem from 'Data/Models/JobItem';
+import DashItem from 'Data/Models/DashItem';
+import PlanItem from 'Data/Models/PlanItem';
+import TicketItem from 'Data/Models/TicketItem';
+import MemoItem from 'Data/Models/MemoItem';
+import AbsentItem from 'Data/Models/AbsentItem';
 import TimeHelper from 'Helpers/TimeHelper';
 
 class ItemsStore {
@@ -29,6 +29,12 @@ class ItemsStore {
 
     newTaskTemplate={};
 
+    // Свойства для поиска задач
+	searchQuery=''; // Строка поиска
+	searchResults=[]; // Массив ID найденных задач
+	isSearching=false; // Флаг выполнения поиска
+	searchMode=false; // Флаг активности режима поиска
+
 	classMap={
 		'dash':		DashItem,
 		'task':		TaskItem,
@@ -46,6 +52,70 @@ class ItemsStore {
 	setLoadingLinked(value) {
 		this.isLoadingLinked=value;
 	}
+
+	// Actions для поиска
+
+	/**
+	 * Устанавливает строку поиска
+	 * @param {string} query - Строка поиска
+	 */
+	setSearchQuery(query) {
+		this.searchQuery = query;
+	}
+
+	/**
+	 * Устанавливает режим поиска
+	 * @param {boolean} value - Включить/выключить режим поиска
+	 */
+	setSearchMode(value) {
+		this.searchMode = value;
+	}
+
+	/**
+	 * Устанавливает флаг выполнения поиска
+	 * @param {boolean} value - Флаг загрузки
+	 */
+	setIsSearching(value) {
+		this.isSearching = value;
+	}
+
+	/**
+	 * Очищает все параметры поиска
+	 */
+	clearSearch() {
+		this.searchQuery = '';
+		this.searchResults = [];
+		this.isSearching = false;
+		this.searchMode = false;
+	}
+
+	/**
+	 * Асинхронный поиск задач по строке запроса
+	 * @param {string} query - Строка поиска (минимум 3 символа)
+	 */
+	async searchTasks(query) {
+		if (!query || query.length < 3) return;
+
+		this.setIsSearching(true);
+		try {
+			const response = await this.main.bx.fetch(
+				`task/search?q=${encodeURIComponent(query)}&random=${TimeHelper.getTimestamp()}`
+			);
+			const data = await response.json();
+
+			// Загрузить задачи через существующий initData
+			data.forEach(item => this.initData(item));
+
+			// Сохранить ID найденных задач
+			this.searchResults = data.map(item => Number(item.ID));
+			this.searchMode = true;
+		} catch (error) {
+			console.error('Search error:', error);
+		} finally {
+			this.setIsSearching(false);
+		}
+	}
+
 
 	//отправить произвольное сообщение
 	broadcast = (msg) => { if (this.master.ws !== undefined) this.master.ws.sendMessage(msg);}
@@ -372,16 +442,27 @@ class ItemsStore {
 		this.users = master.users;
 		this.periods = master.periods;
         makeObservable(this,{
-			items:observable,
-			isLoading:observable,
-			isLoadingLinked:observable,
-			initData:action,
-			setItem: action,
-			updateItem: action,
-			deleteItem:action,
-			setLoading:action,
-			setLoadingLinked:action,
-		});
+        items:observable,
+        isLoading:observable,
+        isLoadingLinked:observable,
+        // Свойства для поиска
+        searchQuery:observable,
+        searchResults:observable,
+        isSearching:observable,
+        searchMode:observable,
+        initData:action,
+        setItem:action,
+        updateItem:action,
+        deleteItem:action,
+        setLoading:action,
+        setLoadingLinked:action,
+        // Actions для поиска
+        setSearchQuery:action,
+        setSearchMode:action,
+        setIsSearching:action,
+        clearSearch:action,
+        searchTasks:action,
+        });
         this.init();
     }
 }
