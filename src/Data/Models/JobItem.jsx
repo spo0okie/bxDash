@@ -47,7 +47,7 @@ class JobItem extends DashItem {
         this.user=Number(item.PROPERTY_USER_VALUE);
 
 		this.priority=Number(item.PROPERTY_PRIORITY_VALUE ?? 1) % 3;
-		console.log(this.priority);
+		//console.log(this.priority);
 
 		this.childUids=[];
 		this.parentUids=[];

@@ -8,7 +8,7 @@ export default class DashItem {
  	context=null;			//остальные хранилища
      
  	type='dash';			//тип элемента (task|job|ticket|plan)
-     uid;					//unique id type+id (чисто по id может совпасть задача1 и работа1, а вместе с типом нет)
+	uid;					//unique id type+id (чисто по id может совпасть задача1 и работа1, а вместе с типом нет)
  	
  	parentUids = [];		//родительские элементы (uid)
  	childUids = [];			//подчиненные элементы (uid)
@@ -21,7 +21,7 @@ export default class DashItem {
  	intervalId=null;		//в какой интервал попадает элемент
  	periodId=null;			//в какой период попадает элемент
  
-     title='';				//заголовок (что будет писаться на доске)
+	title='';				//заголовок (что будет писаться на доске)
  	defaultTitle='';		//какой заголовок у элементов по умолчанию
  
  	user=null;				//к какому пользователю относится
@@ -222,6 +222,7 @@ export default class DashItem {
 					.detachItem(this);				//отцепляемся от него
 		}
 		this.intervalId = null;
+		this.unsetPeriod();
 	}
 
 	/**
@@ -296,7 +297,7 @@ export default class DashItem {
 
 	//перечитать инфу из бэка
 	reload() {
-		console.log(this);
+		//console.log(this);
 		this.list.loadItem(this.id);
 	}
 
@@ -572,23 +573,23 @@ export default class DashItem {
   			title:observable,
   			user:observable,
 
-              deadline:observable,
-              closedDate:observable,
+			deadline:observable,
+			closedDate:observable,
   			t: observable,
 
-              isClosed:observable,
-              isNow:observable,
+			isClosed:observable,
+			isNow:observable,
           
-              sorting:observable,
+			sorting:observable,
           
-              favorite:observable,
+			favorite:observable,
           
-              isUpdating:observable,
+			isUpdating:observable,
   			isAlert: observable,
   			isFlash: observable,
-              isHovered:observable,
-              isHoveredParent:observable,
-              isHoveredChild:observable,
+			isHovered:observable,
+			isHoveredParent:observable,
+			isHoveredChild:observable,
   			isExpanded:observable,
   			priority: observable,
                       

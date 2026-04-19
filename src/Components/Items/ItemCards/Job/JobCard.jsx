@@ -35,15 +35,18 @@ const JobCard = observer((props)=>{
 	//описание для DND
 	//const dropData = ;
 
+	const isEdit = item.isEdit;
+
 	useEffect(()=>{
-		return dashItemDragLogic({
+		// Если не отключить DND во время редактирования, мышью ломается выделение текста в карточке
+		if (!isEdit) return dashItemDragLogic({
 			type: 'item',		//тип - элемент списка
 			element: ref.current,//ссылка на отрисованный элемент
 			item: item,			//dashItem элемент (task|job|ticket|plan)
 			index: index,		//порядок элемента в списке
 			cell: cell,			//ячейка в которой и список и элемент
 		},ref,setClosestEdge);
-	}, [item, index, cell]);
+	}, [ref, item, cell, index, isEdit]);/** */
 
 	const onToggleClick=(e)=>{
 		item.completionToggle();

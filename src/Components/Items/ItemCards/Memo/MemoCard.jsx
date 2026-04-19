@@ -34,6 +34,7 @@ const MemoCard = observer((props)=>{
 
 	useEffect(()=>{
 		//console.log('dnd');
+		// Если не отключить DND во время редактирования, мышью ломается выделение текста в карточке
 		if (!isEdit) return dashItemDragLogic({
 			type: 'item',		//тип - элемент списка
 			element: ref.current,//ссылка на отрисованный элемент
