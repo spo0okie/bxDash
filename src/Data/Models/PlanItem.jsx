@@ -22,12 +22,9 @@ class PlanItem extends DashItem {
 	}
 
 	recalcTime() {
-		const t = this.t;
 		this.deadlineStr = this.deadline ? TimeHelper.strDateTime(this.deadline) : 'нет срока????'; //план запрещено создавать в долгом ящике. двигать сроки тоже нельзя
 		this.closedDateStr = this.closedDate ? TimeHelper.strDateHuman(this.closedDate) : '';
 		this.t = this.deadline;
-		//console.log(this, t);
-		if (this.t !== t) this.findInterval();
 	}
 
 	/**

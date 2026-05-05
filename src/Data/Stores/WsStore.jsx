@@ -1,5 +1,6 @@
 import TimeHelper from "Helpers/TimeHelper";
 import { observable, action, makeObservable, when } from "mobx";
+import { ITEM_TYPES } from "Data/itemTypes";
 
 /**
  * WsStore - хранилище для управления WebSocket соединением
@@ -58,6 +59,7 @@ export class WsStore {
 		this.items = items;
 		items.ws = this;
 		this.users = users;
+		this.handlers = this.buildHandlers();
 		this.connect(url);
 
 		// Собрать все телефоны из realPhones всех пользователей
@@ -129,71 +131,60 @@ export class WsStore {
 	// === Методы обработки сообщений ===
 
 	/**
+	 * Собирает map обработчиков WS-событий.
+	 * Системные события (ping, wsConnected, techSupport*, phonesStatusUpdate) — заданы явно.
+	 * События обновления элементов (taskUpdate/jobUpdate/...) — генерируются из реестра ITEM_TYPES,
+	 * чтобы добавление нового типа элемента сводилось к одной записи в реестре.
+	 */
+	buildHandlers() {
+		const handlers = {
+			wsConnected: data => {
+				this.setId(Number(data.connection));
+				console.log('WS Connection ID set to ' + this.id);
+			},
+			ping: data => {
+				if (this.users) this.users.updateConnection(data.connection);
+			},
+			techSupportTicketer: data => {
+				if (this.users) this.users.setDutyTicketer(data.user);
+			},
+			techSupportShift: data => {
+				if (this.users) this.users.setDutyPhone(data.phone);
+			},
+			phonesStatusUpdate: data => {
+				// data.data: { phone1: state1, phone2: state2, ... }
+				if (this.users && data.data) {
+					Object.entries(data.data).forEach(([phone, state]) => {
+						this.users.updatePhoneStatus(phone, state);
+					});
+				}
+			},
+		};
+		// taskUpdate/jobUpdate/ticketUpdate/planUpdate — из реестра.
+		// У плана id-поле называется 'id', у остальных — 'taskId'/'jobId'/'ticketId'.
+		Object.entries(ITEM_TYPES).forEach(([type, def]) => {
+			if (!def.wsEvent || !def.wsIdField) return;
+			handlers[def.wsEvent] = data => {
+				const store = this.items?.[type];
+				if (store) store.loadItem(Number(data[def.wsIdField]));
+			};
+		});
+		return handlers;
+	}
+
+	/**
 	 * Обработчик входящих WebSocket сообщений
 	 * @param {MessageEvent} message - Входящее сообщение
 	 */
 	onMessage = (message) => {
 		try {
 			const data = JSON.parse(message.data);
-
-			switch (data.event) {
-				case 'wsConnected':
-					this.setId(Number(data.connection));
-					console.log('WS Connection ID set to ' + this.id);
-					break;
-				case 'taskUpdate':
-					if (this.items && this.items['task']) {
-						this.items['task'].loadItem(Number(data.taskId));
-					}
-					break;
-				case 'jobUpdate':
-					if (this.items && this.items['job']) {
-						this.items['job'].loadItem(Number(data.jobId));
-					}
-					break;
-				case 'planUpdate':
-					if (this.items && this.items['plan']) {
-						this.items['plan'].loadItem(Number(data.id));
-					}
-					break;
-				case 'ticketUpdate':
-					if (this.items && this.items['ticket']) {
-						this.items['ticket'].loadItem(Number(data.ticketId));
-					}
-					break;
-				case 'ping':
-					if (this.users) {
-						this.users.updateConnection(data.connection);
-					}
-					break;
-				case 'techSupportTicketer':
-					if (this.users) {
-						this.users.setDutyTicketer(data.user);
-					}
-					break;
-				case 'techSupportShift':
-					if (this.users) {
-						this.users.setDutyPhone(data.phone);
-					}
-					break;
-				case 'phonesStatusUpdate':
-					// data.data: { phone1: state1, phone2: state2, ... }
-					if (this.users && data.data) {
-						Object.entries(data.data).forEach(([phone, state]) => {
-							this.users.updatePhoneStatus(phone, state);
-						});
-					}
-					break;
-				/*
-				case 'jobRemove':
-					userJobRemove(data.jobId);
-					break;
-				case 'techSupportShift':
-					userPhonesSetDuty(data.phone);
-					break;*/
-				default:
-					console.log('Unknown event');
-					console.log(data);
+			const handler = this.handlers[data.event];
+			if (handler) {
+				handler(data);
+			} else {
+				console.log('Unknown event');
+				console.log(data);
 			}
 		} catch (error) {
 			console.error('Error parsing WebSocket message:', error);

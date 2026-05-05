@@ -4,6 +4,7 @@ import BackendSystem from './BackendSystem';
 import { bxAuthScheme } from 'Helpers/BxHelper';
 import { zabbixAuthScheme } from 'Helpers/ZabbixHelper';
 import { inventoryAuthScheme } from 'Helpers/InventoryHelper';
+import { ITEM_TYPE_NAMES } from 'Data/itemTypes';
 
 /**
  * MainStore - главное хранилище приложения bxDash
@@ -20,8 +21,8 @@ class MainStore {
 	cookies = new Cookies(null, { path: '/' });  // Работа с cookies
 
 	// === Observable свойства ===
-	/** Список типов элементов дашборда */
-	itemsTypes = ['task', 'ticket', 'job', 'plan', 'memo', 'absent'];
+	/** Список типов элементов дашборда (источник — реестр Data/itemTypes) */
+	itemsTypes = ITEM_TYPE_NAMES;
 	/** Список пользователей битрикса для выбора автора заявки */
 	bxUsersList = [];
 

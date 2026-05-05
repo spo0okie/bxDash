@@ -30,9 +30,14 @@ class TimeHelper {
 
 	//возвращает дату-время начала сегодняшнего (по МСК) дня
 	getToday() {
-		let d = new Date();
-		d.setUTCHours(-this.tzHoursOffset,0,0,0);
-		return d;
+		// getTime() возвращает Date, в полях getUTC* которой лежит МСК-время.
+		// Обнуляем часы/минуты/сек/мс — получаем МСК-полночь, выраженную как UTC-поля,
+		// затем сдвигаем обратно на tzOffest, чтобы получить реальный UTC-таймстамп этой полночи.
+		// Прямой setUTCHours(-3,...) на new Date() ломается в окне 00:00-02:59 МСК,
+		// когда UTC-дата ещё вчерашняя и -3 часа откатывают на позавчера.
+		let mskNow = this.getTime();
+		mskNow.setUTCHours(0,0,0,0);
+		return new Date(mskNow.getTime() - this.tzOffest);
 	}
 
 	getTimestamp() {

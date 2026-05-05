@@ -341,7 +341,7 @@ class controller_task {
 
 
 	function action_create() {
-		global $newTaskTemplate;
+		global $newTaskTemplate, $APPLICATION;
 
 		if (!($text=router::getRoute(null,'title'))) router::haltJson('no text data');
 		if (!($responsible=router::getRoute(null,'user'))) router::haltJson('no responsible');
@@ -368,7 +368,24 @@ class controller_task {
 
 		$obTask = new CTasks;
 
-		if (!$taskId=$obTask->Add($data)) router::haltJson('error creating task',500,$data);
+		if (!$taskId=$obTask->Add($data)) {
+			$reason = '';
+			if (!empty($obTask->LAST_ERROR)) {
+				$reason = is_array($obTask->LAST_ERROR)
+					? implode('; ', $obTask->LAST_ERROR)
+					: (string)$obTask->LAST_ERROR;
+			}
+			if (!$reason && is_object($APPLICATION)) {
+				$ex = $APPLICATION->GetException();
+				if ($ex) $reason = $ex->GetString();
+			}
+			if (!$reason) $reason = 'unknown error';
+
+			router::haltJson('error creating task: '.$reason, 500, [
+				'reason' => $reason,
+				'data'   => $data,
+			]);
+		}
 
 		echo '{"result":"ok","id":'.$taskId.'}';
 	}

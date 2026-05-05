@@ -17,8 +17,6 @@ class TicketItem extends DashItem {
 	}
 
 	recalcTime() {
-		const t = this.t;
-
 		this.isNow = !this.isClosed && !this.isOnHold;		//в работе, если не закрыта и не отложена
 
 		if (this.isNow) {
@@ -30,8 +28,6 @@ class TicketItem extends DashItem {
 				this.t = this.isOnHold?null:this.deadline;
 			}
 		}
-
-		if (this.t !== t) this.findInterval();
 	}
 
 	/**

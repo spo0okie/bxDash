@@ -1,7 +1,8 @@
-import React  from "react";
+import React, { useState, useEffect } from "react";
 
 import './App.css';
 import Layout from "Components/Layout/Layout";
+import { StoreContext, createStores } from "Data/Stores/StoreProvider";
 
 
 // Create the function
@@ -15,7 +16,7 @@ function AddLibrary(url) {
 
 function App() {
     //какая-то мишура чтобы таски подгруженные в iframe работали
-    window.BX={}; 
+    window.BX={};
     [
         "/bitrix/cache/js/s1/light_blue/kernel_main/kernel_main.js",
         '/bitrix/js/main/core/core.js',
@@ -37,12 +38,31 @@ function App() {
         '/bitrix/js/main/core/core_autosave.js'
     ].map((url)=>AddLibrary(url));
     //конец мишуры
-    
+
+    // Стораджи создаются ровно один раз — useState с ленивым инициализатором
+    // идемпотентен даже при двойном mount от React.StrictMode
+    const [stores] = useState(() => createStores());
+
+    // Доступ из консоли только в dev-сборке
+    useEffect(() => {
+        if (!import.meta.env.DEV) return;
+        Object.assign(window, {
+            mainStore: stores.main,
+            timeStore: stores.time,
+            usersStore: stores.users,
+            layoutStore: stores.layout,
+            periodsStore: stores.periods,
+            itemsStore: stores.items,
+            alertsStore: stores.alerts,
+        });
+        console.log('Stores exported to window: timeStore, layoutStore, periodsStore, mainStore, usersStore, itemsStore, alertsStore');
+    }, [stores]);
+
     return (
-        <Layout />
+        <StoreContext.Provider value={stores}>
+            <Layout />
+        </StoreContext.Provider>
     );
 }
-  
+
 export default App;
-
-

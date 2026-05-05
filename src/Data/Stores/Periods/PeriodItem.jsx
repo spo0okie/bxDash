@@ -1,19 +1,18 @@
 import 'reflect-metadata';
 import TimeHelper from 'Helpers/TimeHelper';
-import ItemsIdsStore from '../Items/ItemsIdsStore';
 import PeriodItemsMixin from './PeriodItemsMixin';
-import {action, makeObservable, observable, computed, get} from 'mobx';
+import {action, makeObservable, observable, computed, values} from 'mobx';
 
 class PeriodItem {
     time;       //ссылка на объект - хранилище времени
-    
+
 	start;      //начало периода
     len;        //длина
     end;        //конец периода
-    
+
 	dropTime;   //какое время ставить элементам брошенным на этот период (на день ставим 18-00 МСК, на неделю ставим 18-00 пятницы, долгий ящик - null)
     type;       //тип ['week'|'day']
-    
+
 	className;  //класс раскраски (количество недель от этой)
 
     isOpen;     //содержит открытые элементы
@@ -21,13 +20,9 @@ class PeriodItem {
     isToday;    //содержит и те и эти (такое бывает только сегодня/на этой неделе)
 
 	interval;	//внутри какого интервала период
-	emeregency=false;		//блокировка помещения элементов в этот период (перед удалением)
-
-	itemsIds;
 
 	dragOverCell=null;
 	setDragOverCell=(value)=>{
-		//console.log(value);
 		if (this.dragOverCell!==value) this.dragOverCell=value;
 	}
 
@@ -72,12 +67,11 @@ class PeriodItem {
             let week=Math.floor((this.start-this.time.sunday0)/TimeHelper.weekLen)+1;
             this.className=Math.min(week,7);
         }
-        //console.log(time.today);
         this.isClosed=(this.start <= this.time.today);
         this.isOpen=(this.end > this.time.today || this.end===null);
         this.isToday=(this.isClosed && this.isOpen)
 	}
-	
+
     constructor(start,len,interval) {
 		this.interval=interval;
         this.time=interval.time;
@@ -88,18 +82,13 @@ class PeriodItem {
 		this.endObj = this.end?TimeHelper.objDate(this.end-1):null;
 		this.wDays=[];
 		if (this.endObj) for (let i = this.startObj.W; i <= this.endObj.W; i++) this.wDays.push(i);
-		//console.log(this.startObj);
-		//console.log(this.endObj);
-		//console.log(this.wDays);
 
 		this.timeInit();
-		this.itemsIds = new ItemsIdsStore(interval.itemsTypes);
 
         makeObservable(this,{
 			dragOverCell: observable,
 			setDragOverCell: action,
 			className: observable,
-			// Computed-свойства для мемоизации фильтрации элементов
 			closedTasks: computed,
 			openedTasks: computed,
 			closedJobs: computed,
@@ -107,173 +96,109 @@ class PeriodItem {
 			closedTickets: computed,
 			openedTickets: computed,
 			plans: computed,
+			itemsByUser: computed,
 		})
     }
 
-	// ==================== Computed-свойства для мемоизации фильтрации ====================
+	// ==================== Декларативная фильтрация элементов ====================
 
 	/**
-	 * Возвращает массив закрытых задач периода
-	 * Важно: читаем sorting и t для отслеживания изменений MobX-реактивностью
-	 * @returns {Array<TaskItem>} Массив закрытых задач
+	 * Параметризованная выборка элементов периода: по типу и предикату.
+	 * Декларативный путь — берём весь items[type].items и фильтруем через filterItem
+	 * (предикат периода по t) + клиентский предикат (open/closed).
+	 *
+	 * "Трогаем" sorting — явная зависимость для реактивной сортировки внутри ячейки;
+	 * filterItem уже читает item.t (зависимость от смены даты).
 	 */
-	get closedTasks() {
+	_pick(type, predicate) {
 		const items = this.interval.items;
 		if (!items) return [];
-		const taskIds = get(this.itemsIds.ids, 'task') || [];
-		return taskIds
-			.map(id => get(items.task.items, id))
-			.filter(task => task?.isClosed)
-			.map(task => {
-				// "Трогаем" sorting и t, чтобы MobX отслеживал их изменения для реактивной сортировки
-				void task.sorting;
-				void task.t;
-				return task;
-			});
+		const store = items[type];
+		if (!store) return [];
+		const out = [];
+		values(store.items).forEach(item => {
+			if (!this.filterItem(item)) return;
+			if (!predicate(item)) return;
+			void item.sorting;
+			out.push(item);
+		});
+		return out;
 	}
 
-	/**
-	 * Возвращает массив открытых задач периода
-	 * Важно: читаем sorting и t для отслеживания изменений MobX-реактивностью
-	 * @returns {Array<TaskItem>} Массив открытых задач
-	 */
-	get openedTasks() {
-		const items = this.interval.items;
-		if (!items) return [];
-		const taskIds = get(this.itemsIds.ids, 'task') || [];
-		return taskIds
-			.map(id => get(items.task.items, id))
-			.filter(task => task && !task.isClosed)
-			.map(task => {
-				// "Трогаем" sorting и t, чтобы MobX отслеживал их изменения для реактивной сортировки
-				void task.sorting;
-				void task.t;
-				return task;
-			});
-	}
+	get closedTasks()   { return this._pick('task',   i => i.isClosed); }
+	get openedTasks()   { return this._pick('task',   i => !i.isClosed); }
+	get closedJobs()    { return this._pick('job',    i => i.isClosed); }
+	get openedJobs()    { return this._pick('job',    i => !i.isClosed); }
+	get closedTickets() { return this._pick('ticket', i => i.isClosed); }
+	get openedTickets() { return this._pick('ticket', i => !i.isClosed); }
+	/** Планы — без разделения на open/closed, рисуются всегда. */
+	get plans()         { return this._pick('plan',   () => true); }
 
 	/**
-	 * Возвращает массив закрытых работ периода
-	 * Важно: читаем sorting и t для отслеживания изменений MobX-реактивностью
-	 * @returns {Array<JobItem>} Массив закрытых работ
+	 * Индекс элементов периода по userId.
+	 *
+	 * Один проход на период вместо отдельной фильтрации на каждую UserCell.
+	 * Учитывает layout.accomplicesVisible: при включённом флаге задача
+	 * попадает в ячейки всех соисполнителей, а не только ответственного.
+	 *
+	 * Для job/ticket/plan accomplices не применяется — только по responsible.
 	 */
-	get closedJobs() {
-		const items = this.interval.items;
-		if (!items) return [];
-		const jobIds = get(this.itemsIds.ids, 'job') || [];
-		return jobIds
-			.map(id => get(items.job.items, id))
-			.filter(job => job?.isClosed)
-			.map(job => {
-				// "Трогаем" sorting и t, чтобы MobX отслеживал их изменения для реактивной сортировки
-				void job.sorting;
-				void job.t;
-				return job;
+	get itemsByUser() {
+		const accomplicesVisible = this.interval.layout.accomplicesVisible;
+		const map = new Map();
+		const ensure = uid => {
+			let v = map.get(uid);
+			if (!v) {
+				v = {
+					closedTasks: [], openedTasks: [],
+					closedJobs: [], openedJobs: [],
+					closedTickets: [], openedTickets: [],
+					plans: [],
+				};
+				map.set(uid, v);
+			}
+			return v;
+		};
+
+		const placeTask = (task, bucket) => {
+			ensure(task.user)[bucket].push(task);
+			if (!accomplicesVisible) return;
+			(task.accomplices ?? []).forEach(a => {
+				if (a !== task.user) ensure(a)[bucket].push(task);
 			});
+		};
+
+		this.openedTasks.forEach(t => placeTask(t, 'openedTasks'));
+		this.closedTasks.forEach(t => placeTask(t, 'closedTasks'));
+		this.openedJobs.forEach(j => ensure(j.user).openedJobs.push(j));
+		this.closedJobs.forEach(j => ensure(j.user).closedJobs.push(j));
+		this.openedTickets.forEach(tk => ensure(tk.user).openedTickets.push(tk));
+		this.closedTickets.forEach(tk => ensure(tk.user).closedTickets.push(tk));
+		this.plans.forEach(p => ensure(p.user).plans.push(p));
+
+		return map;
 	}
 
-	/**
-	 * Возвращает массив открытых работ периода
-	 * Важно: читаем sorting и t для отслеживания изменений MobX-реактивностью
-	 * @returns {Array<JobItem>} Массив открытых работ
-	 */
-	get openedJobs() {
-		const items = this.interval.items;
-		if (!items) return [];
-		const jobIds = get(this.itemsIds.ids, 'job') || [];
-		return jobIds
-			.map(id => get(items.job.items, id))
-			.filter(job => job && !job.isClosed)
-			.map(job => {
-				// "Трогаем" sorting и t, чтобы MobX отслеживал их изменения для реактивной сортировки
-				void job.sorting;
-				void job.t;
-				return job;
-			});
-	}
-
-	/**
-	 * Возвращает массив закрытых тикетов периода
-	 * Важно: читаем sorting и t для отслеживания изменений MobX-реактивностью
-	 * @returns {Array<TicketItem>} Массив закрытых тикетов
-	 */
-	get closedTickets() {
-		const items = this.interval.items;
-		if (!items) return [];
-		const ticketIds = get(this.itemsIds.ids, 'ticket') || [];
-		return ticketIds
-			.map(id => get(items.ticket.items, id))
-			.filter(ticket => ticket?.isClosed)
-			.map(ticket => {
-				// "Трогаем" sorting и t, чтобы MobX отслеживал их изменения для реактивной сортировки
-				void ticket.sorting;
-				void ticket.t;
-				return ticket;
-			});
-	}
-
-	/**
-	 * Возвращает массив открытых тикетов периода
-	 * Важно: читаем sorting и t для отслеживания изменений MobX-реактивностью
-	 * @returns {Array<TicketItem>} Массив открытых тикетов
-	 */
-	get openedTickets() {
-		const items = this.interval.items;
-		if (!items) return [];
-		const ticketIds = get(this.itemsIds.ids, 'ticket') || [];
-		return ticketIds
-			.map(id => get(items.ticket.items, id))
-			.filter(ticket => ticket && !ticket.isClosed)
-			.map(ticket => {
-				// "Трогаем" sorting и t, чтобы MobX отслеживал их изменения для реактивной сортировки
-				void ticket.sorting;
-				void ticket.t;
-				return ticket;
-			});
-	}
-
-	/**
-	 * Возвращает массив планов периода (без разделения на открытые/закрытые)
-	 * Важно: читаем sorting и t для отслеживания изменений MobX-реактивностью
-	 * @returns {Array<PlanItem>} Массив планов
-	 */
-	get plans() {
-		const items = this.interval.items;
-		if (!items) return [];
-		const planIds = get(this.itemsIds.ids, 'plan') || [];
-		return planIds
-			.map(id => get(items.plan.items, id))
-			.filter(plan => plan)
-			.map(plan => {
-				// "Трогаем" sorting и t, чтобы MobX отслеживал их изменения для реактивной сортировки
-				void plan.sorting;
-				void plan.t;
-				return plan;
-			});
-	}
+	/** Дефолтный набор пустых массивов для пользователя без элементов в периоде. */
+	static EMPTY_USER_ITEMS = Object.freeze({
+		closedTasks: [], openedTasks: [],
+		closedJobs: [], openedJobs: [],
+		closedTickets: [], openedTickets: [],
+		plans: [],
+	});
 
 	// ==================== Вспомогательные методы ====================
 
-	/**
-	 * Логирование основных параметров периода
-	 */
+	/** Логирование основных параметров периода (без счётчика — он стоит дороже теперь). */
 	logInfo() {
 		const startStr = TimeHelper.strDateTime(this.start);
 		const endStr = this.end ? TimeHelper.strDateTime(this.end) : 'null (bucket)';
 		const lenStr = this.len ? `${this.len / TimeHelper.dayLen}d` : 'null';
-		const itemCount = this.countItems ? this.countItems() : 0;
-
 		console.log(
 			`  [Period ${this.type}] ` +
-			`start=${startStr}, ` +
-			`end=${endStr}, ` +
-			`len=${lenStr}, ` +
-			`title="${this.title}", ` +
-			`className=${this.className}, ` +
-			`isOpen=${this.isOpen}, ` +
-			`isClosed=${this.isClosed}, ` +
-			`isToday=${this.isToday}, ` +
-			`items=${itemCount}`
+			`start=${startStr}, end=${endStr}, len=${lenStr}, ` +
+			`title="${this.title}", className=${this.className}, ` +
+			`isOpen=${this.isOpen}, isClosed=${this.isClosed}, isToday=${this.isToday}`
 		);
 	}
 }

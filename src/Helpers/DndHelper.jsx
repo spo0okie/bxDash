@@ -45,196 +45,108 @@ function dashItemNewSort(item, list, index, edge) {
 }
 
 
-function dashItemDropOnItem(item,targetItem,targetCell,sourceCell) {
-    // нам надо сравнивать не t задачи и t новой ячейки (они сроду не совпадут), а t старой ячейки и t новой
-    // для новой сортировки нам надо надыбать полный список в новой ячейке, чтобы понять между какими сорт-индексами брошена ячейка
-    console.log('Dropping on item'); 
-    //console.log(item);
-    //console.log(targetItem);
-    //console.log(targetCell);
-    //console.log(sourceCell);
-    const edge=extractClosestEdge(targetItem.data);
-    if (edge===undefined) {
-        console.log('Cant find target item edge. Halt DND!');
-        return;
+/**
+ * Был ли drop фактически "на то же место". Условия разные для drop-on-item и drop-on-cell:
+ * - на элемент: попали в соседа сверху+top или снизу+bottom (и в ту же ячейку);
+ * - на ячейку: уже последний в списке этой ячейки.
+ */
+function isDropOnSelf(targetCell, sourceCell, oldIndex, dropOnItem) {
+    if (targetCell.data.cell.id !== sourceCell.data.cell.id) return false;
+    if (dropOnItem) {
+        const { index, edge } = dropOnItem;
+        return index === oldIndex
+            || (index === oldIndex + 1 && edge === 'top')
+            || (index === oldIndex - 1 && edge === 'bottom');
     }
-
-    const index=targetItem.data.index;
-    if (index===undefined) {
-        console.log('Cant find target item index. Halt DND!');
-        return;
-    }
-
-    const targetList=targetCell.data.items;
-    if (targetList===undefined) {
-        console.log('Cant find target cell items list. Halt DND!');
-        return;
-    }
-
-    const sourceList=sourceCell.data.items;
-    if (sourceList===undefined) {
-        console.log('Cant find source cell items list. Halt DND!');
-        return;
-    }
-
-    console.log(sourceList);
-    const oldIndex=sourceList.findIndex((i)=>i.uid===item.uid)
-    if (oldIndex===-1) {
-        console.log('Cant find myself in source cell. Halt DND!');
-        return;
-    }
-
-    console.log('shifting '+oldIndex+' => '+index+' ('+edge+')');
-    console.log(sourceCell.data.cell.id +'==>'+ targetCell.data.cell.id)
-
-    //если DND внутри одной ячейки (то возможна только сортировка)
-    if (
-        targetCell.data.cell.id === sourceCell.data.cell.id 
-        && 
-        (
-            index===oldIndex 
-            || 
-            (index===oldIndex+1 && edge==='top') 
-            ||
-            (index===oldIndex-1 && edge==='bottom') 
-        )
-    ) {
-        console.log ('Droped on itself. nothing to do');
-        return;            
-    }
-
-    let newParams={
-		deadline: item.deadline,
-        user:item.user,
-        sorting:item.sorting
-    };
-
-    const newSort=dashItemNewSort(item,targetList,index,edge);
-    console.log('sort: '+item.sorting+' => '+newSort);
-    if (newSort!==item.sorting) {
-        console.log('changing sort: '+item.sorting+' => '+newSort);
-        newParams.sorting=newSort;
-    }
-
-    if (targetCell.data.cell.t !== sourceCell.data.cell.t) {
-        console.log('changing time => '+targetCell.data.cell.dropT);
-		newParams.deadline =targetCell.data.cell.dropT;
-    }
-
-    if (targetCell.data.cell.user !== sourceCell.data.cell.user) {
-        console.log('changing user => '+targetCell.data.cell.user);
-        newParams.user=targetCell.data.cell.user
-    }
-
-    if (targetCell.data.cell.priority !== null && targetCell.data.cell.priority !== undefined) {
-        newParams.priority = targetCell.data.cell.priority;
-    }
-
-    item.movePosition(newParams);
-}
-
-function dashItemDropOnCell(item,targetCell,sourceCell) {
-    // нам надо сравнивать не t задачи и t новой ячейки (они сроду не совпадут), а t старой ячейки и t новой
-    // для новой сортировки нам надо надыбать полный список в новой ячейке, чтобы понять между какими сорт-индексами брошена ячейка
-    console.log('Dropping on Cell'); 
-    //console.log(item);
-    //console.log(targetCell);
-    //console.log(sourceCell);
-
-    const targetList=targetCell.data.items;
-    if (targetList===undefined) {
-        console.log('Cant find target cell items list. Halt DND!');
-        return;
-    }
-    const index=targetList.length;
-
-    const sourceList=sourceCell.data.items;
-    if (sourceList===undefined) {
-        console.log('Cant find source cell items list. Halt DND!');
-        return;
-    }
-
-    //console.log(sourceList);
-    const oldIndex=sourceList.findIndex((i)=>i.uid===item.uid)
-    if (oldIndex===-1) {
-        console.log('Cant find myself in source cell. Halt DND!');
-        return;
-    }
-
-    console.log(sourceCell.data.cell.id +'==>'+ targetCell.data.cell.id)
-    console.log('shifting '+oldIndex+' => '+index);
-
-    
-    if (
-        targetCell.data.cell.id === sourceCell.data.cell.id  //если DND внутри одной ячейки (то возможна только сортировка)
-        &&  
-        index-1 === oldIndex //если был и так последним в списке (index===length)
-    ) {
-        console.log ('Droped on itself. nothing to do');
-        return;            
-    }
-
-    let newParams={
-		deadline: item.deadline,
-        user: item.user,
-        sorting: item.sorting
-    };
-
-    const newSort=index?targetList[index-1].sorting-100:item.sorting;
-    console.log('sort: '+item.sorting+' => '+newSort);
-    if (newSort!==item.sorting) {
-        console.log('changing sort: '+item.sorting+' => '+newSort);
-        newParams.sorting=newSort;
-    }
-
-    if (targetCell.data.cell.t !== sourceCell.data.cell.t) {
-        console.log('changing time => '+targetCell.data.cell.dropT);
-		newParams.deadline =targetCell.data.cell.dropT;
-    }
-
-    if (targetCell.data.cell.user !== sourceCell.data.cell.user) {
-        console.log('changing user => '+targetCell.data.cell.user);
-        newParams.user=targetCell.data.cell.user
-    }
-
-    if (targetCell.data.cell.priority !== null && targetCell.data.cell.priority !== undefined) {
-        newParams.priority = targetCell.data.cell.priority;
-    }
-
-    item.movePosition(newParams);
-
+    // drop в пустое место ячейки (= в конец); если уже был последним — ничего не меняется
+    return targetCell.data.items.length - 1 === oldIndex;
 }
 
 /**
- * Общий вызов когда карточку бросили кудато
- * @param {*} item карточка
- * @param {*} location кудато
- * @returns 
+ * Сборка параметров для item.movePosition. Параметр копируется только если он
+ * реально меняется относительно sourceCell — тогда movePosition покажет confirm
+ * только по релевантным полям.
  */
-export function dashItemsDrop(item,location) {
-    //console.log(location);
+function buildMoveParams(item, sourceCell, targetCell, newSort) {
+    const params = {
+        deadline: item.deadline,
+        user: item.user,
+        sorting: item.sorting,
+    };
+    if (newSort !== item.sorting) {
+        console.log('changing sort: ' + item.sorting + ' => ' + newSort);
+        params.sorting = newSort;
+    }
+    if (targetCell.data.cell.t !== sourceCell.data.cell.t) {
+        console.log('changing time => ' + targetCell.data.cell.dropT);
+        params.deadline = targetCell.data.cell.dropT;
+    }
+    if (targetCell.data.cell.user !== sourceCell.data.cell.user) {
+        console.log('changing user => ' + targetCell.data.cell.user);
+        params.user = targetCell.data.cell.user;
+    }
+    if (targetCell.data.cell.priority !== null && targetCell.data.cell.priority !== undefined) {
+        params.priority = targetCell.data.cell.priority;
+    }
+    return params;
+}
 
-    const sourceCell=location.initial.dropTargets.find((source)=>source.data.type==='cell');
-    if (sourceCell===undefined) {
-        console.log ('Cant find source cell. Halt DND!');
+/**
+ * Новый sort-индекс при drop:
+ * - если бросили на элемент — между соседями по edge (через dashItemNewSort);
+ * - если бросили в ячейку — в конец списка (на 100 ниже последнего);
+ * - если ячейка пустая — оставляем текущий sorting.
+ */
+function computeNewSort(item, targetList, dropOnItem) {
+    if (dropOnItem) {
+        return dashItemNewSort(item, targetList, dropOnItem.index, dropOnItem.edge);
+    }
+    const last = targetList.length - 1;
+    if (last < 0) return item.sorting;
+    return targetList[last].sorting - 100;
+}
+
+/**
+ * Общий вызов когда карточку бросили куда-то. Один путь для drop-on-item и drop-on-cell.
+ * @param {*} item карточка
+ * @param {*} location место куда бросили (от @atlaskit/pragmatic-drag-and-drop)
+ */
+export function dashItemsDrop(item, location) {
+    const sourceCell = location.initial.dropTargets.find(s => s.data.type === 'cell');
+    if (!sourceCell) { console.log('Cant find source cell. Halt DND!'); return; }
+
+    const targetCell = location.current.dropTargets.find(t => t.data.type === 'cell');
+    if (!targetCell) { console.log('Cant find target cell. Halt DND!'); return; }
+
+    const targetItem = location.current.dropTargets.find(t => t.data.type === 'item');
+    let dropOnItem = null;
+    if (targetItem) {
+        const edge = extractClosestEdge(targetItem.data);
+        const index = targetItem.data.index;
+        if (edge === undefined || index === undefined) {
+            console.log('Cant extract edge/index from target item. Halt DND!');
+            return;
+        }
+        dropOnItem = { edge, index };
+    }
+
+    const targetList = targetCell.data.items;
+    const sourceList = sourceCell.data.items;
+    if (!targetList || !sourceList) { console.log('Cant find cell items list. Halt DND!'); return; }
+
+    const oldIndex = sourceList.findIndex(i => i.uid === item.uid);
+    if (oldIndex === -1) { console.log('Cant find myself in source cell. Halt DND!'); return; }
+
+    console.log(sourceCell.data.cell.id + ' ==> ' + targetCell.data.cell.id);
+
+    if (isDropOnSelf(targetCell, sourceCell, oldIndex, dropOnItem)) {
+        console.log('Dropped on itself. nothing to do');
         return;
     }
 
-    const targetCell=location.current.dropTargets.find((target)=>target.data.type==='cell');
-    if (targetCell===undefined) {
-        console.log ('Cant find target cell. Halt DND!');
-        return;
-    }
-
-    const targetItem=location.current.dropTargets.find((target)=>target.data.type==='item');
-    if (targetItem!==undefined) {
-        dashItemDropOnItem(item,targetItem,targetCell,sourceCell);
-    } else if (targetCell!==undefined) {
-        console.log('Dropping on cell');
-        dashItemDropOnCell(item,targetCell,sourceCell);
-    } else {
-        console.log('No valid drop target');
-    }
+    const newSort = computeNewSort(item, targetList, dropOnItem);
+    const params = buildMoveParams(item, sourceCell, targetCell, newSort);
+    item.movePosition(params);
 }
 
 

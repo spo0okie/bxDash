@@ -1,4 +1,4 @@
-import { observable, keys, action, makeObservable, get, has} from 'mobx';
+import { observable, action, makeObservable } from 'mobx';
 import TimeHelper from "Helpers/TimeHelper";
 import RelativesMixin from './Mixins/RelativesMixin';
 
@@ -17,10 +17,7 @@ export default class DashItem {
  	
  	parents = [];			//родительские элементы (объект)
  	children = [];			//подчиненные элементы (объекты)
- 
- 	intervalId=null;		//в какой интервал попадает элемент
- 	periodId=null;			//в какой период попадает элемент
- 
+
 	title='';				//заголовок (что будет писаться на доске)
  	defaultTitle='';		//какой заголовок у элементов по умолчанию
  
@@ -179,120 +176,6 @@ export default class DashItem {
 		setTimeout(() => { this.setFlash(false);}, duration);
 		return this;
 	}
-
-
-	findInterval(ids = null) {
-		let homeless=false;
-		let found=false;
-
-		//если явно не сказали среди каких периодов искать - ищем среди всех
-		if (ids === null) { 
-			ids = keys(this.context.periods.intervals).sort((a,b)=>b-a); //делаем обратно отсортированный список, чтобы искать всегда с конца (где ведро)
-			//console.log(ids);
-			homeless=true;	//если интервал не будет найден из всего набора, значит элемент никуда не входит
-		}
-
-		//для оптимизации надо наверно список развернуть от больших id к маленьким, т.к. половина осядет в ведре
-		ids.forEach(id => {
-			if (found) return;	//нам нужен первый совпавший
-			const interval = get(this.context.periods.intervals, id);
-			//console.log(id);
-			if (interval.filterItem(this)) {
-				this.setInterval(id);
-				homeless=false;
-				found=true;
-			}
-		});
-
-		if (homeless) {
-			this.unsetInterval()
-			//console.log(this);
-		} else {
-			//console.log(this.intervalId);
-		}
-	}
-
-	/**
-	 * Отстегивает итем от интервала и убирает себя из него  (двусторонний разрыв ссылок)
-	 */
-	unsetInterval() {
-		if (this.intervalId !== null) {			//если уже был интервал
-			if (has(this.context.periods.intervals, this.intervalId))
-				get(this.context.periods.intervals, this.intervalId)
-					.detachItem(this);				//отцепляемся от него
-		}
-		this.intervalId = null;
-		this.unsetPeriod();
-	}
-
-	/**
-	 * Прикрепляет элемент к интервалу
-	 * Используется в сценарии, когда элемент загружается/обновляется:
-	 *   - Страница загружается (сначала сетка потом элементы)
-	 *   - Страница дозагружается (также)
-	 *   - Элемент перечитывается, добавляется
-	 * @param {*} id 
-	 * @returns 
-	 */
-	setInterval(id) {		
-		const interval=get(this.context.periods.intervals, id);
-		if (this.intervalId !== id) {				
-			this.unsetInterval();
-			this.intervalId=id;
-			
-			interval.attachItem(this);
-			//после смены интервала надо найти свой период в нем
-		}
-		this.findPeriod(interval.periodsIds);				
-		//console.log(this.intervalId);
-		
-	}
-
-	findPeriod(ids=null) {
-		//если явно не сказали среди каких периодов искать - ищем среди всех
-		if (ids===null) {ids=keys(this.context.periods.periods)}
-
-		ids.forEach(t => {
-			const period = get(this.context.periods.periods, t);
-			if (period.filterItem(this)) {
-				this.setPeriod(t);
-				return;
-			}
-		});
-
-		if (this.periodId===null) console.log(this);
-	}
-
-	/**
-	 * Отстегивает итем от периода и убирает себя из него  (двусторонний разрыв ссылок)
-	 */
-	unsetPeriod() {
-		if (this.periodId !== null) {			//если уже был интервал
-			if (has(this.context.periods.periods, this.periodId)) {	//такой интервал есть
-				get(this.context.periods.periods, this.periodId)
-					.detachItem(this);				//отцепляемся от него
-			}
-		}
-		this.periodId = null;
-	}
-
-	setPeriod(id) {
-		//if (this.periodId === id) return;		//если ничего не поменялось 
-		//(при разбивке недели на дни то что на понедельник не поймет что переехало из недели в день)
-		//тут нужен какой-то uid может
-
-		this.unsetPeriod();
-
-		
-		//console.log(TimeHelper.strDateTime(this.periodId));
-		//console.log(this.context.periods.periods);
-		if (id!==null) {
-			this.periodId = id;
-			get(this.context.periods.periods, this.periodId)
-			.attachItem(this);				//прицепляемся к нему
-		}
-	}
-
 
 
 	//перечитать инфу из бэка
@@ -489,7 +372,6 @@ export default class DashItem {
 	}
 
 	recalcTime() {
-		const t = this.t;
 		if (this.deadline) {
 			this.deadlineObj = TimeHelper.objDate(this.deadline);
 			this.deadlineStr = this.deadlineObj.D + '.' + this.deadlineObj.M;
@@ -513,8 +395,6 @@ export default class DashItem {
 			this.isClosed = false;
 			this.isOpen = true;
 		}
-		//console.log(this, t);
-		if (this.t !== t) this.findInterval();
 	}
 
 	/**

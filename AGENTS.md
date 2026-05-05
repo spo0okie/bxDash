@@ -127,6 +127,17 @@ export default Sidebar;
 
 ### Управление состоянием
 
+#### Архитектурные принципы (после рефакторинга 2026-05)
+
+Эти принципы важно соблюдать при добавлении новой функциональности — иначе мы откатимся к сложности, от которой ушли. См. подробности в [plans/simplify.md](plans/simplify.md).
+
+1. **Реестр типов элементов**. Все циклы по типам строятся из [`src/Data/itemTypes.jsx`](src/Data/itemTypes.jsx) (`ITEM_TYPES`, `ITEM_TYPE_NAMES`, `classForType`). Не плодить литеральные списки `[task, ticket, job, plan, memo, absent]` в коде — одно место правды.
+2. **Стораджи через фабрику**. Не создавать стораджи в module scope. Вызов `createStores()` ровно один раз из [`App.jsx`](src/App.jsx) через `useState(() => createStores())`. Доступ из компонентов — через хук `useStores()` из [`StoreProvider.jsx`](src/Data/Stores/StoreProvider.jsx) (или `useContext(StoreContext)` для классовых компонентов).
+3. **Декларативный поток items↔periods**. У `DashItem` НЕТ методов `findInterval/setInterval/findPeriod/setPeriod` и нет полей `intervalId/periodId`. Период (`PeriodItem`) сам решает, какие элементы в него попадают, через computed-фильтрацию (`PeriodItem._pick`). Не возвращать двусторонние ссылки.
+4. **Один индекс на Period**. Группировка элементов по userId делается ровно один раз в `PeriodItem.itemsByUser` (computed). UserCell-компоненты только читают свою долю, не делают повторной фильтрации по `userId`/`accomplices`.
+5. **WS-обработчики из реестра**. Новый тип элемента → добавить запись в `ITEM_TYPES` (с `wsEvent`/`wsIdField`), и [`WsStore.buildHandlers`](src/Data/Stores/WsStore.jsx) автоматически пропишет обработчик `*Update`-события. Не дублировать `case 'fooUpdate':` в switch.
+6. **LayoutStore.prefs**. Все персистируемые настройки (видимость типов, expand, sidebar width) живут в `prefs = observable.map()`. Авто-сохранение в куки через `observe(this.prefs)`. Для нового флага — добавить ключ в `PREF_DEFAULTS` и опциональный геттер-обёртку для старого API.
+
 #### Структура хранилища
 ```javascript
 import { observable, action, makeObservable, computed } from 'mobx';
@@ -161,6 +172,10 @@ class ExampleStore {
 }
 ```
 
+⚠️ **Запись в observable.map ВНЕ action бросает в strict-mode** — например, `this.prefs.set(key, value)` в конструкторе. Если нужна массовая инициализация observable.map — создавайте её через `observable.map(initialEntries)` целиком, а не через цикл `.set()`.
+
+⚠️ **`observe(store, 'fieldName', cb)` требует, чтобы `fieldName` было объявлено в `makeObservable`** — включая computed-геттеры. Если поле не зарегистрировано, бросает «no observable property X found».
+
 #### Правила MobX
 
 1. **Использовать только `makeObservable`** с явным объявлением реактивных свойств
@@ -175,17 +190,19 @@ class ExampleStore {
 - `action.bound` — для методов, которые передаются как колбэки
 
 #### Использование контекста
+
+Предпочтительный способ — хук `useStores()`:
+
 ```javascript
-import { useContext } from "react";
-import { StoreContext } from "Data/Stores/StoreProvider";
+import { useStores } from "Data/Stores/StoreProvider";
 
 const MyComponent = () => {
-  const context = useContext(StoreContext);
-  const { layout, main } = context;
-
+  const { layout, main } = useStores();
   // Используйте хранилища здесь
 };
 ```
+
+Хук бросит явную ошибку, если вызван вне `<StoreContext.Provider>`. Для legacy-кода и классовых компонентов остаётся доступным `useContext(StoreContext)` / `Class.contextType = StoreContext`.
 
 ### Обработка ошибок
 
@@ -275,9 +292,11 @@ const DraggableItem = ({ item }) => {
 ```
 src/
 ├── Components/          # React компоненты
-│   ├── Layout/         # Компоненты layout (включая MemoCell в Layout/Sidebar/)
+│   ├── Layout/         # Layout-композиция (Layout, CalendarGrid, BucketIntervals,
+│   │                   #   RightPaneBucket, Modals, useGlobalShortcuts, Sidebar/MemoCell)
 │   └── Items/          # Компоненты элементов
 ├── Data/               # Уровень данных
+│   ├── itemTypes.jsx   # Реестр типов элементов (единый источник правды)
 │   ├── Stores/         # MobX хранилища
 │   └── Models/         # Модели данных элементов (TaskItem, JobItem и др.)
 ├── Helpers/            # Вспомогательные функции
@@ -367,4 +386,4 @@ docs: обновить README
 
 ---
 
-*Этот документ должен обновляться по мере развития кодовой базы. Последнее обновление: январь 2026*
+*Этот документ должен обновляться по мере развития кодовой базы. Последнее обновление: май 2026 (после рефакторинга simplify, см. [plans/simplify.md](plans/simplify.md)).*

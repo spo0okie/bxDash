@@ -1,25 +1,32 @@
 # Архитектура хранилищ интервалов и периодов
 
+> **Обновлено май 2026** после рефакторинга по [plans/simplify.md](../plans/simplify.md), Этап 8.
+> Двусторонние ссылки `DashItem ↔ IntervalItem ↔ PeriodItem` УБРАНЫ. Связь теперь
+> декларативная: период сам решает, какие элементы в него попадают, через computed-фильтрацию.
+
 ## Обзор
 
-Система управления временными интервалами и периодами в bxDash состоит из трех уровней:
+Система состоит из трёх уровней:
 
-1. **IntervalItem** — недельные интервалы
+1. **IntervalItem** — недельные интервалы (плюс bucket с `end===null`)
 2. **PeriodItem** — дневные/недельные периоды внутри интервалов
-3. **DashItem** — элементы (задачи, работы, заявки), размещаемые в периодах
+3. **DashItem** — элементы (задачи, работы, заявки), отображаемые в периодах
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
 │                     PeriodsStore                               │
+│                                                                │
+│  intervals: Map(id → IntervalItem)                             │
+│  periods:   Map(start → PeriodItem)                            │
+│  items:     ItemsMultiStore   (привязывается через             │
+│                                attachItemsStore из ItemsMulti) │
+│                                                                │
 │  ┌─────────────────────────────────────────────────────────┐   │
 │  │  IntervalItem (id=-4)                                   │   │
 │  │  ┌──────────┐ ┌──────────┐       ┌──────────┐           │   │
 │  │  │PeriodItem│ │PeriodItem│  ...  │PeriodItem│           │   │
 │  │  │(day 1)   │ │(day 2)   │       │(day 7)   │           │   │
-│  │  └────┬─────┘ └────┬─────┘       └────┬─────┘           │   │
-│  │       │            │                  │                 │   │
-│  │       ▼            ▼                  ▼                 │   │
-│  │  [DashItem]    [DashItem]         [DashItem]            │   │
+│  │  └──────────┘ └──────────┘       └──────────┘           │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │                           ...                                  │
 │  ┌─────────────────────────────────────────────────────────┐   │
@@ -30,13 +37,23 @@
 │  │  └─────────────────────────────────────────────────┘    │   │
 │  └─────────────────────────────────────────────────────────┘   │
 └────────────────────────────────────────────────────────────────┘
+                            ▲
+                            │  PeriodItem._pick(type, predicate) — computed
+                            │  values(items[type].items).filter(filterItem & predicate)
+                            │
+                  ┌─────────┴──────────┐
+                  │  ItemsMultiStore   │  (хранит DashItem'ы по типам)
+                  │  task / job / ...  │
+                  └────────────────────┘
 ```
+
+Ключевое отличие от старой модели: **никто не «приписывает» элемент к периоду**. Периоды сами читают `items[type].items` через computed и оставляют те, чей `t` попадает в их `[start, end)`.
 
 ## TimeStore — источник истины о времени
 
-**Назначение:** Хранит текущее время и вычисляет границы недель.
+**Назначение:** хранит текущее время и вычисляет границы недель.
 
-**Ключевые поля:**
+**Ключевые поля (observable):**
 
 - `today` — timestamp начала текущего дня (00:00 МСК)
 - `monday0` — timestamp начала текущей недели (00:00 понедельника)
@@ -47,34 +64,34 @@
 
 - `weekStart(id)` = `monday0 + weekLen * id`
 - `weekEnd(id)` = `sunday0 + weekLen * id`
-- `weeksRange()` — возвращает массив id недель [weekMin..weekMax+1] (bucket)
+- `weeksRange(bucket)` — массив id недель `[weekMin..weekMax]`, при `bucket=true` ещё `+1` (для долгого ящика)
 
 **Жизненный цикл:**
 
-1. Создается при старте приложения
-2. `updateTime()` вызывается каждую секунду
-3. При смене дня пересчитываются `today`, `monday0`, `sunday0`
+1. Создаётся при старте через `createStores()` ([StoreProvider.jsx](../src/Data/Stores/StoreProvider.jsx))
+2. `updateTime()` запускается каждую секунду через `setInterval`
+3. При смене дня обновляются `today`, `monday0`, `sunday0` (см. раздел «Порядок обновлений» ниже)
 
 ## PeriodsStore — контейнер интервалов
 
-**Назначение:** Управляет коллекцией IntervalItem, реагирует на изменения времени.
+**Назначение:** управляет коллекцией `IntervalItem`, реагирует на изменения времени.
 
 **Ключевые поля:**
-- `intervals` — Map(id → IntervalItem)
-- `periods` — Map(start → PeriodItem) — все периоды всех интервалов
+- `intervals` — `observable.map(id → IntervalItem)`
+- `periods` — `observable.map(start → PeriodItem)` — все периоды всех интервалов
+- `items` — ссылка на `ItemsMultiStore` (устанавливается через `attachItemsStore` из конструктора `ItemsMultiStore`)
 
-**Жизненный цикл:**
-
-### Инициализация (constructor)
+### Конструктор
 
 ```javascript
 constructor(main, layout, time) {
-    this.weeksInit();  // Создает IntervalItem для всех недель
-    
-    // Подписки на изменения
-    observe(time, 'weekMin', change => this.weeksInit());
-    observe(time, 'weekMax', change => this.weeksInit());
-    observe(time, 'today', change => this.weeksInit());
+    this.weeksInit();
+
+    observe(time, 'weekMin', () => this.weeksInit());
+    observe(time, 'weekMax', () => this.weeksInit());
+    // При смене "сегодня" — границы недель могли поплыть (вс->пн), пересобираем.
+    // Элементы перепривяжутся сами через computed (зависит от item.t и period.start/end).
+    observe(time, 'today', () => this.weeksInit());
 }
 ```
 
@@ -82,58 +99,53 @@ constructor(main, layout, time) {
 
 ```javascript
 weeksInit() {
-    const weeks = this.time.weeksRange(true);  // [-4, -3, ..., 4, 5]
-    
-    // 1. Создаем или обновляем существующие интервалы
-    weeks.forEach(id => {
+    const weeks = this.time.weeksRange(true);  // [-4, ..., 4, 5]
+
+    weeks.reverse().forEach(id => {
         if (has(this.intervals, id)) {
-            get(this.intervals, id).init();  // Обновляем существующий
+            get(this.intervals, id).init();           // обновляем существующий
         } else {
-            set(this.intervals, id, new IntervalItem(id, ...));  // Создаем новый
+            set(this.intervals, id, new IntervalItem(id, this.main, this.time, this.layout, this));
         }
     });
-    
-    // 2. Удаляем интервалы, которых больше нет в диапазоне
+
     keys(this.intervals).forEach(id => {
-        if (!weeks.includes(id)) {
-            this.deleteInterval(id);
-        }
+        if (!weeks.includes(id)) this.deleteInterval(id);
     });
 }
 ```
 
+`deleteInterval(id)` зовёт `interval.destroy()` (освобождает свои периоды) и удаляет интервал из карты. Никаких `beforeDelete`/`emergency`-флагов больше нет — элементы автоматически переедут в новые периоды через computed.
+
 ## IntervalItem — недельный интервал
 
-**Назначение:** Группирует элементы по неделям, управляет периодами внутри недели.
+**Назначение:** группирует периоды по неделям. **НЕ хранит** элементы — они живут в общем `ItemsMultiStore`, фильтрация идёт на уровне `PeriodItem`.
 
 **Ключевые поля:**
 
 - `id` — номер недели относительно текущей (0 = текущая, -1 = прошлая, +1 = следующая)
-- `start`, `end` — границы интервала в timestamp
-- `today` — копия time.today на момент инициализации
-- `periodsIds` — массив start-ов периодов этого интервала
-- `itemsIds` — хранилище id элементов в этом интервале
-- `expand` — кэш layout.expand
+- `start`, `end` — границы интервала (`end===null` для bucket)
+- `today` — копия `time.today` на момент инициализации
+- `periodsIds` — массив start-ов своих периодов
+- `expand` — кэш `layout.expand` (для отслеживания смены раскладки)
+- `itemsTypes` — список типов из реестра ([Data/itemTypes.jsx](../src/Data/itemTypes.jsx))
 
-**Жизненный цикл:**
+**Геттер:**
+- `get items()` → `this.periods.items` — короткий путь к корневому хранилищу элементов; используется в `PeriodItem._pick`.
 
 ### Создание (constructor)
 
 ```javascript
-constructor(id, main, time, items, layout, periods) {
+constructor(id, main, time, layout, periods) {
     this.id = id;
     this.time = time;
     this.layout = layout;
     this.periods = periods;
-    this.itemsIds = new ItemsIdsStore();
-    
-    this.init();  // Инициализация start/end и создание периодов
-    
-    // Подписка на изменение expand
+    this.itemsTypes = main.itemsTypes;
+    this.init();
+
     observe(layout, 'expand', () => {
-        if (this.layout.expand !== this.expand) {
-            this.reinitPeriods();
-        }
+        if (this.layout.expand !== this.expand) this.reinitPeriods();
     });
 }
 ```
@@ -145,24 +157,17 @@ init() {
     const start = this.time.weekStart(this.id);
     const end = this.id > this.time.weekMax ? null : this.time.weekEnd(this.id);
     const today = this.time.today;
-    
+
     if (this.start !== start || this.end !== end || this.today !== today) {
-        // Границы изменились
         this.start = start;
         this.end = end;
         this.today = today;
-        
-        this.reinitPeriods();  // Пересоздаем периоды
-        
-        // Перераспределяем элементы этого интервала
-        if (oldEnd === null && end !== null) {
-            this.reintervalItems([this.id + 1]);
-        } else {
-            this.reintervalItems();
-        }
+        this.reinitPeriods();
     }
 }
 ```
+
+Никаких `reintervalItems`/`reperiodItems`/`findItems` больше нет — элементы перепривязываются сами через computed.
 
 ### reinitPeriods() — пересоздание периодов
 
@@ -170,359 +175,273 @@ init() {
 reinitPeriods() {
     this.expand = this.layout.expand;
     const len = this.layout.expand ? TimeHelper.dayLen : TimeHelper.weekLen;
-    
-    // Удаляем старые периоды
+
     this.periodsIds.forEach(t => this.periods.deletePeriod(t));
     this.periodsIds = [];
-    
-    // Создаем новые периоды
+
     if (this.end === null) {
         // Bucket — один период без конца
-        let period = new PeriodItem(this.start, null, this);
+        const period = new PeriodItem(this.start, null, this);
         this.periods.setPeriod(period);
         this.periodsIds.push(this.start);
     } else {
-        // Обычный интервал — периоды по дням или неделе
+        // Обычный интервал — периоды по дням или неделя целиком
         for (let t = this.start; t < this.end; t += len) {
-            let period = new PeriodItem(t, len, this);
+            const period = new PeriodItem(t, len, this);
             this.periods.setPeriod(period);
             this.periodsIds.push(t);
         }
     }
-    
-    // Перераспределяем элементы по новым периодам
-    this.reperiodItems();
 }
 ```
 
-### reintervalItems() — перераспределение элементов по интервалам
+### destroy() — освобождение перед удалением
 
 ```javascript
-reintervalItems(search = null) {
-    // Берем все элементы этого интервала
-    this.itemsTypes.forEach(type => {
-        const ids = [...get(this.itemsIds.ids, type)];
-        ids.forEach(i => {
-            // Каждый элемент ищет себе новый интервал
-            get(this.items[type].items, i).findInterval(search);
-        });
-    });
+destroy() {
+    this.periodsIds.forEach(t => this.periods.deletePeriod(t));
+    this.periodsIds = [];
 }
 ```
 
-### filterItem(item) — проверка попадания элемента
+### filterItem(item) — попадает ли элемент в интервал
+
+Из миксина [PeriodItemsMixin.jsx](../src/Data/Stores/Periods/PeriodItemsMixin.jsx) (общий для `IntervalItem` и `PeriodItem`):
 
 ```javascript
 filterItem(item) {
-    if (this.emeregency) return false;
-    return (
-        // Элемент с датой попадает в интервал
-        (item.t !== null && item.t >= this.start && (
-            (this.end !== null && item.t < this.end) ||
-            this.end === null  // bucket принимает любые даты
-        ))
-        ||
-        // Элемент без даты попадает только в bucket
-        (item.t === null && this.end === null)
-    );
+    if (item.t === null) return this.end === null;     // bucket принимает t=null
+    if (item.t < this.start) return false;
+    if (this.end === null) return true;                  // bucket принимает всё что после start
+    return item.t < this.end;
 }
 ```
 
 ## PeriodItem — период внутри интервала
 
-**Назначение:** Отображает временной период (день или неделю) и содержит элементы.
+**Назначение:** отображает временной период (день или неделю) и через computed-выборку даёт элементы для рендера.
 
 **Ключевые поля:**
 
 - `start` — начало периода
-- `len` — длина периода (dayLen, weekLen или null для bucket)
-- `end` = start + len (или null)
-- `type` — 'day' | 'week'
-- `title` — текст для отображения
-- `className` — CSS класс для раскраски
-- `isOpen`, `isClosed`, `isToday` — флаги для стилизации
-- `interval` — ссылка на родительский IntervalItem
+- `len` — длина (`dayLen`, `weekLen` или `null` для bucket)
+- `end` = `start + len` (или `null`)
+- `type` — `'day'` | `'week'`
+- `title`, `className`, `dropTime`, `toolTip` — для отображения и DnD
+- `isOpen`, `isClosed`, `isToday` — флаги стилизации
+- `interval` — ссылка на родительский `IntervalItem`
+- `dragOverCell` (observable) — id ячейки, над которой сейчас drag
 
-**Жизненный цикл:**
-
-### Создание (constructor)
+### Создание
 
 ```javascript
 constructor(start, len, interval) {
-    this.start = start;
-    this.len = len;
-    this.end = len === null ? null : start + len;
     this.interval = interval;
     this.time = interval.time;
-    
-    this.timeInit();  // Вычисляем title, className, isOpen/isClosed
-    this.itemsIds = new ItemsIdsStore();
+    this.start = start;
+    this.len = len;
+    this.end = (len === null) ? null : start + len;
+    this.timeInit();   // вычисляет title, className, isOpen/isClosed
+    makeObservable(this, {
+        dragOverCell: observable,
+        setDragOverCell: action,
+        className: observable,
+        closedTasks: computed,
+        openedTasks: computed,
+        closedJobs: computed,
+        openedJobs: computed,
+        closedTickets: computed,
+        openedTickets: computed,
+        plans: computed,
+        itemsByUser: computed,
+    });
 }
 ```
 
-### timeInit() — вычисление отображаемых свойств
+`timeInit()` вызывается только в конструкторе — при смене `today` PeriodItem пересоздаётся через `IntervalItem.reinitPeriods()`.
+
+### Декларативная выборка элементов
+
+Один параметризованный метод вместо семи копий:
 
 ```javascript
-timeInit() {
-    if (this.len === null) {
-        // Bucket
-        this.type = 'week';
-        this.title = 'Долгий ящик';
-        this.dropTime = null;
-    } else if (this.len <= TimeHelper.dayLen) {
-        // День
-        this.type = 'day';
-        this.title = TimeHelper.strWeekDayDate(this.start);
-        this.dropTime = this.start + TimeHelper.hourLen * 18;  // 18:00
-    } else {
-        // Неделя
-        this.type = 'week';
-        this.dropTime = this.start + TimeHelper.dayLen * 4 + TimeHelper.hourLen * 18;
-        
-        // Вычисляем относительное название
-        if (this.start < this.time.monday0) {
-            this.title = 'Пред. неделя' или 'X нед. назад';
-        } else if (this.start > this.time.sunday0) {
-            this.title = 'След. неделя' или 'Через X нед.';
-        } else {
-            this.title = 'Эта неделя';
-        }
-    }
-    
-    // CSS класс на основе удаленности от текущей недели
-    this.className = 'period0';
-    if (this.start < this.time.monday0) {
-        let week = Math.floor((this.time.monday0 - this.start - 1) / TimeHelper.weekLen) + 1;
-        this.className = 'period' + Math.min(week, 7);
-    }
-    if (this.start > this.time.sunday0 - 1) {
-        let week = Math.floor((this.start - this.time.sunday0) / TimeHelper.weekLen) + 1;
-        this.className = 'period' + Math.min(week, 7);
-    }
-    
-    // Флаги открытости/закрытости
-    this.isClosed = (this.start <= this.time.today);
-    this.isOpen = (this.end > this.time.today || this.end === null);
-    this.isToday = (this.isClosed && this.isOpen);
+_pick(type, predicate) {
+    const items = this.interval.items;
+    if (!items) return [];
+    const store = items[type];
+    if (!store) return [];
+    const out = [];
+    values(store.items).forEach(item => {
+        if (!this.filterItem(item)) return;   // зависимость от item.t
+        if (!predicate(item)) return;
+        void item.sorting;                    // явная зависимость для сортировки
+        out.push(item);
+    });
+    return out;
+}
+
+get closedTasks()   { return this._pick('task',   i => i.isClosed); }
+get openedTasks()   { return this._pick('task',   i => !i.isClosed); }
+get closedJobs()    { return this._pick('job',    i => i.isClosed); }
+get openedJobs()    { return this._pick('job',    i => !i.isClosed); }
+get closedTickets() { return this._pick('ticket', i => i.isClosed); }
+get openedTickets() { return this._pick('ticket', i => !i.isClosed); }
+get plans()         { return this._pick('plan',   () => true); }
+```
+
+Семёрка геттеров оставлена ради читабельности — потребители рендера ходят за ними по имени.
+
+### Индекс по пользователям
+
+Один проход по элементам периода вместо отдельной фильтрации в каждой `UserCell`:
+
+```javascript
+get itemsByUser() {
+    const accomplicesVisible = this.interval.layout.accomplicesVisible;
+    const map = new Map();
+    const ensure = uid => { /* map.get/set { closedTasks, openedTasks, ... } */ };
+
+    const placeTask = (task, bucket) => {
+        ensure(task.user)[bucket].push(task);
+        if (!accomplicesVisible) return;
+        (task.accomplices ?? []).forEach(a => {
+            if (a !== task.user) ensure(a)[bucket].push(task);
+        });
+    };
+
+    this.openedTasks.forEach(t => placeTask(t, 'openedTasks'));
+    this.closedTasks.forEach(t => placeTask(t, 'closedTasks'));
+    this.openedJobs.forEach(j => ensure(j.user).openedJobs.push(j));
+    this.closedJobs.forEach(j => ensure(j.user).closedJobs.push(j));
+    this.openedTickets.forEach(tk => ensure(tk.user).openedTickets.push(tk));
+    this.closedTickets.forEach(tk => ensure(tk.user).closedTickets.push(tk));
+    this.plans.forEach(p => ensure(p.user).plans.push(p));
+
+    return map;
 }
 ```
 
-**Важно:** `timeInit()` вызывается только в constructor! При изменении `today` PeriodItem не обновляет свои свойства автоматически — он пересоздается через `IntervalItem.reinitPeriods()`.
+`UserCellContainer` берёт `period.itemsByUser.get(userId)` — без повторного прохода по `accomplices`.
 
 ## DashItem — элементы задач/работ/заявок
 
-**Назначение:** Представляет бизнес-сущности (задачи, работы, заявки, планы).
+**Назначение:** представляет бизнес-сущности (задачи, работы, заявки, планы, мемо, отсутствия).
 
 **Ключевые поля для позиционирования:**
 
-- `t` — timestamp, к которому элемент относится (deadline или closedDate)
-- `intervalId` — id интервала, в котором находится элемент
-- `periodId` — start периода, в котором находится элемент
+- `t` — timestamp, к которому элемент относится. Только это поле определяет, в какой период элемент попадёт.
+- `deadline`, `closedDate`, `isClosed`, `isOpen` — исходники, из которых вычисляется `t` в `recalcTime()`.
 
-**Жизненный цикл позиционирования:**
+> Полей `intervalId`/`periodId` больше **нет**. Методов `findInterval/setInterval/findPeriod/setPeriod/unsetX` тоже **нет**. Элемент не «знает», в каком периоде он находится — это решает сам период через `_pick`.
 
-### 1. recalcTime() — вычисление t
+### recalcTime()
+
+Базовая реализация в [DashItem.jsx](../src/Data/Models/DashItem.jsx):
 
 ```javascript
 recalcTime() {
+    if (this.deadline) {
+        this.deadlineObj = TimeHelper.objDate(this.deadline);
+        this.deadlineStr = ...;
+    } else this.deadlineStr = 'нет срока';
+
     if (this.closedDate) {
-        // Закрытый элемент — позиционируем по дате закрытия
+        this.closedDateObj = TimeHelper.objDate(this.closedDate);
+        this.closedDateStr = ...;
+    } else this.closedDateStr = '';
+
+    if (this.closedDate !== null) {
         this.t = this.closedDate;
         this.isClosed = true;
         this.isOpen = false;
     } else {
-        // Открытый элемент — позиционируем по deadline
-        // Если deadline в прошлом — позиционируем на today (эффект "съезжания")
+        // Открытый: позиционируем по deadline; просрочка съезжает на today
         this.t = this.deadline ? Math.max(this.deadline, this.context.time.today) : null;
         this.isClosed = false;
         this.isOpen = true;
     }
-    
-    if (this.t !== oldT) {
-        this.findInterval();  // Ищем новый интервал
-    }
 }
 ```
 
-### 2. findInterval() — поиск интервала
+Подклассы (`TaskItem`, `TicketItem`, `PlanItem`, `MemoItem`) переопределяют `recalcTime()` под свою семантику статуса/времени. Никто из них больше **не зовёт** `findInterval()`.
 
-```javascript
-findInterval(ids = null) {
-    if (ids === null) {
-        // Ищем среди всех интервалов (обратный порядок — сначала bucket)
-        ids = keys(this.context.periods.intervals).sort((a, b) => b - a);
-    }
-    
-    ids.forEach(id => {
-        if (found) return;
-        const interval = get(this.context.periods.intervals, id);
-        if (interval.filterItem(this)) {
-            this.setInterval(id);  // Привязываемся к интервалу
-            found = true;
-        }
-    });
-}
-```
-
-### 3. setInterval() — привязка к интервалу
-
-```javascript
-setInterval(id) {
-    const interval = get(this.context.periods.intervals, id);
-    
-    if (this.intervalId !== id) {
-        this.unsetInterval();  // Отцепляемся от старого
-        this.intervalId = id;
-        interval.attachItem(this);  // Прицепляемся к новому
-    }
-    
-    // Ищем период внутри интервала
-    this.findPeriod(interval.periodsIds);
-}
-```
-
-### 4. findPeriod() — поиск периода внутри интервала
-
-```javascript
-findPeriod(ids = null) {
-    if (ids === null) {
-        ids = keys(this.context.periods.periods);
-    }
-    
-    ids.forEach(t => {
-        const period = get(this.context.periods.periods, t);
-        if (period.filterItem(this)) {
-            this.setPeriod(t);
-            return;
-        }
-    });
-}
-```
-
-### 5. setPeriod() — привязка к периоду
-
-```javascript
-setPeriod(id) {
-    this.unsetPeriod();  // Отцепляемся от старого
-    
-    if (id !== null) {
-        this.periodId = id;
-        get(this.context.periods.periods, this.periodId).attachItem(this);
-    }
-}
-```
+Когда `recalcTime()` обновляет `this.t` — все computed-геттеры периодов, которые зависят от этого item, инвалидируются автоматически. Элемент «переезжает» в правильный период без императивных шагов.
 
 ## Поток данных при смене today
 
 ```
-1. time.overrideDate(newTimestamp)
+1. time.overrideDate(newTimestamp)  — или updateTime() при смене суток
    ↓
-2. time.today = newTimestamp
-   time.monday0 = пересчитано
-   time.sunday0 = пересчитано
+2. Сначала обновляются monday0 и sunday0,
+   потом today (см. "Порядок обновлений" ниже)
    ↓
-3. observe(time, 'today') → PeriodsStore.weeksInit()
+3. observe(time, 'today') в PeriodsStore → weeksInit()
    ↓
-4. Для каждого существующего IntervalItem:
-   IntervalItem.init()
+4. Для каждого существующего IntervalItem: init()
+   - если start/end/today изменились → reinitPeriods()
+     (старые PeriodItem удаляются, новые создаются с новым start/end)
    ↓
-5. IntervalItem вычисляет новые start/end
-   Если start/end изменились:
+5. observe(time, 'today') в ItemsStore → recalcPeriods()
+   - для каждого item: recalcTime() (пересчёт t с учётом нового today)
    ↓
-6. IntervalItem.reinitPeriods()
-   - Удаляет старые PeriodItem
-   - Создает новые PeriodItem с новыми start/end
-   - Вызывает reperiodItems() — перераспределяет свои элементы по новым периодам
-   ↓
-7. IntervalItem.reintervalItems()
-   - Для каждого элемента интервала вызывает item.findInterval()
-   - Элемент ищет подходящий интервал среди всех
-   - Если нашел — привязывается к нему
+6. Computed-геттеры PeriodItem._pick / itemsByUser автоматически
+   пересчитываются — реактивная перепривязка элементов к новым периодам.
 ```
 
-## Потенциальные проблемы
+Никакого `reintervalItems`/`reintervalAllItems` больше нет. Элемент с просроченным deadline (вчера) сегодня сдвинется на новый `today`, и computed периодов сами увидят его в правильной ячейке.
 
-### 1. PeriodItem не обновляется при смене today
+## Порядок обновлений today/monday0/sunday0 (КРИТИЧНО)
 
-`PeriodItem.timeInit()` вызывается только в constructor. При смене `today`:
+**Проблема:** если `today` обновляется ДО `monday0`/`sunday0`, то `observe(time, 'today')` сработает в момент, когда `monday0` ещё содержит старое значение. `weeksInit()` прочитает рассогласованную пару → границы интервалов посчитаются неверно.
 
-- PeriodItem пересоздаются через `reinitPeriods()`
-- Но их свойства (`title`, `className`, `isOpen`, etc.) вычисляются на момент создания
-- Если `today` меняется, а PeriodItem не пересоздаются — они показывают устаревшие данные
-
-**Решение:** PeriodItem всегда пересоздаются при изменении `start`/`end` интервала.
-
-### 2. Элементы могут "потеряться" при смене today
-
-Если элемент был в интервале 0, а `today` сдвинулся так, что элемент теперь должен быть в интервале -1:
-
-- `reintervalItems()` вызывается только для элементов текущего интервала
-- Элемент остается привязанным к старому `intervalId`
-- Но `filterItem()` уже не сработает для этого интервала
-
-**Решение:** Нужно перераспределять ВСЕ элементы, а не только текущего интервала.
-
-### 3. Порядок обновлений MobX (КРИТИЧНО!)
-
-При изменении `today` в `overrideDate()` или `updateTime()`:
-
-**Проблема:** Если `today` обновляется ДО `monday0`/`sunday0`, то `observe(time, 'today')` сработает, когда `monday0` еще содержит старое значение. Это приводит к некорректному пересчету границ интервалов.
-
-**Решение:** Всегда обновлять `monday0` и `sunday0` ДО `today`:
+**Решение:** в `overrideDate()` и `updateTime()` всегда обновлять `monday0` и `sunday0` ПЕРВЫМИ, а `today` — ПОСЛЕДНИМ:
 
 ```javascript
-@action overrideDate(timestamp) {
+overrideDate(timestamp) {
     // Сначала вычисляем все значения
     let m0 = ...;  // новый monday0
     let s0 = ...;  // новый sunday0
-    let d0 = ...;  // новый today
+    let d0 = timestamp;  // новый today
 
-    // Обновляем monday0 и sunday0 ПЕРВЫМИ
+    // monday0 и sunday0 — первыми
     this.monday0 = m0;
     this.sunday0 = s0;
 
-    // Вспомогательные поля
     this.day = d;
     this.month = M;
     this.year = Y;
     this.wday = w;
 
-    // today обновляем ПОСЛЕДНИМ (на него подписан PeriodsStore)
+    // today — последним: на него подписан PeriodsStore
     this.today = d0;
 }
 ```
 
-**Почему это работает:**
-
-- `observe(time, 'today')` срабатывает только при изменении `today`
-- К этому моменту `monday0` и `sunday0` уже содержат актуальные значения
-- `weeksInit()` читает корректные `monday0`/`sunday0` при вычислении границ интервалов
-
-**Важно:** То же самое относится к `updateTime()` — `today` должен обновляться последним.
+То же относится к `updateTime()` — `today` обновляется последним.
 
 ## Рекомендации по отладке
 
-1. **Следить за порядком обновлений:**
+В dev-сборке стораджи доступны через `window.*` (см. [App.jsx](../src/App.jsx) — экспорт под `import.meta.env.DEV`):
 
 ```javascript
-// В консоли
+// Сдвинуть "сегодня" для проверки перестройки layout
 window.timeStore.overrideDate(new Date('2026-02-15').getTime());
-// Смотреть логи в консоли — что обновляется первым
-```
 
-2. **Проверить состояние интервалов:**
-
-```javascript
-// В консоли
+// Состояние интервалов
 window.periodsStore.intervals.forEach((interval, id) => {
     console.log(`Interval ${id}: start=${interval.start}, end=${interval.end}`);
 });
-```
 
-3. **Проверить привязку элементов:**
+// Какие задачи попадают в конкретный период
+const period = window.periodsStore.periods.get(window.timeStore.monday0);
+console.log('opened tasks:', period.openedTasks);
+console.log('items by user:', period.itemsByUser);
 
-```javascript
-// В консоли
+// Конкретная задача — её время t (привязки к периоду в самом item больше нет)
 const task = window.itemsStore.task.items.get(123);
-console.log(`Task intervalId=${task.intervalId}, periodId=${task.periodId}, t=${task.t}`);
+console.log(`Task t=${task.t} (${new Date(task.t).toISOString()})`);
 ```
+
+## Почему так
+
+Подробное обоснование декларативного подхода — в [plans/simplify.md](../plans/simplify.md), Этап 8 («Декларативный поток items↔periods через computed»). Кратко: императивные двусторонние ссылки требовали ручного `attach/detach` при каждом изменении `t`/`deadline`/`status` и порождали целый класс багов («элемент потерялся при смене today»). Декларативные computed снимают эту работу — MobX сам пересчитывает выборки при изменении зависимостей.

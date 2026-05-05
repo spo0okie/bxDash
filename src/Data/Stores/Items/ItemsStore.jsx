@@ -1,13 +1,7 @@
 import 'reflect-metadata';
 import {observable, when, makeObservable, keys , get, set, action, has, remove, observe} from 'mobx';
-import TaskItem from 'Data/Models/TaskItem';
-import JobItem from 'Data/Models/JobItem';
-import DashItem from 'Data/Models/DashItem';
-import PlanItem from 'Data/Models/PlanItem';
-import TicketItem from 'Data/Models/TicketItem';
-import MemoItem from 'Data/Models/MemoItem';
-import AbsentItem from 'Data/Models/AbsentItem';
 import TimeHelper from 'Helpers/TimeHelper';
+import { ITEM_TYPES, classForType } from 'Data/itemTypes';
 
 class ItemsStore {
 	items = new observable.map([],{deep:true});
@@ -34,16 +28,6 @@ class ItemsStore {
 	searchResults=[]; // Массив ID найденных задач
 	isSearching=false; // Флаг выполнения поиска
 	searchMode=false; // Флаг активности режима поиска
-
-	classMap={
-		'dash':		DashItem,
-		'task':		TaskItem,
-		'job':		JobItem,
-		'plan':		PlanItem,
-		'ticket':	TicketItem,
-		'memo':		MemoItem,
-		'absent':	AbsentItem,
-	}
 
 	setLoading(value) {
 		this.isLoading=value;
@@ -158,10 +142,9 @@ class ItemsStore {
     //создать/обновить элемент из JSON данных объекта из битрикс
 	initData(data){
 		const id = Number(data.ID);
-		const className = this.classMap[this.type];
+		const ItemClass = classForType(this.type);
 		if (!has(this.items,id)) {
-			const Item = new className({}, data, this);
-			//if (className === MemoItem) console.log(Item);
+			const Item = new ItemClass({}, data, this);
 			this.setItem(Item);
 		} else {
 			const Item = get(this.items, id)
@@ -369,11 +352,9 @@ class ItemsStore {
 
 	recalcPeriods() {
 		console.log('recalc periods');
-		this.items.forEach(test => {
-			test.recalcTime();
-			test.findInterval();
-
-		});
+		// Только пересчёт временной отметки t — привязка к интервалу/периоду
+		// делается декларативно через PeriodItem._pick (computed на основе t).
+		this.items.forEach(test => test.recalcTime());
 	}
 
     init() {
@@ -381,10 +362,9 @@ class ItemsStore {
         const users=this.users.items;
         when(()=>users.size,()=>{
             this.loadPending();
-			let reloadInterval=0;
 			//перегружаем время от времени задачи и заявки, т.к. их обновления могут проскакивать мимо WS канала
-			if (this.type==='task') reloadInterval=5*60*1000;
-			if (this.type==='ticket') reloadInterval=2*60*1000;
+			//период берётся из реестра типов (Data/itemTypes), 0 — не перезагружать
+			const reloadInterval = ITEM_TYPES[this.type]?.reloadMs ?? 0;
 			if (reloadInterval) {
 				setInterval(()=>{
 					console.log(this.type + 's reload');
@@ -420,9 +400,9 @@ class ItemsStore {
 		this.resolvePending(item);
 	}
 
-	deleteItem(item) { 
-		item.unsetPeriod();
-		item.unsetInterval();
+	deleteItem(item) {
+		// Без unsetPeriod/unsetInterval — двусторонних ссылок больше нет (этап 8).
+		// detachLinks() убирает элемент из parents/children других элементов.
 		item.detachLinks();
 		remove(this.items, item.id);
 	}

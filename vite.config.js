@@ -42,6 +42,13 @@ export default defineConfig({
 		port: 3030,
 		https: httpsConfig,
 		host: true,
+        hmr: {
+          protocol: 'wss',
+          host: 'portal.azimuth.holding.local',
+          //port: 443,
+          clientPort: 443,
+          path: '/reviakin/z2/'
+        }
 	},
 	build: {
 		outDir: 'build',

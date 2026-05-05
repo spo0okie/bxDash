@@ -1,37 +1,20 @@
-import {get} from 'mobx';
-
+/**
+ * Общий миксин для IntervalItem и PeriodItem.
+ *
+ * Даёт чистый предикат filterItem(item) — попадает ли элемент в этот период
+ * по своему времени t. Используется при декларативной выборке элементов
+ * (PeriodItem._pick) без двусторонних ссылок.
+ *
+ * Bucket — период с end===null. В bucket попадают элементы с t===null
+ * (нет срока) и любые элементы с t >= start.
+ */
 const PeriodItemsMixin = {
-
 	filterItem(item) {
-		if (this.emeregency) return false;
-		return (
-			(item.t !== null && item.t >= this.start && (
-				(this.end !== null && item.t < this.end)
-				||
-				this.end === null
-			))
-			||
-			(item.t === null && this.end === null)
-		);
+		if (item.t === null) return this.end === null;
+		if (item.t < this.start) return false;
+		if (this.end === null) return true;
+		return item.t < this.end;
 	},
-
-	attachItem(item) {
-		//if (!this.filterItem(item)) return false;
-		this.itemsIds.attachItem(item);
-	},
-
-	detachItem(item) {
-		this.itemsIds.detachItem(item);
-	},
-
-	countItems() {
-		if (this.items === undefined) return 0;
-		let total=0;
-		this.itemsTypes.forEach(type => {
-			total+=get(this.itemsIds.ids,type).length;
-		})
-		return total;
-	}
-}
+};
 
 export default PeriodItemsMixin;

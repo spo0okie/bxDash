@@ -1,16 +1,21 @@
 import 'reflect-metadata';
 import TimeHelper from 'Helpers/TimeHelper';
 import PeriodItem from './PeriodItem';
-import {values, get, observe, when, has} from 'mobx';
-import ItemsIdsStore from '../Items/ItemsIdsStore';
+import {observe} from 'mobx';
 import PeriodItemsMixin from './PeriodItemsMixin';
 
+/**
+ * Интервал — недельный контейнер периодов (или bucket с end===null).
+ *
+ * После Этапа 8 интервал больше НЕ владеет элементами через двусторонние ссылки.
+ * `items` — это просто геттер на `periods.items` (общее хранилище), а PeriodItem
+ * сам декларативно фильтрует элементы по своему диапазону.
+ */
 class IntervalItem {
-    time;		//ссылка на объект - хранилище времени
-    items;		//ссылка на объект - хранилище элементов
-	periods;	//ссылка на объект - хранилище периодов
-	layout;		//ссылка на объект - раскладка
-	
+    time;       //ссылка на хранилище времени
+	periods;	//ссылка на хранилище периодов
+	layout;		//ссылка на раскладку
+
 	id;			//номер недели
     start;      //начало недели
     end;        //конец периода
@@ -18,90 +23,15 @@ class IntervalItem {
 	today;		//отметка "сегодня" относительно которой опредлены флаги открытого/закрытого периода
 
 	itemsTypes;
-	itemsIds;
 	periodsIds=[];
-	
-	emeregency=false;		//блокировка помещения элементов в этот период (перед удалением)
 
-	attachItemsStore(items) {
-		if (this.items!==undefined) return;
-		this.items=items;
-	}
-
-	/**
-	 * Ищет среди загрузенных элементов те, которые нужно поместить в себя
-	 */
-	findItems(all=true) {
-		if (this.items===undefined) {
-			//console.log('items not attached. skip search')
-			return;
-		}
-		//let current=this.countItems();
-		this.itemsTypes.forEach(type=>{
-			values(this.items[type].items)
-				.forEach(item=>{					
-					if (all || item.intervalId===null) 	//если мы подтягиваем все элементы или у этого элемента нет интервала, то 
-						item.findInterval([this.id])	//предлагаем себя
-				})
-		})
-
-		//console.log(this.id+': found '+(this.countItems()-current)+' '+(all?'all ':'orphaned ')+'items' );
-	}
-
-	/**
-	 * перераспределить элементы интервала по периодам
-	 */
-	reperiodItems() {
-		if (this.items === undefined) return;
-		this.itemsTypes.forEach(type => {
-			get(this.itemsIds.ids,type)
-				.forEach(i => {
-					get(this.items[type].items, i)
-						.findPeriod(this.periodsIds)
-				})
-		})
-	}
-
-	/**
-	 * перераспределить элементы интервала по интервалам (перед удалением или после смены границ)
-	 */
-	reintervalItems(search=null) {
-		if (this.items === undefined) return;
-		//let current=this.countItems();
-		//console.log(this.id+': reintervaling from '+(current)+' items' );
-		this.itemsTypes.forEach(type => {
-			const ids=[...get(this.itemsIds.ids,type)];	//если не клонировать массив, то forEach по уменьшающемуся архиву ломается на середине
-			//let counter=0;
-			//console.log(this.id+': reintervaling '+(ids.length)+' of '+type);
-			
-				ids.forEach(i => {
-					get(this.items[type].items, i)
-						.findInterval(search);
-					//counter++;
-				})
-			//console.log(this.id+': processed '+(counter)+' of '+type);
-		})
-		//let total=this.countItems();
-		//console.log(this.id+': reintervaled to '+ total+'('+(total-current)+') items' );
-	}
-
-
-	/**
-	 * Ну по смыслу это beforeDelete
-	 * говорим что в нас нельзя ничего помещать и перераспределяем элементы
-	 */
-	beforeDelete(search=null) {
-		this.emeregency=true;
-		this.reintervalItems(search);
-	}
+	/** Все items берутся через корневое хранилище (см. ItemsMultiStore). */
+	get items() { return this.periods.items; }
 
     reinitPeriods() {
-        //console.log(this.id+': interval periods reinit');
         this.expand=this.layout.expand;
-        
-        let len=this.layout.expand?	//длина периодов
-            TimeHelper.dayLen:
-            TimeHelper.weekLen;
+
+        let len=this.layout.expand?TimeHelper.dayLen:TimeHelper.weekLen;
 
 		//чистим старые периоды
         this.periodsIds.forEach(t=>this.periods.deletePeriod(t));
@@ -117,74 +47,47 @@ class IntervalItem {
             this.periods.setPeriod(period);
 			this.periodsIds.push(t);
         }
-		//console.log(this.items);
-		this.reperiodItems();
 	}
 
 	init() {
 		const start = this.time.weekStart(this.id);
 		const end = this.id>this.time.weekMax?null:this.time.weekEnd(this.id);
 		const today = this.time.today;
-		//const oldStart = this.start;
-		const oldEnd = this.end;
 
 		if (this.start !== start || this.end !== end || this.today !== today) {
-			//console.log (this.id + ': [' + this.start + ',' + this.end + ','+this.today+'] -> [' + start+',' + end + ','+today + ']' );
 			this.start=start;
 			this.end=end;
 			this.today=today;
-			this.reinitPeriods();	//большинство переедет в новый последний
-			if (oldEnd===null && end!==null) { //был последним и перестал
-				this.reintervalItems([this.id+1]);	//большинство переедет в новый последний
-			} else {
-				this.reintervalItems();
-			}
-			when(//нужно подождать что интервал не просто создался, но и добавился в список интервалов
-				()=>has(this.periods.intervals,this.id),
-				()=>{this.findItems(false)}				//перепроверяем свободные элементы
-			);
+			this.reinitPeriods();
 		}
 	}
 
+	/** Удаление интервала — освобождаем его периоды; элементы переедут сами через computed. */
+	destroy() {
+		this.periodsIds.forEach(t => this.periods.deletePeriod(t));
+		this.periodsIds = [];
+	}
 
-	/**
-	 * 
-	 * @param {*} id 
-	 * @param {*} time 
-	 * @param {*} items //может созадаваться до появления items
-	 * @param {*} layout 
-	 * @param {*} periods 
-	 */
-    constructor(id,main,time,items,layout,periods) {
+    constructor(id,main,time,layout,periods) {
         this.id=id;
         this.time=time;
         this.layout=layout;
         this.periods=periods;
 		this.itemsTypes=main.itemsTypes;
-		this.itemsIds = new ItemsIdsStore(this.itemsTypes);
-		this.items = items;
 		this.init();
 		observe(layout,'expand',()=>{if (this.layout.expand !== this.expand) this.reinitPeriods()});
     }
 
-	/**
-	 * Логирование основных параметров интервала
-	 */
 	logInfo() {
 		const startStr = this.start ? TimeHelper.strDateTime(this.start) : 'null';
 		const endStr = this.end ? TimeHelper.strDateTime(this.end) : 'null (bucket)';
 		const todayStr = this.today ? TimeHelper.strDateTime(this.today) : 'null';
-		const itemCount = this.countItems ? this.countItems() : 0;
 		const periodCount = this.periodsIds ? this.periodsIds.length : 0;
 
 		console.log(
 			`[Interval ${this.id}] ` +
-			`start=${startStr}, ` +
-			`end=${endStr}, ` +
-			`today=${todayStr}, ` +
-			`expand=${this.expand}, ` +
-			`periods=${periodCount}, ` +
-			`items=${itemCount}`
+			`start=${startStr}, end=${endStr}, today=${todayStr}, ` +
+			`expand=${this.expand}, periods=${periodCount}`
 		);
 	}
 }

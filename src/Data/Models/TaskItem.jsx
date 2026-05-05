@@ -18,8 +18,6 @@ class TaskItem extends DashItem {
 	}
 
 	recalcTime() {
-		const t = this.t;
-
 		this.isClosed = Boolean(this.closedDate) && (this.status === 5 || this.status === 7); //завершена, отменена
 		this.isNow = (this.status === 3 || this.status === 4);                                //в работе, ждет подтверж. - всегда выполняются [прямо сейчас]!
 		
@@ -44,9 +42,6 @@ class TaskItem extends DashItem {
 			if (this.context.time.year !== this.closedDateObj.Y)
 				this.closedDateStr += '.' + this.closedDateObj.y;
 		} else this.closedDateStr = '';
-
-
-		if (this.t !== t) this.findInterval();
 	}
 
 	setStatus(value) {
