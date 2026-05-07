@@ -1,0 +1,411 @@
+/*
+ * Тема "Modern" — токены.
+ *
+ * Спецификация и обоснование решений — docs/ui/modern-theme.md.
+ * Этот файл — реализация системы правил из документа.
+ *
+ * Ключевые правила (см. §2 спецификации):
+ *   - ТИП = только цвет фона карточки. Никаких полос, иконок или рамок.
+ *   - ОТКРЫТОСТЬ = яркость и насыщенность фона (open ярче, closed тусклее).
+ *   - СТАТУС = 4px полоса СЛЕВА в семантическом цвете (success/warning/danger/info/muted).
+ *   - Карточки БЕЗ БОРДЕРА. Разделение margin'ом и контрастом фон-страницы.
+ *   - Радиусы 0.
+ */
+
+/* keyframes для пульсации closeMe (4px info-полоса слева пульсирует opacity) */
+@keyframes modern-closeMe-pulse {
+	0%, 100% {
+		box-shadow: inset 4px 0 0 0 rgba(59, 130, 246, 1);
+	}
+	50% {
+		box-shadow: inset 4px 0 0 0 rgba(59, 130, 246, 0.35);
+	}
+}
+
+[data-theme="modern"] {
+
+	/* =====================================================================
+	 * §1. Семантические статусные цвета. См. §8.1 спецификации.
+	 * ===================================================================== */
+	--sem-success:                   #22c55e;
+	--sem-success-soft:              rgba(34, 197, 94, 0.18);
+	--sem-success-strong:            #4ade80;
+	--sem-warning:                   #f59e0b;
+	--sem-warning-soft:              rgba(245, 158, 11, 0.18);
+	--sem-warning-strong:            #fbbf24;
+	--sem-danger:                    #ef4444;
+	--sem-danger-soft:               rgba(239, 68, 68, 0.20);
+	--sem-danger-strong:             #f87171;
+	--sem-info:                      #3b82f6;
+	--sem-info-soft:                 rgba(59, 130, 246, 0.18);
+	--sem-info-strong:               #60a5fa;
+	--sem-accent:                    #a855f7;
+	--sem-accent-soft:               rgba(168, 85, 247, 0.20);
+	--sem-accent-strong:             #c084fc;
+	--sem-muted:                     #64748b;
+	--sem-muted-soft:                rgba(100, 116, 139, 0.20);
+
+	/* =====================================================================
+	 * §2. Поверхности.
+	 * Page чуть светлее предыдущей версии (#171b25 vs #0a0d12) — карточки
+	 * на нём остаются яркими, но не «кричат» как на чистом чёрном.
+	 * ===================================================================== */
+	--surface-page:                  #171b25;
+	--surface-app-bar:               #1f2430;
+	--surface-app-bar-text-shadow:   none;
+	--surface-sidebar-resizer-hover: #475569;
+	--surface-card:                  #2c3447;        /* AntD контейнер */
+	--surface-card-elevated:         #3a4358;        /* dropdown, modal contents */
+	--surface-modal:                 #1f2430;
+	--surface-overlay:               rgba(0, 0, 0, 0.78);
+	--surface-overlay-stripe:        rgba(120, 30, 30, 0.6);
+	--surface-dropzone-active:       rgba(59, 130, 246, 0.30);
+	--surface-droppable-active:      rgba(59, 130, 246, 0.22);
+	--surface-ticket-bg:             none;
+
+	/* =====================================================================
+	 * §3. Текст. См. §8.4 спецификации.
+	 * ===================================================================== */
+	--text-primary:                  #f1f5f9;
+	--text-secondary:                #cbd5e1;
+	--text-muted:                    #94a3b8;
+	--text-inverse:                  #0a0d12;
+	--text-on-overlay:               #f1f5f9;
+	--text-link:                     #60a5fa;
+	--text-debug-info:               #94a3b8;
+	--text-debug-section:            #cbd5e1;
+	--text-debug-button:             #e2e8f0;
+	--text-debug-reset:              #fca5a5;
+
+	--accent-primary:                var(--sem-info);
+	--accent-primary-focus:          var(--sem-info-strong);
+	--accent-success:                var(--sem-success);
+	--accent-warning:                var(--sem-warning);
+	--accent-danger:                 var(--sem-danger);
+	--accent-info:                   var(--sem-info);
+
+	/* =====================================================================
+	 * §4. Типографика.
+	 * ===================================================================== */
+	--font-family-base:              Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+	--font-family-mono:              "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+	--font-size-base:                12.5px;
+	--font-size-sm:                  11.5px;
+	--font-size-md:                  13.5px;
+	--font-size-lg:                  16px;
+	--font-weight-regular:           400;
+	--font-weight-bold:              600;
+
+	/* =====================================================================
+	 * §5. Геометрия — radius=0, бордеров нет.
+	 * ===================================================================== */
+	--radius-sm:                     0;
+	--radius-md:                     0;
+	--radius-lg:                     0;
+	--radius-xl:                     0;
+	--space-1:                       2px;
+	--space-2:                       4px;
+	--space-3:                       6px;
+	--space-4:                       10px;
+	--space-5:                       14px;
+	--border-width-thin:             1px;
+	--border-width-thick:            2px;
+
+	/* =====================================================================
+	 * §6. Тени.
+	 * ===================================================================== */
+	--shadow-app-bar:                0 2px 0 0 rgba(255, 255, 255, 0.04), 0 4px 16px rgba(0, 0, 0, 0.55);
+	--shadow-card-hover:             0 0 0 2px var(--sem-info), 0 0 12px rgba(59, 130, 246, 0.35);
+	--shadow-modal:                  0 8px 32px rgba(0, 0, 0, 0.7);
+	--shadow-memo:                   0 1px 0 0 rgba(0, 0, 0, 0.4), 2px 3px 8px rgba(0, 0, 0, 0.55);
+	--transition-fast:               .12s ease;
+	--transition-medium:             .18s ease;
+	--transition-slow:               .25s ease;
+
+	/* =====================================================================
+	 * §7. TASK CARD
+	 *  open:   slate — нейтральный сине-серый #2c3447
+	 *  closed: глубокий navy #1d2a4d (отдельный hue — выполнено)
+	 * ===================================================================== */
+
+	--task-bg:                       #2c3447;
+	--task-border:                   transparent;
+	--task-shadow-inset:             none;
+
+	--task-bg-closed:                #1d2a4d;
+	--task-text-closed:              var(--text-secondary);
+	--task-border-closed:            transparent;
+	--task-shadow-closed:            none;
+	--task-text-shadow-closed:       none;
+
+	/* activeNow: 4px success-полоса слева через border-left */
+	--task-stripe-active-now:        var(--sem-success);
+	--task-active-now-border-left:   4px solid var(--task-stripe-active-now);
+	--task-active-now-shadow:        none;
+
+	/* closeMe: 4px info-полоса слева, пульсирует через animation. Задаём
+	   через box-shadow inset, чтобы не съедать ширину; 2px-обводка вокруг
+	   карточки (присутствующая в classic) отключается через transparent. */
+	--task-bg-closeMe-border:        transparent;
+	--task-shadow-closeMe:           inset 4px 0 0 0 var(--sem-info);
+	--task-closeMe-animation:        modern-closeMe-pulse 1.5s ease-in-out infinite;
+
+	/* negative: 4px danger-полоса слева + 20% danger-overlay фона */
+	--task-bg-negative:              linear-gradient(0deg, rgba(239, 68, 68, 0.20), rgba(239, 68, 68, 0.20)), var(--task-bg);
+	--task-bg-negative-color:        var(--task-bg);
+	--task-text-negative:            var(--text-primary);
+	--task-border-negative:          transparent;
+	--task-shadow-negative:          inset 4px 0 0 0 var(--sem-danger);
+	--task-text-shadow-negative:     none;
+
+	/* приоритеты — точки 6×6, цветной текст ОТКЛЮЧЁН */
+	--task-priority-low:             var(--sem-success);
+	--task-priority-mid:             var(--sem-warning);
+	--task-priority-high:            var(--sem-danger);
+	--task-priority-mid-text:        var(--text-primary);
+	--task-priority-high-text:       var(--text-primary);
+	--task-updates-bg:               var(--sem-danger);
+	--task-updates-text:             #ffffff;
+
+	/* =====================================================================
+	 * §7. JOB CARD
+	 *  open:   оранжевый #5a3010 (тёплый, заметный — открытая работа в фокусе)
+	 *  closed: forest-зелёный #1d4022 (выполнено)
+	 *  Job не имеет подстатусов — полосы слева нет в обоих состояниях.
+	 * ===================================================================== */
+	--job-bg-open:                   #5a3010;
+	--job-text-open:                 var(--text-primary);
+	--job-border-open:               transparent;
+	--job-shadow-open:               none;
+	--job-text-shadow-open:          none;
+	--job-bg-closed:                 #1d4022;
+	--job-text-closed:               var(--text-secondary);
+	--job-border-closed:             transparent;
+	--job-shadow-closed:             none;
+	--job-text-shadow-closed:        none;
+
+	/* =====================================================================
+	 * §7. TICKET CARD
+	 *  open:   магента #5a1d52 (заявка ждёт обработки — выделяется)
+	 *  closed: cyan/голубой #1c4252 (заявка обработана — спокойнее)
+	 *  Подстатусы red/green/blue → 4px полоса слева в семантическом цвете.
+	 * ===================================================================== */
+	--ticket-stripe-red:             var(--sem-danger);
+	--ticket-stripe-green:           var(--sem-success);
+	--ticket-stripe-blue:            var(--sem-info);
+
+	--ticket-red-border:             none;
+	--ticket-red-shadow:             inset 4px 0 0 0 var(--ticket-stripe-red);
+	--ticket-green-border:           none;
+	--ticket-green-shadow:           inset 4px 0 0 0 var(--ticket-stripe-green);
+	--ticket-blue-border:            none;
+	--ticket-blue-shadow:            inset 4px 0 0 0 var(--ticket-stripe-blue);
+	--ticket-shadow-blue:            inset 4px 0 0 0 var(--ticket-stripe-blue);  /* legacy */
+
+	/* base (open) ticket — фон через переопределение li.userTicket */
+	--ticket-bg-closed:              #1c4252;
+	--ticket-shadow-closed:          none;
+	--ticket-text-shadow-closed:     none;
+	--ticket-text-closed:            var(--text-secondary);
+	--ticket-border-closed:          transparent;
+	--ticket-link-border:            transparent;
+	--card-link-text:                var(--text-primary);
+
+	/* =====================================================================
+	 * §7. PLAN CARD
+	 *  Тип: ВСЕГДА чёрный. Open и closed имеют одинаковый фон. Открытость
+	 *  читается через подстатусы прогресса (4px полоса слева) и класс
+	 *  .denied (strikethrough).
+	 *  Прогресс (unknown/partial/failed/complete) → 4px полоса слева через
+	 *  border-left (двух-токенная схема, унаследованная от classic).
+	 * ===================================================================== */
+	--plan-bg:                       #16191d;
+	--plan-bg-authorized:            #16191d;
+	--plan-text:                     var(--text-primary);
+
+	--plan-stripe-unknown:           var(--sem-muted);
+	--plan-stripe-partial:           var(--sem-warning);
+	--plan-stripe-failed:            var(--sem-danger);
+	--plan-stripe-complete:          var(--sem-success);
+
+	/* двух-токенная схема: classic — 8px border-left, modern — 4px */
+	--plan-stripe-unknown-border-left:  4px solid var(--plan-stripe-unknown);
+	--plan-stripe-unknown-shadow:       none;
+	--plan-stripe-partial-border-left:  4px solid var(--plan-stripe-partial);
+	--plan-stripe-partial-shadow:       none;
+	--plan-stripe-failed-border-left:   4px solid var(--plan-stripe-failed);
+	--plan-stripe-failed-shadow:        none;
+	--plan-stripe-complete-border-left: 4px solid var(--plan-stripe-complete);
+	--plan-stripe-complete-shadow:      none;
+
+	--plan-divider:                  #2a3142;
+
+	/* =====================================================================
+	 * §6.1. MEMO CARD — стикер.
+	 *  open: warm yellow градиент + offset-тень (бумажный листок).
+	 *  closed: приглушённый, как у других closed-карточек.
+	 *  Бордера нет — sticker-эффект достигается тенью.
+	 * ===================================================================== */
+	--memo-bg-open:                  #5a4520;
+	--memo-border-open:              transparent;
+	--memo-text-open:                var(--text-primary);
+	--memo-bg-closed:                #2c2412;
+	--memo-text-closed:              var(--text-secondary);
+	--memo-border-closed:            transparent;
+	--memo-shadow-closed:            none;
+
+	/* =====================================================================
+	 * §12.1. USER CELL HEADER
+	 * ===================================================================== */
+	--user-cell-header-bg:           linear-gradient(180deg, #2a3142 0%, #1f2430 100%);
+	--user-cell-header-text-shadow:  0 1px 0 rgba(0, 0, 0, 0.6);
+	/* Counters — оттенки соответствующих type-цветов:
+	   open ticket = магента, closed ticket = голубой,
+	   open job = оранж, closed job = зелёный,
+	   open task = slate, closed task = синий */
+	--counter-open-tickets:          #e879f9;          /* fuchsia */
+	--counter-closed-tickets:        #67e8f9;          /* cyan */
+	--counter-open-jobs:             #fb923c;          /* orange */
+	--counter-closed-jobs:           #4ade80;          /* green */
+	--counter-open-tasks:            #cbd5e1;          /* slate-light */
+	--counter-closed-tasks:          #60a5fa;          /* blue */
+
+	/* =====================================================================
+	 * §7. ПОДСВЕТКА КАРТОЧЕК — outer ring 2px, фон не перекрашиваем.
+	 * Реализация в UserCell.css через [data-theme="modern"]-override.
+	 * ===================================================================== */
+	--item-hover-border:             var(--sem-success);
+	--item-hover-bg:                 transparent;
+	--item-parent-border:            var(--sem-warning);
+	--item-parent-bg:                transparent;
+	--item-child-border:             var(--sem-info);
+	--item-child-bg:                 transparent;
+	--item-alert-bg:                 var(--sem-danger-soft);
+	--item-flash-bg-1:               var(--sem-success-soft);
+	--item-flash-bg-2:               var(--sem-success);
+	--item-flash-text-2:             #052e16;
+	--item-spinner-color:            rgba(255, 255, 255, 0.55);
+
+	/* =====================================================================
+	 * §12.4. PERIODS — насыщенные тематические оттенки «утро→ночь».
+	 * ===================================================================== */
+	--period-0-color:                #eab308;
+	--period-0-text:                 #1a1d24;
+	--period-1-color:                #84cc16;
+	--period-1-text:                 #1a1d24;
+	--period-2-color:                #10b981;
+	--period-2-text:                 #ffffff;
+	--period-3-color:                #06b6d4;
+	--period-3-text:                 #0a1f24;
+	--period-4-color:                #3b82f6;
+	--period-4-text:                 #ffffff;
+	--period-5-color:                #8b5cf6;
+	--period-5-text:                 #ffffff;
+	--period-6-color:                #4c1d95;
+	--period-6-text:                 #f1f5f9;
+	--period-7-color:                #1e293b;
+	--period-7-text:                 #cbd5e1;
+
+	/* =====================================================================
+	 * §12.2. USER ITEM
+	 * ===================================================================== */
+	--user-absent:                   rgba(239, 68, 68, 0.40);
+	--user-week-absent:              rgba(245, 158, 11, 0.40);
+	--user-twoweek-absent:           rgba(245, 158, 11, 0.22);
+	--user-hover:                    var(--sem-success-soft);
+	--user-status-online:            var(--sem-success);
+	--user-status-away:              var(--sem-warning);
+	--user-status-unavail:           var(--sem-danger);
+	--user-status-offline:           var(--sem-muted);
+	--user-duty-phone-text:          var(--sem-info-strong);
+	--phone-idle:                    var(--sem-success);
+	--phone-ringing:                 var(--sem-warning);
+	--phone-inuse:                   var(--sem-danger);
+	--phone-unknown:                 var(--sem-muted);
+
+	/* =====================================================================
+	 * §12.3. ALERTS — severity badges (AAA контраст).
+	 * ===================================================================== */
+	--alert-severity-1-bg:           #3b82f6;
+	--alert-severity-1-text:         #ffffff;
+	--alert-severity-2-bg:           #f59e0b;
+	--alert-severity-2-text:         #1a1208;
+	--alert-severity-3-bg:           #f97316;
+	--alert-severity-3-text:         #1a0d05;
+	--alert-severity-4-bg:           #ef4444;
+	--alert-severity-4-text:         #ffffff;
+	--alert-severity-5-bg:           #b91c1c;
+	--alert-severity-5-text:         #fee2e2;
+	--alert-link-bg:                 var(--surface-card-elevated);
+	--alert-link-bg-hover:           #4a5468;
+	--alert-link-text:               var(--text-primary);
+	--alert-pin-close-bg:            rgba(255, 255, 255, 0.10);
+	--alert-pin-close-bg-hover:      var(--sem-danger-soft);
+
+	/* =====================================================================
+	 * §12.5. CONNECTION STATES
+	 * ===================================================================== */
+	--conn-id-text:                  var(--sem-info-strong);
+	--conn-green:                    var(--sem-success);
+	--conn-yellow:                   var(--sem-warning);
+	--conn-red:                      var(--sem-danger);
+
+	/* =====================================================================
+	 * §12.6. CREATE ITEM BUTTON — hover-цвета в hue типа.
+	 * ===================================================================== */
+	--create-button-border:          rgba(255, 255, 255, 0.10);
+	--create-button-bg:              rgba(255, 255, 255, 0.04);
+	/* hover-цвета — мускульная память: hover создания тянется к hue
+	   create-X-hover = open-цвет соответствующего типа */
+	--create-task-hover:             rgba(148, 163, 184, 0.40);  /* slate */
+	--create-job-hover:              rgba(251, 146, 60, 0.45);   /* orange */
+	--create-closedJob-hover:        rgba(74, 222, 128, 0.40);   /* green */
+	--create-ticket-hover:           rgba(232, 121, 249, 0.45);  /* fuchsia */
+	--create-plan-hover:             rgba(160, 175, 195, 0.40);  /* нейтральный (plan чёрный) */
+
+	--header-button-hover-bg:        var(--surface-card-elevated);
+
+	/* =====================================================================
+	 * §12.7. AUTH FORM / debug
+	 * ===================================================================== */
+	--auth-on-bg:                    var(--sem-success-soft);
+	--auth-on-border:                var(--sem-success);
+	--auth-on-text:                  var(--sem-success-strong);
+	--auth-off-bg:                   var(--surface-card);
+	--auth-off-border:               transparent;
+	--auth-off-text:                 var(--sem-muted);
+	--auth-divider:                  rgba(255, 255, 255, 0.08);
+	--auth-debug-button-bg:          var(--surface-card);
+	--auth-debug-button-bg-hover:    var(--surface-card-elevated);
+	--auth-debug-button-border:      transparent;
+	--auth-debug-button-border-hover:#64748b;
+	--auth-debug-reset-bg:           var(--sem-danger-soft);
+	--auth-debug-reset-bg-hover:     rgba(239, 68, 68, 0.30);
+	--auth-debug-reset-border:       var(--sem-danger);
+	--auth-debug-reset-border-hover: var(--sem-danger-strong);
+	--auth-error-border:             var(--sem-danger);
+
+	/* =====================================================================
+	 * §12.8. TASK SEARCH / SEARCH RESULTS
+	 * ===================================================================== */
+	--search-bg:                     var(--surface-card);
+	--search-header-bg:              var(--surface-app-bar);
+	--search-divider:                #2a3142;
+	--search-divider-soft:           #2a3142;
+	--search-empty-text:             var(--text-secondary);
+	--search-empty-text-soft:        var(--text-muted);
+	--search-icon:                   var(--text-secondary);
+	--search-result-hover:           var(--surface-card-elevated);
+	--search-focus-outline:          var(--sem-info);
+	--search-count-text:             var(--sem-info-strong);
+}
+
+/* =========================================================================
+ * Modern: фон open-тикета.
+ * Ticket базовый стиль (.userTicket без подстатуса) — фон через переопределение
+ * правила с background-image на background-color из tokens.
+ * ========================================================================= */
+[data-theme="modern"] li.userTicket {
+	background-image: none;
+	background-color: #5a1d52;
+}

@@ -3,25 +3,25 @@ div.userCellHeader {
 	flex-flow: row nowrap;
 	justify-content: space-evenly;
     text-align: center;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
     vertical-align: middle;
     min-height: 20px;
-    background: linear-gradient(to bottom, #787878 5%, #2e2e2e 100%);
+    background: var(--user-cell-header-bg);
     border: none;
-    border-radius: 5px;
+    border-radius: var(--radius-md);
     margin: 2px;
 }
 
 div.userCellHeader span {
-    text-shadow: 0 0 3px black;
+    text-shadow: var(--user-cell-header-text-shadow);
     cursor: pointer;
 }
 
 
-div.userCellHeader span.closedTicketsCountLabel    {color: #79bbff;}
-div.userCellHeader span.openTicketsCountLabel      {color: red;}
-div.userCellHeader span.closedJobsCountLabel       {color: #5cb811;}
-div.userCellHeader span.openJobsCountLabel         {color: #ffee66}
-div.userCellHeader span.closedTasksCountLabel      {color: blueviolet;}
-div.userCellHeader span.openTasksCountLabel        {color: #e9e9e9;}
+div.userCellHeader span.closedTicketsCountLabel    {color: var(--counter-closed-tickets);}
+div.userCellHeader span.openTicketsCountLabel      {color: var(--counter-open-tickets);}
+div.userCellHeader span.closedJobsCountLabel       {color: var(--counter-closed-jobs);}
+div.userCellHeader span.openJobsCountLabel         {color: var(--counter-open-jobs);}
+div.userCellHeader span.closedTasksCountLabel      {color: var(--counter-closed-tasks);}
+div.userCellHeader span.openTasksCountLabel        {color: var(--counter-open-tasks);}

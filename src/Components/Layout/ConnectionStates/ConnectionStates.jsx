@@ -13,7 +13,7 @@ const statusItem=function(status) {
 	return <span className={style}>{status}</span>
 }
 
-const ConnectionStates = observer(function InvAuthForm() {
+const ConnectionStates = observer(function ConnectionStates() {
     const context = useContext(StoreContext);
 
     const wsConnectionStatus = context.ws?.connectionStatus || 'Uninitialized'; // Получение статуса WebSocket

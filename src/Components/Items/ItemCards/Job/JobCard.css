@@ -1,17 +1,17 @@
 td.userCell ul li.userJob.closed {
-    color:#306108;
-    border-color:#268a16;
-    box-shadow:inset 0 1px 0 0 #caefab;
-    text-shadow: 0 1px 0 #aade7c;
-    background:linear-gradient(#77d42a, #5cb811);
+    color: var(--job-text-closed);
+    border-color: var(--job-border-closed);
+    box-shadow: var(--job-shadow-closed);
+    text-shadow: var(--job-text-shadow-closed);
+    background: var(--job-bg-closed);
 }
 
 td.userCell ul li.userJob.open {
-    color:rgba(106, 59, 20, 1);
-    border-color:rgba(121, 79, 2, 1);
-    box-shadow:inset 0 1px 0 0 #fff6af;
-    text-shadow: 0 1px 0 #ffee66;
-    background:linear-gradient(#ffec64, #ffab23);
+    color: var(--job-text-open);
+    border-color: var(--job-border-open);
+    box-shadow: var(--job-shadow-open);
+    text-shadow: var(--job-text-shadow-open);
+    background: var(--job-bg-open);
 }
 
 

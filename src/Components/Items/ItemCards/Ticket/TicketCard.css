@@ -1,5 +1,5 @@
 li.userTicket {
-	background-image: url('/public/alum0.jpg');
+	background-image: var(--surface-ticket-bg);
 	min-height: 25px;
 }
 
@@ -18,55 +18,54 @@ li.userTicket:after {
 }
 
 li.userItem.userTicket.red {
-	border: solid 2px red;
+	border: var(--ticket-red-border);
+	box-shadow: var(--ticket-red-shadow);
 	padding: 1px;
 }
 
 li.userItem.userTicket.green {
-	border: solid 2px limegreen;
+	border: var(--ticket-green-border);
+	box-shadow: var(--ticket-green-shadow);
 	padding: 1px;
 }
 
 li.userItem.userTicket.blue {
-	box-shadow: inset 0 0 10px 0 lightskyblue;
-	border: 2px solid lightskyblue !important;
+	border: var(--ticket-blue-border) !important;
+	box-shadow: var(--ticket-blue-shadow);
 }
 
 li.userItem.userTicket.closed {
-	/*background: repeating-linear-gradient(0deg, lightblue 0, lightblue 1px, lightskyblue 1px, lightskyblue 2px);*/
-	background: linear-gradient(#79bbff, #378de5);
-	box-shadow: inset 0 1px 0 0 #bbdaf7;
-	text-shadow: 0 1px 0 #528ecc;
-	color: #fff;
-	border-color: #84bbf3;
+	background: var(--ticket-bg-closed);
+	box-shadow: var(--ticket-shadow-closed);
+	text-shadow: var(--ticket-text-shadow-closed);
+	color: var(--ticket-text-closed);
+	border-color: var(--ticket-border-closed);
 }
 
 
 span.userTicketLink {
-	border: solid 1px #999999;
-	background-image: url('/public/alum0.jpg');
-	box-shadow: inset 0 1px 0 0 #ffffff;
-	border-radius: 4px;
-	color: black;
+	border: solid 1px var(--ticket-link-border);
+	background-image: var(--surface-ticket-bg);
+	box-shadow: var(--task-shadow-inset);
+	border-radius: var(--radius-sm);
+	color: var(--card-link-text);
 }
 
 span.userTicketLink.red {
-	border-left: 4px solid red;
+	border-left: 4px solid var(--ticket-stripe-red);
 }
 
 span.userTicketLink.green {
-	border-left: 4px solid limegreen;
+	border-left: 4px solid var(--ticket-stripe-green);
 }
 
 span.userTicketLink.blue {
-	border-left: 4px solid lightskyblue;
+	border-left: 4px solid var(--ticket-stripe-blue);
 }
 
 span.userTicketLink.closed {
-	background: linear-gradient(#79bbff, #378de5);
-	box-shadow: inset 0 1px 0 0 #bbdaf7;
-	text-shadow: 0 1px 0 #528ecc;
-	color: #fff;
+	background: var(--ticket-bg-closed);
+	box-shadow: var(--ticket-shadow-closed);
+	text-shadow: var(--ticket-text-shadow-closed);
+	color: var(--ticket-text-closed);
 }
-
-

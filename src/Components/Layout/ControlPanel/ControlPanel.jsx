@@ -1,13 +1,13 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import './invAuthForm.css';
+import './controlPanel.css';
 import { StoreContext } from 'Data/Stores/StoreProvider';
 import ConnectionStates from 'Components/Layout/ConnectionStates/ConnectionStates';
 import { debugLogin, debugPassword, debugAutoLogin, showTimeDebugUI } from 'config.priv';
 import classNames from 'classnames';
 import MenuButton from '../Header/Menu/MenuIButton';
 
-const InvAuthForm = observer(function InvAuthForm() {
+const ControlPanel = observer(function ControlPanel() {
     const [login, setLogin] = useState('');
     const [password, setPassword] = useState('');
     const [status, setStatus] = useState('typing');
@@ -18,9 +18,9 @@ const InvAuthForm = observer(function InvAuthForm() {
         if (debugLogin && debugPassword) {
             setLogin(debugLogin);
             setPassword(debugPassword);
-            
+
             // Если включен автовход - сразу выполняем авторизацию
-            if (debugAutoLogin 
+            if (debugAutoLogin
 				&& context.main.bx.authStatus !== 'OK'
 				&& context.main.zabbix.authStatus !== 'OK'
 				&& context.main.inventory.authStatus !== 'OK'
@@ -108,10 +108,12 @@ const InvAuthForm = observer(function InvAuthForm() {
 		context.time.resetToRealTime();
 	}, [context.time]);
 
+	const { theme } = context;
+
 
     return (
 		<div className={classNames(
-			'invAuthForm', 
+			'controlPanel',
 			{hasErrors: context.main.hasErrors,}
 		)}>
 			<div className='section'>
@@ -138,7 +140,21 @@ const InvAuthForm = observer(function InvAuthForm() {
 						<button onClick={defaultMode} className="small">Сброс</button>
 						<br/>
 						<MenuButton property='useSplitBucket' title={['1 корзина', '3 корзины']} />
-
+						<br/>
+						{theme.availableThemes.length >= 2 && (
+							<>
+								Тема:<br/>
+								{theme.availableThemes.map(t => (
+									<button
+										key={t.id}
+										onClick={() => theme.setTheme(t.id)}
+										className={classNames('small', {active: theme.currentThemeId === t.id})}
+									>
+										{t.name}
+									</button>
+								))}
+							</>
+						)}
 					</div>
 				</div>
 			</div>
@@ -204,7 +220,7 @@ const InvAuthForm = observer(function InvAuthForm() {
 				</div>
 				<div className='debug-time-info'>
 					<h3>Отладка времени</h3>
-				
+
 					<small>
 						today: {context.time.today ? new Date(context.time.today).toLocaleDateString('ru-RU') : '—'}<br/>
 						monday0: {context.time.monday0 ? new Date(context.time.monday0).toLocaleDateString('ru-RU') : '—'}<br/>
@@ -218,4 +234,4 @@ const InvAuthForm = observer(function InvAuthForm() {
     );
 });
 
-export default InvAuthForm;
+export default ControlPanel;

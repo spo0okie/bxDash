@@ -1,6 +1,6 @@
 div.userCellContent ul li.userItem.userPlan {
-	color: white;
-	background: #444;
+	color: var(--plan-text);
+	background: var(--plan-bg);
 }
 
 div.userCellContent ul li.userPlan.denied {
@@ -8,28 +8,32 @@ div.userCellContent ul li.userPlan.denied {
 }
 
 div.userCellContent ul li.userPlan.authorized {
-	background: #222;
+	background: var(--plan-bg-authorized);
 }
 
 div.userCellContent ul li.userPlan.authorized.unknown {
-	border-left: whitesmoke solid 8px;
+	border-left: var(--plan-stripe-unknown-border-left);
+	box-shadow: var(--plan-stripe-unknown-shadow);
 }
 
 div.userCellContent ul li.userPlan.authorized.partial {
-	border-left: yellow solid 8px;
+	border-left: var(--plan-stripe-partial-border-left);
+	box-shadow: var(--plan-stripe-partial-shadow);
 }
 
 div.userCellContent ul li.userPlan.authorized.failed {
-	border-left: red solid 8px;
+	border-left: var(--plan-stripe-failed-border-left);
+	box-shadow: var(--plan-stripe-failed-shadow);
 }
 
 div.userCellContent ul li.userPlan.authorized.complete {
-	border-left: green solid 8px;
+	border-left: var(--plan-stripe-complete-border-left);
+	box-shadow: var(--plan-stripe-complete-shadow);
 }
 div.userCellContent ul li.userPlan hr {
 	height: 1px;
 	border: 0;
-	background: gray;
+	background: var(--plan-divider);
 	margin: 2px;
 }
 

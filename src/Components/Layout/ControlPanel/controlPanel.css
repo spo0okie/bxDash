@@ -1,0 +1,136 @@
+.controlPanel {
+	position: fixed;
+	background: var(--surface-overlay);
+	width: 100%;
+	text-align: center;
+	z-index: 998;
+	color: var(--text-on-overlay);
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	justify-content: space-between;
+}
+
+.controlPanel.hasErrors {
+	background: repeating-linear-gradient(
+		-60deg,
+		var(--surface-overlay-stripe),
+		var(--surface-overlay-stripe) 25px,
+		var(--surface-overlay) 25px,
+		var(--surface-overlay) 50px
+	  );
+	border: 2px solid var(--auth-error-border);
+}
+
+.controlPanel > .section {
+	flex-grow: 1;
+	flex-basis: 600px;
+}
+
+
+.controlPanel div.menu {
+	display: flex;
+	flex-direction: row;
+	text-align: left;
+	margin: 4px 0;
+	justify-content: center;
+}
+
+div.options button {
+	border-radius: var(--radius-md);
+	border-width: 1px;
+	margin: 2px;
+}
+div.options button.on {
+	background: var(--auth-on-bg);
+	border-color: var(--auth-on-border);
+	color: var(--auth-on-text);
+}
+
+div.options button.off {
+	background: var(--auth-off-bg);
+	border-color: var(--auth-off-border);
+	color: var(--auth-off-text);
+}
+
+button.small.active {
+	background: var(--auth-on-bg);
+	border-color: var(--auth-on-border);
+	color: var(--auth-on-text);
+}
+
+/* Debug time controls */
+.debug-section {
+	border-left: 1px solid var(--auth-divider);
+	padding: 0 1em;
+	display: flex;
+	align-items: center;
+	flex-shrink: 1;
+	flex-grow: 0 !important;
+}
+
+.debug-section h3 {
+	margin: 0.5em 0;
+	font-size: 0.9em;
+	color: var(--text-debug-section);
+}
+
+.debug-time-controls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+	justify-content: center;
+	margin-bottom: 0.5em;
+	flex-direction: column;
+  	align-items: center;
+}
+
+.debug-time-controls button {
+	border-radius: var(--radius-md);
+	border-width: 1px;
+	margin: 2px;
+	padding: 4px 8px;
+	font-size: 0.8em;
+	background: var(--auth-debug-button-bg);
+	border-color: var(--auth-debug-button-border);
+	color: var(--text-debug-button);
+	cursor: pointer;
+}
+
+.debug-time-controls button:hover {
+	background: var(--auth-debug-button-bg-hover);
+	border-color: var(--auth-debug-button-border-hover);
+}
+
+.debug-time-controls button.reset {
+	background: var(--auth-debug-reset-bg);
+	border-color: var(--auth-debug-reset-border);
+	color: var(--text-debug-reset);
+}
+
+.debug-time-controls button.reset:hover:not(:disabled) {
+	background: var(--auth-debug-reset-bg-hover);
+	border-color: var(--auth-debug-reset-border-hover);
+}
+
+.debug-time-controls button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.debug-time-info {
+	color: var(--text-debug-info);
+	text-align: left;
+	padding: 0 1em;
+}
+
+.debug-time-info small {
+	font-family: var(--font-family-mono);
+	font-size: 0.75em;
+}
+
+.warning {
+	color: var(--accent-warning);
+	font-weight: bold;
+}

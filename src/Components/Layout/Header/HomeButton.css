@@ -7,7 +7,7 @@ span.homeButton {
 }
 
 span.homeButton:hover {
-	background: greenyellow;
+	background: var(--header-button-hover-bg);
 }
 
 button.memoButton {
@@ -21,7 +21,7 @@ button.memoButton {
 }
 
 button.memoButton:hover {
-	background: greenyellow;
+	background: var(--header-button-hover-bg);
 }
 
 
@@ -36,7 +36,7 @@ button.optionsButton {
 }
 
 button.optionsButton:hover {
-	background: greenyellow;
+	background: var(--header-button-hover-bg);
 }
 
 button.calendarButton {
@@ -50,5 +50,20 @@ button.calendarButton {
 }
 
 button.calendarButton:hover {
-	background: greenyellow;
+	background: var(--header-button-hover-bg);
+}
+
+button.themeButton {
+	position: fixed;
+	top: 0;
+	right: 22px;
+	padding: 1px 1px;
+	z-index: 991;
+	border: none;
+	background: inherit;
+	cursor: pointer;
+}
+
+button.themeButton:hover {
+	background: var(--header-button-hover-bg);
 }

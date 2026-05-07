@@ -3,7 +3,7 @@ import { observer } from "mobx-react";
 import { useStores } from "Data/Stores/StoreProvider";
 
 import AppHeader from "./Header/AppHeader";
-import InvAuthForm from "./AuthForm/InvAuthForm";
+import ControlPanel from "./ControlPanel/ControlPanel";
 import HomeButton from "./Header/HomeButton";
 import MenuButton from "./Header/Menu/MenuIButton";
 import TaskSearch from "./TaskSearch/TaskSearch";
@@ -41,7 +41,7 @@ const Layout = observer(() => {
 
 	return (
 		<>
-			{showAuthForm && <InvAuthForm />}
+			{showAuthForm && <ControlPanel />}
 
 			<Modals />
 

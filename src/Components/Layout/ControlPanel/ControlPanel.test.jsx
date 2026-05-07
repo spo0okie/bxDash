@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import InvAuthForm from '../src/Components/Layout/AuthForm/InvAuthForm';
+import ControlPanel from '../src/Components/Layout/AuthForm/ControlPanel';
 
 // Mock для MobX store
 const mockStore = {
@@ -16,20 +16,20 @@ jest.mock('react', () => ({
   useContext: () => mockStore
 }));
 
-describe('InvAuthForm', () => {
+describe('ControlPanel', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   test('рендерит форму авторизации', () => {
-    render(<InvAuthForm />);
+    render(<ControlPanel />);
     expect(screen.getByText('Авторизация')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Вход/i })).toBeInTheDocument();
   });
 
   test('заполняет форму данными из config.priv.js', async () => {
-    render(<InvAuthForm />);
-    
+    render(<ControlPanel />);
+
     // Проверяем автозаполнение
     await waitFor(() => {
       expect(screen.getByDisplayValue('reviakin.a')).toBeInTheDocument();
@@ -37,13 +37,13 @@ describe('InvAuthForm', () => {
   });
 
   test('выполняет авторизацию при включенном автовходе', async () => {
-    render(<InvAuthForm />);
-    
+    render(<ControlPanel />);
+
     // Ждем автозаполнения
     await waitFor(() => {
       expect(screen.getByDisplayValue('reviakin.a')).toBeInTheDocument();
     });
-    
+
     // Проверяем что authenticate был вызван
     expect(mockStore.main.authenticate).toHaveBeenCalled();
   });

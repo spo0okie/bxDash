@@ -8,6 +8,7 @@ import ItemsMultiStore from './Items/ItemsMultiStore';
 import { userList, inventoryUrl, apiUrl, wsUrl, asteriskUrl, zabbixUrl } from 'config.priv';
 import { WsStore } from './WsStore';
 import AlertsStore from './Items/AlertsStore';
+import ThemeStore from './ThemeStore';
 
 /**
  * React-контекст со всеми стораджами приложения.
@@ -56,7 +57,10 @@ export function createStores() {
 
 	const alerts = new AlertsStore(main);
 
-	return { main, time, users, layout, periods, items, ws, alerts };
+	// тема — глобальная, нужен только main (cookies)
+	const theme = new ThemeStore(main);
+
+	return { main, time, users, layout, periods, items, ws, alerts, theme };
 }
 
 /**

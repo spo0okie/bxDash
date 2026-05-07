@@ -228,7 +228,7 @@ const CreateTicketModal = observer((props) => {
                 <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>
                     Текст заявки *
                 </label>
-                <div style={{ marginBottom: 8, color: '#666', fontSize: 12 }}>
+                <div style={{ marginBottom: 8, color: 'var(--text-secondary)', fontSize: 12 }}>
                     Первая строка - заголовок заявки, остальные строки - сообщение
                 </div>
                 <TextArea

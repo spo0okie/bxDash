@@ -1,0 +1,299 @@
+/*
+ * Базовые дизайн-токены приложения.
+ *
+ * Источник правды для всех визуальных параметров: цвета, шрифты, размеры,
+ * радиусы, тени, анимации. Тематические оверрайды живут в
+ * src/Themes/<id>/tokens.css и применяются по селектору [data-theme="<id>"].
+ *
+ * Значения здесь зеркалируют текущие литералы из компонентных CSS — это даёт
+ * визуальную идентичность на момент внедрения каркаса (Этап 0). Постепенно
+ * компонентные CSS переходят с `#abc` на `var(--token)`; новые токены
+ * добавляются сюда же.
+ */
+
+:root {
+	/* ===== Поверхности и фон ===== */
+	--surface-page:           #666;
+	--surface-app-bar:        white;
+	--surface-app-bar-text-shadow: 0 0 3px white;
+	--surface-sidebar-resizer-hover: #c1c3c5b4;
+	--surface-card:           #fff;
+	--surface-card-elevated:  #fafafa;
+	--surface-modal:          #fff;
+	--surface-overlay:        rgba(0, 0, 0, 0.7);
+	--surface-overlay-stripe: rgba(120, 0, 0, 0.7);
+	--surface-dropzone-active: rgb(103, 176, 248);
+	--surface-droppable-active: skyblue;
+	--surface-ticket-bg:      url('/public/alum0.jpg');
+	--surface-favorite-icon:  url('/public/fav48.png');
+
+	/* ===== Текст ===== */
+	--text-primary:           #333;
+	--text-secondary:         #666;
+	--text-muted:             #999;
+	--text-inverse:           #fff;
+	--text-on-overlay:        #fff;
+	--text-link:              #1890ff;
+	--text-debug-info:        #888;
+	--text-debug-section:     #aaa;
+	--text-debug-button:      #ccc;
+	--text-debug-reset:       #faa;
+
+	/* ===== Бренд / акценты ===== */
+	--accent-primary:         #1890ff;
+	--accent-primary-focus:   #1890ff;
+	--accent-success:         limegreen;
+	--accent-warning:         #ffaa00;
+	--accent-danger:          #ff4d4f;
+	--accent-info:            deepskyblue;
+
+	/* ===== Типографика ===== */
+	--font-family-base:       "Helvetica Neue", Helvetica, Arial, sans-serif;
+	--font-family-mono:       source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+	--font-size-base:         12px;
+	--font-size-sm:           11px;
+	--font-size-md:           14px;
+	--font-size-lg:           16px;
+	--font-weight-regular:    400;
+	--font-weight-bold:       700;
+
+	/* ===== Геометрия / отступы ===== */
+	--radius-sm:              4px;
+	--radius-md:              5px;
+	--radius-lg:              6px;
+	--radius-xl:              8px;
+	--space-1:                2px;
+	--space-2:                4px;
+	--space-3:                8px;
+	--space-4:                12px;
+	--space-5:                16px;
+	--border-width-thin:      1px;
+	--border-width-thick:     2px;
+
+	/* ===== Тени и эффекты ===== */
+	--shadow-app-bar:         0 6px 6px rgba(0, 0, 0, 0.5);
+	--shadow-card-hover:      0 0 8px rgba(255, 255, 255, 0.6);
+	--shadow-modal:           0 4px 16px rgba(0, 0, 0, 0.15);
+	--shadow-memo:            0 2px 6px rgba(0, 0, 0, 0.5);
+	--transition-fast:        .15s ease;
+	--transition-medium:      .2s ease;
+	--transition-slow:        .3s ease;
+
+	/* ===== Statuses: карточки задач (Task) ===== */
+	--task-bg:                linear-gradient(to bottom, #f9f9f9, #e9e9e9);
+	--task-border:            #999999;
+	--task-shadow-inset:      inset 0 1px 0 0 #ffffff;
+	--task-bg-closed:         linear-gradient(#007dc1, #0061a7);
+	--task-text-closed:       #ffffff;
+	--task-border-closed:     #124d77;
+	--task-shadow-closed:     inset 0 1px 0 0 #54a3f7;
+	--task-text-shadow-closed:0 1px 0 #154682;
+	--task-bg-closeMe-border: #54a3f7;
+	--task-shadow-closeMe:    inset 0 0 5px 5px rgba(84, 163, 247, 0.2);
+	--task-stripe-active-now: limegreen;
+	--task-bg-negative:       linear-gradient(to bottom, #a83516 5%, #852511 100%);
+	--task-bg-negative-color: #a83516;
+	--task-text-negative:     #ffffff;
+	--task-border-negative:   #942911;
+	--task-shadow-negative:   inset 0 1px 0 0 #cf866c;
+	--task-text-shadow-negative: 0 1px 0 #854629;
+	--task-priority-low:      lime;
+	--task-priority-mid:      sandybrown;
+	--task-priority-high:     red;
+	--task-priority-mid-text: green;
+	--task-priority-high-text:red;
+	--task-updates-bg:        red;
+	--task-updates-text:      white;
+	/* двух-токенная схема: в classic activeNow рисуется через border-left,
+	   в modern — через box-shadow inset top. Тема выбирает, чем рисовать. */
+	--task-active-now-border-left: 4px solid var(--task-stripe-active-now);
+	--task-active-now-shadow:      none;
+	/* анимация closeMe — пульсация, по умолчанию выключена; modern включает */
+	--task-closeMe-animation:      none;
+
+	/* ===== Statuses: работы (Job) ===== */
+	--job-bg-open:            linear-gradient(#ffec64, #ffab23);
+	--job-text-open:          rgba(106, 59, 20, 1);
+	--job-border-open:        rgba(121, 79, 2, 1);
+	--job-shadow-open:        inset 0 1px 0 0 #fff6af;
+	--job-text-shadow-open:   0 1px 0 #ffee66;
+	--job-bg-closed:          linear-gradient(#77d42a, #5cb811);
+	--job-text-closed:        #306108;
+	--job-border-closed:      #268a16;
+	--job-shadow-closed:      inset 0 1px 0 0 #caefab;
+	--job-text-shadow-closed: 0 1px 0 #aade7c;
+
+	/* ===== Statuses: тикеты (Ticket) ===== */
+	--ticket-stripe-red:      red;
+	--ticket-stripe-green:    limegreen;
+	--ticket-stripe-blue:     lightskyblue;
+	--ticket-shadow-blue:     inset 0 0 10px 0 lightskyblue;
+	--ticket-bg-closed:       linear-gradient(#79bbff, #378de5);
+	--ticket-shadow-closed:   inset 0 1px 0 0 #bbdaf7;
+	--ticket-text-shadow-closed: 0 1px 0 #528ecc;
+	--ticket-text-closed:     #fff;
+	--ticket-border-closed:   #84bbf3;
+	/* двух-токенная схема для подстатусов тикета (red/green/blue):
+	   classic — толстая 2px-обводка по периметру, modern — 1px top-stripe */
+	--ticket-red-border:      solid 2px var(--ticket-stripe-red);
+	--ticket-red-shadow:      none;
+	--ticket-green-border:    solid 2px var(--ticket-stripe-green);
+	--ticket-green-shadow:    none;
+	--ticket-blue-border:     2px solid var(--ticket-stripe-blue);
+	--ticket-blue-shadow:     var(--ticket-shadow-blue);
+	--ticket-link-border:     #999999;
+	/* цвет текста ссылок-карточек (TaskLink/TicketLink): на светлой карточке
+	   — чёрный, на тёмной — светлый. Темы переопределяют. */
+	--card-link-text:         black;
+
+	/* ===== Statuses: планы (Plan) ===== */
+	--plan-bg:                #444;
+	--plan-bg-authorized:     #222;
+	--plan-text:              white;
+	--plan-stripe-unknown:    whitesmoke;
+	--plan-stripe-partial:    yellow;
+	--plan-stripe-failed:     red;
+	--plan-stripe-complete:   green;
+	--plan-divider:           gray;
+	/* двух-токенная схема прогресса плана: classic — 8px border-left,
+	   modern — 1px top stripe через box-shadow inset */
+	--plan-stripe-unknown-border-left:  var(--plan-stripe-unknown) solid 8px;
+	--plan-stripe-unknown-shadow:       none;
+	--plan-stripe-partial-border-left:  var(--plan-stripe-partial) solid 8px;
+	--plan-stripe-partial-shadow:       none;
+	--plan-stripe-failed-border-left:   var(--plan-stripe-failed) solid 8px;
+	--plan-stripe-failed-shadow:        none;
+	--plan-stripe-complete-border-left: var(--plan-stripe-complete) solid 8px;
+	--plan-stripe-complete-shadow:      none;
+
+	/* ===== Statuses: заметки (Memo) ===== */
+	--memo-bg-open:           beige;
+	--memo-border-open:       #333;
+	--memo-text-open:         #333;
+	--memo-bg-closed:         linear-gradient(#77d42a, #5cb811);
+	--memo-text-closed:       #306108;
+	--memo-border-closed:     #268a16;
+	--memo-shadow-closed:     inset 0 1px 0 0 #caefab;
+
+	/* ===== UserCellHeader (счётчики над колонкой пользователя) ===== */
+	--user-cell-header-bg:    linear-gradient(to bottom, #787878 5%, #2e2e2e 100%);
+	--user-cell-header-text-shadow: 0 0 3px black;
+	--counter-closed-tickets: #79bbff;
+	--counter-open-tickets:   red;
+	--counter-closed-jobs:    #5cb811;
+	--counter-open-jobs:      #ffee66;
+	--counter-closed-tasks:   blueviolet;
+	--counter-open-tasks:     #e9e9e9;
+
+	/* ===== Подсветка карточек (hover/parent/child) ===== */
+	--item-hover-border:      lime;
+	--item-hover-bg:          palegreen;
+	--item-parent-border:     orange;
+	--item-parent-bg:         darkgoldenrod;
+	--item-child-border:      dodgerblue;
+	--item-child-bg:          deepskyblue;
+	--item-alert-bg:          rgba(255, 0, 0, 0.4);
+	--item-flash-bg-1:        lime;
+	--item-flash-bg-2:        green;
+	--item-flash-text-2:      white;
+	/* цвет колец спиннера загрузки на карточке (3 кольца + transparent) */
+	--item-spinner-color:     rgba(0, 0, 0, 0.4);
+
+	/* ===== Periods ===== */
+	--period-0-color:         yellow;
+	--period-0-text:          inherit;
+	--period-1-color:         greenyellow;
+	--period-1-text:          inherit;
+	--period-2-color:         limegreen;
+	--period-2-text:          inherit;
+	--period-3-color:         deepskyblue;
+	--period-3-text:          inherit;
+	--period-4-color:         royalblue;
+	--period-4-text:          white;
+	--period-5-color:         blueviolet;
+	--period-5-text:          white;
+	--period-6-color:         darkslateblue;
+	--period-6-text:          white;
+	--period-7-color:         #333333;
+	--period-7-text:          white;
+
+	/* ===== UserItem (статусы присутствия / телефонии) ===== */
+	--user-absent:            indianred;
+	--user-week-absent:       orange;
+	--user-twoweek-absent:    yellow;
+	--user-hover:             lime;
+	--user-status-online:     lime;
+	--user-status-away:       orange;
+	--user-status-unavail:    red;
+	--user-status-offline:    gray;
+	--user-duty-phone-text:   blue;
+	--phone-idle:             lime;
+	--phone-ringing:          orange;
+	--phone-inuse:            red;
+	--phone-unknown:          gray;
+
+	/* ===== Alerts (severity 1..5) ===== */
+	--alert-severity-1-bg:    #7499FF;
+	--alert-severity-1-text:  #00268e;
+	--alert-severity-2-bg:    #FFC859;
+	--alert-severity-2-text:  #734d00;
+	--alert-severity-3-bg:    #FFA059;
+	--alert-severity-3-text:  #733100;
+	--alert-severity-4-bg:    #E45959;
+	--alert-severity-4-text:  #52190b;
+	--alert-severity-5-bg:    #891515;
+	--alert-severity-5-text:  #000;
+	--alert-link-bg:          #333;
+	--alert-link-bg-hover:    #666;
+	--alert-link-text:        white;
+	--alert-pin-close-bg:     rgba(255, 255, 255, 0.2);
+	--alert-pin-close-bg-hover: rgba(255, 100, 100, 0.6);
+
+	/* ===== ConnectionStates ===== */
+	--conn-id-text:           cyan;
+	--conn-green:             lime;
+	--conn-yellow:            yellow;
+	--conn-red:               red;
+
+	/* ===== Кнопки добавления (CreateItemButton) ===== */
+	--create-button-border:   rgba(255, 255, 255, 0.4);
+	--create-button-bg:       rgba(255, 255, 255, 0.3);
+	--create-task-hover:      orange;
+	--create-job-hover:       yellow;
+	--create-closedJob-hover: lime;
+	--create-ticket-hover:    deepskyblue;
+	--create-plan-hover:      mediumorchid;
+
+	/* ===== Кнопки шапки (Home/Memo/Options/Calendar) ===== */
+	--header-button-hover-bg: greenyellow;
+
+	/* ===== AuthForm (debug панель) ===== */
+	--auth-on-bg:             #141;
+	--auth-on-border:         limegreen;
+	--auth-on-text:           limegreen;
+	--auth-off-bg:            #010;
+	--auth-off-border:        green;
+	--auth-off-text:          green;
+	--auth-divider:           rgba(255, 255, 255, 0.2);
+	--auth-debug-button-bg:   #222;
+	--auth-debug-button-bg-hover: #333;
+	--auth-debug-button-border: #666;
+	--auth-debug-button-border-hover: #888;
+	--auth-debug-reset-bg:    #411;
+	--auth-debug-reset-bg-hover: #522;
+	--auth-debug-reset-border: #844;
+	--auth-debug-reset-border-hover: #a55;
+	--auth-error-border:      red;
+
+	/* ===== TaskSearch / SearchResults ===== */
+	--search-bg:              #fff;
+	--search-header-bg:       #fafafa;
+	--search-divider:         #f0f0f0;
+	--search-divider-soft:    #f5f5f5;
+	--search-empty-text:      #999;
+	--search-empty-text-soft: #bbb;
+	--search-icon:            #8c8c8c;
+	--search-result-hover:    #f5f5f5;
+	--search-focus-outline:   #1890ff;
+	--search-count-text:      #1890ff;
+}

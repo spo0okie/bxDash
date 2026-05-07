@@ -14,51 +14,51 @@ td.userCell:hover  span.CreateItemButton{
 }
 
 div.userCellContent span.CreateItemButton :first-child {
-	border-top-left-radius: 5px;
-	border-bottom-left-radius: 5px;
+	border-top-left-radius: var(--radius-md);
+	border-bottom-left-radius: var(--radius-md);
 }
 
 div.userCellContent span.CreateItemButton :last-child {
-	border-top-right-radius: 5px;
-	border-bottom-right-radius: 5px;
+	border-top-right-radius: var(--radius-md);
+	border-bottom-right-radius: var(--radius-md);
 }
 
 div.userCellContent span.CreateItemButton span.create {
 	flex-grow: 1;
 	padding: 0;
 	margin: 0;
-	border: solid 1px rgba(255,255,255,0.4);
-	background: rgba(255,255,255,0.3);
+	border: solid 1px var(--create-button-border);
+	background: var(--create-button-bg);
 	text-align: center;
 	cursor: pointer;
-	font-size: 12px;
-	opacity: 40%;  
+	font-size: var(--font-size-base);
+	opacity: 40%;
 	border-collapse: collapse;
 	text-overflow: clip;
 	overflow-x: hidden;
 }
 
 div.userCellContent span.CreateItemButton span.task:hover {
-	background:orange;
+	background: var(--create-task-hover);
 	opacity: 100%;
 }
 
 div.userCellContent span.CreateItemButton span.job:hover {
-	background: yellow;
+	background: var(--create-job-hover);
 	opacity: 100%;
 }
 
 div.userCellContent span.CreateItemButton span.closedJob:hover {
-	background: lime;
+	background: var(--create-closedJob-hover);
 	opacity: 100%;
 }
 
 div.userCellContent span.CreateItemButton span.ticket:hover {
-	background:deepskyblue;
+	background: var(--create-ticket-hover);
 	opacity: 100%;
 }
 
 div.userCellContent span.CreateItemButton span.plan:hover {
-	background: mediumorchid;
+	background: var(--create-plan-hover);
 	opacity: 100%;
 }

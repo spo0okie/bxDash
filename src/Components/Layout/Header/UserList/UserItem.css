@@ -1,10 +1,10 @@
 .UserItem {position: relative;}
-.UserItem.ABSENT			{background-color: indianred;}
-.UserItem.WEEK_ABSENT		{background-color: orange;}
-.UserItem.TWO_WEEK_ABSENT	{background-color: yellow;}
+.UserItem.ABSENT			{background-color: var(--user-absent);}
+.UserItem.WEEK_ABSENT		{background-color: var(--user-week-absent);}
+.UserItem.TWO_WEEK_ABSENT	{background-color: var(--user-twoweek-absent);}
 
 .UserItem.hovered {
-    background-color: lime;
+    background-color: var(--user-hover);
 }
 
 .UserItem span.userStatus,
@@ -17,17 +17,17 @@
     margin-right: 1px;
     margin-left: 1px;
 }
-.UserItem span.userStatus.online {background-color: lime;}
-.UserItem span.userStatus.away {background-color: orange;}
-.UserItem span.userStatus.unavail {background-color: red;}
-.UserItem span.userStatus.offline {background-color: gray;}
+.UserItem span.userStatus.online {background-color: var(--user-status-online);}
+.UserItem span.userStatus.away {background-color: var(--user-status-away);}
+.UserItem span.userStatus.unavail {background-color: var(--user-status-unavail);}
+.UserItem span.userStatus.offline {background-color: var(--user-status-offline);}
 
-.UserItem span.dutyPhone{color:blue; font-weight: bolder; white-space: nowrap;}
-.UserItem span.phoneStatus.IDLE {background-color: lime;}
-.UserItem span.phoneStatus.RINGING {background-color: orange;}
-.UserItem span.phoneStatus.INUSE {background-color: red;}
+.UserItem span.dutyPhone{color: var(--user-duty-phone-text); font-weight: bolder; white-space: nowrap;}
+.UserItem span.phoneStatus.IDLE {background-color: var(--phone-idle);}
+.UserItem span.phoneStatus.RINGING {background-color: var(--phone-ringing);}
+.UserItem span.phoneStatus.INUSE {background-color: var(--phone-inuse);}
 .UserItem span.phoneStatus.UNKNOWN,
-.UserItem span.phoneStatus.UNAVAILABLE {background-color: gray;}
+.UserItem span.phoneStatus.UNAVAILABLE {background-color: var(--phone-unknown);}
 
 .UserItem .firstLine {
     display: flex;

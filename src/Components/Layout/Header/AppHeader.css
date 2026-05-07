@@ -2,15 +2,15 @@
 div.AppHeader {
     position: fixed;
     top: 0;
-    background: white;
-    font-weight: bold;
-    text-shadow: 0 0 3px white;
+    background: var(--surface-app-bar);
+    font-weight: var(--font-weight-bold);
+    text-shadow: var(--surface-app-bar-text-shadow);
     min-height: 0 !important;
     width: 100%;
     padding: 0;
     margin: 0;
     z-index: 990;
-    box-shadow: 0 6px 6px rgba(0,0,0,0.5);
+    box-shadow: var(--shadow-app-bar);
     border:none;
     text-align: center;
 	display: table;

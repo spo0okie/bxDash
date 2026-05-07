@@ -8,7 +8,7 @@ table.UserCells tr {
 td.userCell {
 	vertical-align: top;
     height: 100%;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
 	padding: 0;
 }
 
@@ -30,7 +30,7 @@ div.userCellContent ul.droppableBlock {
 }
 
 td.userCell.draggedOver {
-	background-color: rgb(103, 176, 248);
+	background-color: var(--surface-dropzone-active);
 }
 
 /* список элементов внутри колонки пользователя*/
@@ -39,10 +39,10 @@ div.userCellContent ul li.userItem {
     display: block;
     margin: 2px;
     text-align: left;
-    font-size: 11px;
+    font-size: var(--font-size-sm);
     padding: 0;
-    border-radius: 5px;
-    color: #333;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
     position: relative;
     overflow-wrap: break-word;
     word-break: break-word;
@@ -64,7 +64,7 @@ li.userItem .content p {
 	margin: 2pt 0;
 }
 
-li.userItem.favorite .content {background: url("/public/fav48.png") 50% 50% no-repeat;}
+li.userItem.favorite .content {background: var(--surface-favorite-icon) 50% 50% no-repeat;}
 
 td.userCell ul
 
@@ -87,10 +87,10 @@ li.userItem.updating:before {
     position:absolute;
     top: 0;
     right: 0;
-    
+
     border-radius: 50%;
     border: 3px solid;
-    border-color: rgba(0, 0, 0, 0.4) rgba(0, 0, 0, 0.4) rgba(0, 0, 0, 0.4) transparent;
+    border-color: var(--item-spinner-color) var(--item-spinner-color) var(--item-spinner-color) transparent;
     animation: lds-dual-ring 1.2s linear infinite;
 }
 @keyframes lds-dual-ring {
@@ -100,7 +100,7 @@ li.userItem.updating:before {
 
 /* ОШИБКА */
 li.userItem.alert div.content {
-    background-color: rgba(255, 0, 0, 0.4);
+    background-color: var(--item-alert-bg);
 }
 
 li.userItem.alert{
@@ -124,10 +124,29 @@ li.userItem.flash div.content{
     animation: flash 0.1s infinite;
 }
 @keyframes flash {
-	0% {background: lime;}
-	50% {background: green; color: white}
+	0% {background: var(--item-flash-bg-1);}
+	50% {background: var(--item-flash-bg-2); color: var(--item-flash-text-2)}
 }
-/* подсветка (задача под курсором, родительская, дочерние) */
-li.userItem.hovered            {border-color: lime !important; background: palegreen !important; color:#333 !important; text-shadow: none!important}
-li.userItem.parentTask         {border-color: orange !important; background: darkgoldenrod !important; color:#333 !important; text-shadow: none!important}
-li.userItem.childTask          {border-color: dodgerblue !important; background: deepskyblue !important; color:#333!important; text-shadow: none!important}
+/* подсветка (задача под курсором, родительская, дочерние)
+   Двух-уровневая стратегия:
+   - classic: border-color + background-fill (заливка). !important перекрывает
+     status-фон (.closed и т.д.).
+   - modern: outline 2px поверх карточки + сохранение type-фона. См.
+     [data-theme="modern"]-блок ниже. */
+li.userItem.hovered            {border-color: var(--item-hover-border) !important; background: var(--item-hover-bg) !important; color: var(--text-primary) !important; text-shadow: none!important}
+li.userItem.parentTask         {border-color: var(--item-parent-border) !important; background: var(--item-parent-bg) !important; color: var(--text-primary) !important; text-shadow: none!important}
+li.userItem.childTask          {border-color: var(--item-child-border) !important; background: var(--item-child-bg) !important; color: var(--text-primary) !important; text-shadow: none!important}
+
+/* В modern hover/parent/child — outer ring без перекраски фона.
+   `background: revert` отменяет !important-заливку выше и пускает фон
+   быть тем, что задал тип-конкретное правило (.userTask, .userTicket, ...). */
+[data-theme="modern"] li.userItem.hovered,
+[data-theme="modern"] li.userItem.parentTask,
+[data-theme="modern"] li.userItem.childTask {
+	background: revert !important;
+	border-color: var(--task-border) !important;
+	outline-offset: -1px;
+}
+[data-theme="modern"] li.userItem.hovered    { outline: 2px solid var(--item-hover-border);  }
+[data-theme="modern"] li.userItem.parentTask { outline: 2px solid var(--item-parent-border); }
+[data-theme="modern"] li.userItem.childTask  { outline: 2px solid var(--item-child-border);  }

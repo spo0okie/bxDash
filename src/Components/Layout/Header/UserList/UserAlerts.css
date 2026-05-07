@@ -9,17 +9,11 @@ ul.user-alerts li {
 	margin: 4px 0;
 }
 ul.user-alerts a {
-	color: white;
+	color: var(--alert-link-text);
 	display: block;
 	padding: 1px 4px;
 	margin: 0 2px;
-	background-color: #333;
-	/*transition: background-color 0.15s;
-	border-radius: 4px;
-	text-decoration: none;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;*/
+	background-color: var(--alert-link-bg);
 }
 
 div.user-alerts > div.ant-tooltip {
@@ -28,12 +22,8 @@ div.user-alerts > div.ant-tooltip {
 
 /* Hover-подсветка ссылок в списке алертов */
 ul.user-alerts a:hover {
-	background-color: #666;
+	background-color: var(--alert-link-bg-hover);
 }
-
-/*ul.user-alerts li {
-	margin: 2px 0;
-}*/
 
 /* Обертка для списка с прокруткой */
 .tooltip-alerts-list {
@@ -41,26 +31,6 @@ ul.user-alerts a:hover {
 	padding-right: 4px;
 	white-space: wrap;
 }
-
-/* Стили скроллбара 
-.tooltip-alerts-list::-webkit-scrollbar {
-	width: 6px;
-}
-
-.tooltip-alerts-list::-webkit-scrollbar-track {
-	background: rgba(255, 255, 255, 0.1);
-	border-radius: 3px;
-}
-
-.tooltip-alerts-list::-webkit-scrollbar-thumb {
-	background: rgba(255, 255, 255, 0.3);
-	border-radius: 3px;
-}
-
-.tooltip-alerts-list::-webkit-scrollbar-thumb:hover {
-	background: rgba(255, 255, 255, 0.5);
-}
-*/
 
 h4.user-alerts {
 	padding:0; margin: 0 0 10px 0;
@@ -74,15 +44,13 @@ div.user-alerts > span.item{
 	text-shadow: none;
 	padding: 0;
 	margin: 0;
-	/* Анимация и transition для hover-эффектов 
-	transition: transform 0.2s ease, box-shadow 0.2s ease;*/
 	cursor: pointer;
 }
 
 /* Активная группа - реагирует на hover */
 div.user-alerts > span.item.active:hover {
 	transform: scale(1.15);
-	box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+	box-shadow: var(--shadow-card-hover);
 	z-index: 1;
 	position: relative;
 }
@@ -104,18 +72,18 @@ div.user-alerts.support >.item{
 	opacity: 0.5;
 }
 
-div.user-alerts > span.severity1 {background-color: #7499FF;color: #00268e;}
-div.user-alerts > span.severity2 {background-color: #FFC859;color: #734d00;}
-div.user-alerts > span.severity3 {background-color: #FFA059;color: #733100;}
-div.user-alerts > span.severity4 {background-color: #E45959;color: #52190b;}
-div.user-alerts > span.severity5 {background-color: #891515;color: /*#4b0c0c*/ #000;}
+div.user-alerts > span.severity1 {background-color: var(--alert-severity-1-bg); color: var(--alert-severity-1-text);}
+div.user-alerts > span.severity2 {background-color: var(--alert-severity-2-bg); color: var(--alert-severity-2-text);}
+div.user-alerts > span.severity3 {background-color: var(--alert-severity-3-bg); color: var(--alert-severity-3-text);}
+div.user-alerts > span.severity4 {background-color: var(--alert-severity-4-bg); color: var(--alert-severity-4-text);}
+div.user-alerts > span.severity5 {background-color: var(--alert-severity-5-bg); color: var(--alert-severity-5-text);}
 
 /* Кнопка закрытия в заголовке тултипа */
 .pin-close {
 	float: right;
-	background: rgba(255, 255, 255, 0.2);
+	background: var(--alert-pin-close-bg);
 	border: none;
-	color: white;
+	color: var(--alert-link-text);
 	cursor: pointer;
 	font-size: 14px;
 	width: 24px;
@@ -132,7 +100,7 @@ div.user-alerts > span.severity5 {background-color: #891515;color: /*#4b0c0c*/ #
 }
 
 .pin-close:hover {
-	background-color: rgba(255, 100, 100, 0.6);
+	background-color: var(--alert-pin-close-bg-hover);
 	transform: scale(1.1);
 }
 
@@ -147,16 +115,16 @@ ul.user-alerts li.alert-item {
 /* Ссылка внутри элемента списка */
 ul.user-alerts li.alert-item a {
 	flex: 1;
-	color: white;
+	color: var(--alert-link-text);
 	display: block;
 	padding: 1px 4px;
 	margin: 0;
-	background-color: #333;
+	background-color: var(--alert-link-bg);
 	white-space: wrap;
 }
 
 ul.user-alerts li.alert-item a:hover {
-	background-color: #666;
+	background-color: var(--alert-link-bg-hover);
 }
 
 /* Кнопка создания заявки из алерта */
@@ -169,38 +137,10 @@ ul.user-alerts li.alert-item a:hover {
 	opacity: 0.6;
 	transition: opacity 0.2s, transform 0.2s;
 	flex-shrink: 0;
-	color: white;
+	color: var(--alert-link-text);
 }
 
 .create-ticket-from-alert:hover {
 	opacity: 1;
 	transform: scale(1.2);
 }
-
-/* Зафиксированная группа - визуальное отличие 
-div.user-alerts > span.item.pinned {
-	transform: scale(1.1);
-	box-shadow: 0 0 12px rgba(255, 255, 255, 0.9);
-	border: 2px solid white;
-	z-index: 10;
-	position: relative;
-}
-
-/* Контент зафиксированного тултипа 
-.tooltip-content.pinned {
-	border: 2px solid rgba(255, 255, 255, 0.5);
-	border-radius: 8px;
-	padding: 8px 12px;
-	background-color: rgba(0, 0, 0, 0.85);
-}
-
-/* Заголовок зафиксированного тултипа 
-.tooltip-content.pinned h4.user-alerts {
-	border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-	padding-bottom: 8px;
-	margin-bottom: 8px;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-}
-*/

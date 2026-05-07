@@ -1,53 +1,62 @@
 /*просто задача*/
-li.userTask { border: solid 1px #999999; background: linear-gradient(to bottom,#f9f9f9,#e9e9e9); box-shadow:inset 0 1px 0 0 #ffffff;}
+li.userTask {
+	border: solid 1px var(--task-border);
+	background: var(--task-bg);
+	box-shadow: var(--task-shadow-inset);
+}
 
 /* ожидает закрытия */
 li.userTask.closeMe {
-	border: 2px solid #54a3f7;
-	box-shadow:inset 0 0 5px 5px rgba(84, 163, 247, 0.2);
+	border: 2px solid var(--task-bg-closeMe-border);
+	box-shadow: var(--task-shadow-closeMe);
+	animation: var(--task-closeMe-animation);
 }
 
 /* задача в работе*/
-li.userTask.activeNow {border-left: 4px solid limegreen;}
+li.userTask.activeNow {
+	border-left: var(--task-active-now-border-left);
+	box-shadow: var(--task-shadow-inset), var(--task-active-now-shadow);
+}
 
 span.userTaskLink {
-	border: solid 1px #999999;
-	background: linear-gradient(to bottom, #f9f9f9, #e9e9e9);
-	box-shadow: inset 0 1px 0 0 #ffffff;
-	border-radius: 4px;
-	color: black;
+	border: solid 1px var(--task-border);
+	background: var(--task-bg);
+	box-shadow: var(--task-shadow-inset);
+	border-radius: var(--radius-sm);
+	color: var(--card-link-text);
 }
 
 span.userTaskLink.activeNow {
-	border-left: 4px solid limegreen;
+	border-left: var(--task-active-now-border-left);
+	box-shadow: var(--task-shadow-inset), var(--task-active-now-shadow);
 }
 
 span.userTaskLink.closed {
-	color: #fff;
-	border-color: #124d77;
-	box-shadow: inset 0 1px 0 0 #54a3f7;
-	text-shadow: 0 1px 0 #154682;
-	background: linear-gradient(#007dc1, #0061a7);
+	color: var(--task-text-closed);
+	border-color: var(--task-border-closed);
+	box-shadow: var(--task-shadow-closed);
+	text-shadow: var(--task-text-shadow-closed);
+	background: var(--task-bg-closed);
 }
 
 /* чужая задача (пользователь - соисполнитель) */
 li.userItem.userTask.dimmedOut   {opacity: 60%;}
 
 li.userItem.userTask.closed.negative {
-    color:#fff;
-	box-shadow:inset 0px 1px 0px 0px #cf866c;
-	background:linear-gradient(to bottom, #a83516 5%, #852511 100%);
-	background-color:#a83516;
-	border:1px solid #942911;
-	text-shadow:0px 1px 0px #854629;
+    color: var(--task-text-negative);
+	box-shadow: var(--task-shadow-negative);
+	background: var(--task-bg-negative);
+	background-color: var(--task-bg-negative-color);
+	border:1px solid var(--task-border-negative);
+	text-shadow: var(--task-text-shadow-negative);
 }
 
 li.userItem.userTask.closed {
-    color:#fff;
-    border-color:#124d77;
-    box-shadow:inset 0 1px 0 0 #54a3f7;
-    text-shadow:0 1px 0 #154682;
-    background:linear-gradient(#007dc1, #0061a7);
+    color: var(--task-text-closed);
+    border-color: var(--task-border-closed);
+    box-shadow: var(--task-shadow-closed);
+    text-shadow: var(--task-text-shadow-closed);
+    background: var(--task-bg-closed);
 }
 
 
@@ -57,9 +66,8 @@ li.userTask .task-item-updates {
 	margin-left: 2px;
 	border-radius: 4pt;
     display: inline-block;
-    color: white;
-    background: red; /* #75ca57
-    background: #75ca57;/**/
+    color: var(--task-updates-text);
+    background: var(--task-updates-bg);
     outline: 0;
     cursor: pointer;
     text-decoration: none!important;
@@ -97,8 +105,8 @@ li.userTask .userTaskFooter .status {
 }
 
 
-li.userTask span.midPriority {color: green;}
-li.userTask span.hiPriority {color: red;}
+li.userTask span.midPriority {color: var(--task-priority-mid-text);}
+li.userTask span.hiPriority {color: var(--task-priority-high-text);}
 
 
 
@@ -110,6 +118,6 @@ span.taskPriority {
     margin-bottom: 1px;
     margin-right: 1px;
 }
-span.taskPriority.low {background-color: lime;}
-span.taskPriority.mid {background-color: sandybrown;}
-span.taskPriority.high {background-color: red;}
+span.taskPriority.low {background-color: var(--task-priority-low);}
+span.taskPriority.mid {background-color: var(--task-priority-mid);}
+span.taskPriority.high {background-color: var(--task-priority-high);}

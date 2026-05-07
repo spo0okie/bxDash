@@ -1,9 +1,9 @@
 ul li.userMemo.closed {
-    color:#306108;
-    border-color:#268a16;
-    box-shadow:inset 0 1px 0 0 #caefab;
-    text-shadow: 0 1px 0 #aade7c;
-    background:linear-gradient(#77d42a, #5cb811);
+    color: var(--memo-text-closed);
+    border-color: var(--memo-border-closed);
+    box-shadow: var(--memo-shadow-closed);
+    text-shadow: var(--job-text-shadow-closed);
+    background: var(--memo-bg-closed);
 }
 
 ul li.userMemo.open {
@@ -11,13 +11,13 @@ ul li.userMemo.open {
 	outline: none;
 	cursor: pointer;
 	border-radius: 0 !important;
-	border:#333 solid 1px;
+	border: var(--memo-border-open) solid 1px;
 	transition-property: background-color,border-color,color,box-shadow,filter;
 	transition-duration: .3s;
-	color: #333;
-	background-color:beige;
+	color: var(--memo-text-open);
+	background-color: var(--memo-bg-open);
 	margin: 0 4px 10px 2px !important;
-	box-shadow: 0 2px 6px rgba(0,0,0,.5);
+	box-shadow: var(--shadow-memo);
 }
 
 
@@ -42,7 +42,3 @@ li.userMemo.expanded span.memoToggle:before {
 li.userMemo.compact span.memoToggle:before {
 	content: '⊞'
 }
-
-
-
-                

@@ -24,5 +24,5 @@
 
 .App-Sidebar .App-Sidebar-resizer:hover {
 	width: 2px;
-	background: #c1c3c5b4;
+	background: var(--surface-sidebar-resizer-hover);
 }
