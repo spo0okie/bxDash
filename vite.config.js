@@ -33,6 +33,7 @@ export default defineConfig({
 			Data: path.resolve(__dirname, './src/Data'),
 			Helpers: path.resolve(__dirname, './src/Helpers'),
 			Themes: path.resolve(__dirname, './src/Themes'),
+			Vendor: path.resolve(__dirname, './src/Vendor'),
 			// Алиас для быстрого доступа к моделям данных
 			'Data/Models': path.resolve(__dirname, './src/Data/Models'),
 			// Алиас для модуля-обёртки, который читает window.__CONFIG__

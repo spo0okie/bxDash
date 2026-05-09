@@ -5,10 +5,11 @@ import LayoutStore from './LayoutStore';
 import TimeStore from './TimeStore';
 import PeriodsStore from './Periods/PeriodsStore';
 import ItemsMultiStore from './Items/ItemsMultiStore';
-import { userList, inventoryUrl, apiUrl, wsUrl, asteriskUrl, zabbixUrl } from 'config.priv';
+import { userList, inventoryUrl, apiUrl, wsUrl, asteriskUrl, zabbixUrl, workScheduleId } from 'config.priv';
 import { WsStore } from './WsStore';
 import AlertsStore from './Items/AlertsStore';
 import ThemeStore from './ThemeStore';
+import ScheduleStore from './ScheduleStore';
 
 /**
  * React-контекст со всеми стораджами приложения.
@@ -38,6 +39,9 @@ export function createStores() {
 	// время — от него зависят почти все остальные
 	const time = new TimeStore(main);
 
+	// расписание — нужно для расчёта SLA по тикетам, грузится из Inventory
+	const schedule = new ScheduleStore(main, workScheduleId);
+
 	// пользователи зависят только от настроек
 	const users = new UsersStore(main);
 	users.init(userList);
@@ -60,7 +64,7 @@ export function createStores() {
 	// тема — глобальная, нужен только main (cookies)
 	const theme = new ThemeStore(main);
 
-	return { main, time, users, layout, periods, items, ws, alerts, theme };
+	return { main, time, users, layout, periods, items, ws, alerts, theme, schedule };
 }
 
 /**

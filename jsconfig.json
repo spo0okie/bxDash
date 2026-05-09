@@ -10,6 +10,7 @@
 			"Data/Models/*": ["src/Data/Models/*"],
 			"Helpers/*": ["src/Helpers/*"],
 			"Themes/*": ["src/Themes/*"],
+			"Vendor/*": ["src/Vendor/*"],
 			"config": ["src/config.priv.js"]
 		},
 		"experimentalDecorators": true,

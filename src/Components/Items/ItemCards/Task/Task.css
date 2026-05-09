@@ -1,8 +1,9 @@
 /*просто задача*/
-li.userTask {
+li.userItem.userTask {
 	border: solid 1px var(--task-border);
 	background: var(--task-bg);
 	box-shadow: var(--task-shadow-inset);
+	color: var(--task-text);
 }
 
 /* ожидает закрытия */
@@ -40,56 +41,63 @@ span.userTaskLink.closed {
 }
 
 /* чужая задача (пользователь - соисполнитель) */
-li.userItem.userTask.dimmedOut   {opacity: 60%;}
+li.userItem.userTask.dimmedOut {
+	opacity: 60%;
+}
 
 li.userItem.userTask.closed.negative {
-    color: var(--task-text-negative);
+	color: var(--task-text-negative);
 	box-shadow: var(--task-shadow-negative);
 	background: var(--task-bg-negative);
 	background-color: var(--task-bg-negative-color);
-	border:1px solid var(--task-border-negative);
+	border: 1px solid var(--task-border-negative);
 	text-shadow: var(--task-text-shadow-negative);
 }
 
 li.userItem.userTask.closed {
-    color: var(--task-text-closed);
-    border-color: var(--task-border-closed);
-    box-shadow: var(--task-shadow-closed);
-    text-shadow: var(--task-text-shadow-closed);
-    background: var(--task-bg-closed);
+	color: var(--task-text-closed);
+	border-color: var(--task-border-closed);
+	box-shadow: var(--task-shadow-closed);
+	text-shadow: var(--task-text-shadow-closed);
+	background: var(--task-bg-closed);
 }
-
-
 
 li.userTask .task-item-updates {
-    padding: 1pt 2pt;
+	padding: 1pt 2pt;
 	margin-left: 2px;
 	border-radius: 4pt;
-    display: inline-block;
-    color: var(--task-updates-text);
-    background: var(--task-updates-bg);
-    outline: 0;
-    cursor: pointer;
-    text-decoration: none!important;
-    line-height: 9px;
-    vertical-align: middle;
+	display: inline-block;
+	color: var(--task-updates-text);
+	background: var(--task-updates-bg);
+	outline: 0;
+	cursor: pointer;
+	text-decoration: none !important;
+	line-height: 9px;
+	vertical-align: middle;
 }
 
-li.userTask .userTaskFooter,
-li.userTicket .userTaskFooter{
-    display: flex;
-    width: 100%;
-    font-size: 8pt;
-    opacity: 70%;
+li.userTask .content {
+	display: flow-root;
+}
+
+li.userTask .userTaskFooter {
+	font-size: 8pt;
+	opacity: 70%;
 	white-space: nowrap;
+	padding-left: 3px;
+	float: right;
+	padding-right: 1px;
 }
 
-.userTaskFooter span.deadline {
+li.userTask .userTaskFooter span:first-child {
+	padding: 0 1.5px;
+}
+
+/*.userTaskFooter span.deadline {
 	align-self: flex-start;
 	white-space: nowrap;
 	overflow-x: hidden;
-}
-
+	}*/
 
 li.userTask span.priority {
 	flex-grow: 1;
@@ -98,26 +106,39 @@ li.userTask span.priority {
 
 li.userTask .userTaskFooter .msgStatus,
 li.userTask .userTaskFooter .status {
-    text-align: right;
+	text-align: right;
 	align-self: flex-end;
-	flex-shrink:1;
+	flex-shrink: 1;
 	overflow-x: hidden;
 }
 
-
-li.userTask span.midPriority {color: var(--task-priority-mid-text);}
-li.userTask span.hiPriority {color: var(--task-priority-high-text);}
-
-
+li.userTask span.userTaskFooter span.midPriority {
+	color: var(--task-priority-mid-text);
+	background-color: var(--task-priority-mid);
+}
+li.userTask span.userTaskFooter span.highPriority {
+	color: var(--task-priority-high-text);
+	background-color: var(--task-priority-high);
+}
+li.userTask span.userTaskFooter span.lowPriority {
+	color: var(--task-priority-low-text);
+	background-color: var(--task-priority-low);
+}
 
 span.taskPriority {
-    width: 6px;
-    height: 6px;
-    border-radius: 3px;
-    display: inline-block;
-    margin-bottom: 1px;
-    margin-right: 1px;
+	width: 6px;
+	height: 6px;
+	border-radius: 3px;
+	display: inline-block;
+	margin-bottom: 1px;
+	margin-right: 1px;
 }
-span.taskPriority.low {background-color: var(--task-priority-low);}
-span.taskPriority.mid {background-color: var(--task-priority-mid);}
-span.taskPriority.high {background-color: var(--task-priority-high);}
+span.taskPriority.low {
+	background-color: var(--task-priority-low);
+}
+span.taskPriority.mid {
+	background-color: var(--task-priority-mid);
+}
+span.taskPriority.high {
+	background-color: var(--task-priority-high);
+}

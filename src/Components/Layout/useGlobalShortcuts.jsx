@@ -12,7 +12,7 @@ import { useEffect } from "react";
 export function useGlobalShortcuts(items) {
 	useEffect(() => {
 		const handleKeyDown = (event) => {
-			const isToggleShortcut = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k';
+			const isToggleShortcut = (event.ctrlKey || event.metaKey) && event.code === 'KeyK';
 
 			if (isToggleShortcut) {
 				event.preventDefault();

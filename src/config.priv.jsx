@@ -22,6 +22,10 @@ export const ticketSiteId = config.ticketSiteId || 's1';
 export const ticketCategoryId = config.ticketCategoryId || 43;
 export const ticketSlaId = config.ticketSlaId || 1;
 
+// === SLA / расписание ===
+export const workScheduleId = config.workScheduleId || 0;
+export const ticketSlaWorkDays = typeof config.ticketSlaWorkDays === 'number' ? config.ticketSlaWorkDays : 2;
+
 // === Список пользователей ===
 export const userList = config.userList || {};
 

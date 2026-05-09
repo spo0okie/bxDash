@@ -15,7 +15,11 @@ window.__CONFIG__ = {
 	wsUrl: '',             // URL WebSocket (wss://...)
 	asteriskUrl: '',       // URL Asterisk
 	zabbixUrl: '',         // URL Zabbix API
-	
+
+	// === SLA / расписание ===
+	workScheduleId: 0,     // ID рабочего расписания в Inventory (0 = отключено)
+	ticketSlaWorkDays: 2,  // SLA для тикетов в рабочих днях
+
 	// === Список пользователей ===
 	// Массив объектов с информацией о пользователях
 	userList: [],

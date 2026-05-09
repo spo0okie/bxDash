@@ -1,8 +1,48 @@
 li.userTicket {
-	background-image: var(--surface-ticket-bg);
-	min-height: 25px;
+	background: var(--ticket-bg-open);
+	color: var(--ticket-text-open);
+	border: 1px solid var(--ticket-border-open);
+	box-shadow: var(--ticket-shadow-open);
+	text-shadow: var(--ticket-text-shadow-open);
+	min-height: 15px;
+	position: relative;
 }
 
+li.userTicket span.slaCountdown {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	font-size: 22px;
+	font-weight: 900;
+	font-variant-numeric: tabular-nums;
+	letter-spacing: 0.04em;
+	color: var(--ticket-stripe-red, --sem-danger);
+	opacity: 0.8;
+	pointer-events: none;
+	user-select: none;
+	white-space: nowrap;
+	z-index: 0;
+}
+
+li.userTicket span.slaCountdown.overdue {
+	background: repeating-linear-gradient(
+		45deg,
+		var(--sem-danger) 0,
+		var(--sem-danger) 5px,
+		transparent 5px,
+		transparent 10px
+	);
+	width: 100%;
+	height: 100%;
+	text-shadow: var();
+	opacity: 0.6;
+}
+
+li.userTicket .content {
+	position: relative;
+	z-index: 1;
+}
 
 li.userTicket span.deadline {
 	float: right;
@@ -42,13 +82,13 @@ li.userItem.userTicket.closed {
 	border-color: var(--ticket-border-closed);
 }
 
-
 span.userTicketLink {
-	border: solid 1px var(--ticket-link-border);
-	background-image: var(--surface-ticket-bg);
-	box-shadow: var(--task-shadow-inset);
+	border: solid 1px var(--ticket-border-open);
+	background: var(--ticket-bg-open);
+	box-shadow: var(--ticket-shadow-open);
+	text-shadow: var(--ticket-text-shadow-open);
 	border-radius: var(--radius-sm);
-	color: var(--card-link-text);
+	color: var(--ticket-text-open);
 }
 
 span.userTicketLink.red {

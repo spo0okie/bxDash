@@ -7,135 +7,169 @@ class TaskItem extends DashItem {
 	//strStatus;
 
 	initDefaults() {
-		this.type = 'task';		//тип
-		this.updatesCount = 0;	//количество обновлений в задаче
-		this.accomplices = [];	//соисполнители
+		this.type = "task"; //тип
+		this.updatesCount = 0; //количество обновлений в задаче
+		this.accomplices = []; //соисполнители
 		this.title = "Заголовок задачи\nОписание задачи";
 		this.defaultTitle = "Заголовок задачи\nОписание задачи";
-		this.status = 1; 		//новая
+		this.status = 1; //новая
 		this.mark = 0;
-		this.strStatus = 'unknown';
+		this.strStatus = "unknown";
 	}
 
 	recalcTime() {
-		this.isClosed = Boolean(this.closedDate) && (this.status === 5 || this.status === 7); //завершена, отменена
-		this.isNow = (this.status === 3 || this.status === 4);                                //в работе, ждет подтверж. - всегда выполняются [прямо сейчас]!
-		
+		this.isClosed =
+			Boolean(this.closedDate) && (this.status === 5 || this.status === 7); //завершена, отменена
+		this.isNow = this.status === 3 || this.status === 4; //в работе, ждет подтверж. - всегда выполняются [прямо сейчас]!
+
 		if (this.isClosed) {
 			this.t = this.closedDate;
 		} else if (this.isNow) {
 			this.t = this.context.time.today;
 		} else {
-			this.t = this.deadline ? Math.max(this.deadline, this.context.time.today) : null;
+			this.t = this.deadline
+				? Math.max(this.deadline, this.context.time.today)
+				: null;
 		}
 
 		if (this.deadline) {
 			this.deadlineObj = TimeHelper.objDate(this.deadline);
-			this.deadlineStr = this.deadlineObj.D + '.' + this.deadlineObj.M;
+			this.deadlineStr = this.deadlineObj.D + "." + this.deadlineObj.M;
 			if (this.context.time.year !== this.deadlineObj.Y)
-				this.deadlineStr += '.' + this.deadlineObj.y;
-		} else this.deadlineStr = 'нет срока';
+				this.deadlineStr += "." + this.deadlineObj.y;
+		} else this.deadlineStr = "∞";
 
 		if (this.closedDate) {
 			this.closedDateObj = TimeHelper.objDate(this.closedDate);
-			this.closedDateStr = this.closedDateObj.D + '.' + this.closedDateObj.M;
+			this.closedDateStr = this.closedDateObj.D + "." + this.closedDateObj.M;
 			if (this.context.time.year !== this.closedDateObj.Y)
-				this.closedDateStr += '.' + this.closedDateObj.y;
-		} else this.closedDateStr = '';
+				this.closedDateStr += "." + this.closedDateObj.y;
+		} else this.closedDateStr = "";
 	}
 
 	setStatus(value) {
-		if (value===this.status) return;
-		this.status=value;
+		if (value === this.status) return;
+		this.status = value;
 	}
 
 	setUpdates(value) {
-		if (value===this.updatesCount) return;
-		this.updatesCount=value;
+		if (value === this.updatesCount) return;
+		this.updatesCount = value;
 	}
-	
+
 	/**
 	 * Инициализация на данных из Birtix
-	 * @param {*} item 
+	 * @param {*} item
 	 * @param {*} options //сюда нужно передать {
 	 * 	today = отметка "сегодня" (для задач в работе и просроченных)
 	 * }
 	 */
-	loadData(item,recalc){
-		
-        if (!super.loadData(item,recalc)) return false;
+	loadData(item, recalc) {
+		if (!super.loadData(item, recalc)) return false;
 
-		this.parentUids = item.PARENT_ID ? ['task:'+Number(item.PARENT_ID)]:[];
+		this.parentUids = item.PARENT_ID ? ["task:" + Number(item.PARENT_ID)] : [];
 
-		this.title=item['~TITLE'];
+		this.title = item["~TITLE"];
 
-        this.user=Number(item.RESPONSIBLE_ID);
-        this.accomplices=item.ACCOMPLICES?item.ACCOMPLICES.map(i=>Number(i)):[];
+		this.user = Number(item.RESPONSIBLE_ID);
+		this.accomplices = item.ACCOMPLICES
+			? item.ACCOMPLICES.map((i) => Number(i))
+			: [];
 
-        this.setStatus(Number(item.REAL_STATUS));
+		this.setStatus(Number(item.REAL_STATUS));
 
-		this.mark = 0;							//Neutral
-		if (item.MARK==='N')	this.mark=-1;	//Negative
-		if (item.MARK==='P')	this.mark=1;	//Positive
-		
+		this.mark = 0; //Neutral
+		if (item.MARK === "N") this.mark = -1; //Negative
+		if (item.MARK === "P") this.mark = 1; //Positive
+
 		switch (this.status) {
-            case -1:    this.strStatus="Просрочена";	break;		//просрочена
-            case 1:     this.strStatus="Новая";  		break;
-            case 2:     this.strStatus="Ожидание"; 		break;	//Ожидание
-            case 3:     this.strStatus="В работе"; 		break;
-            case 4:     this.strStatus="Ож. подтв.";  	break;
-            case 5:     this.strStatus=this.mark<0?"Провалена":"Завершена"; break;
-            case 6:     this.strStatus="Отложена";  	break;
-            case 7:     this.strStatus="Отменена";  	break;
-			default:	this.strStatus="unknown";
-        }
+			case -1:
+				this.strStatus = "Просрочена";
+				break; //просрочена
+			case 1:
+				this.strStatus = "Новая";
+				break;
+			case 2:
+				this.strStatus = "Ожидание";
+				break; //Ожидание
+			case 3:
+				this.strStatus = "В работе";
+				break;
+			case 4:
+				this.strStatus = "Ож. подтв.";
+				break;
+			case 5:
+				this.strStatus = this.mark < 0 ? "Провалена" : "Завершена";
+				break;
+			case 6:
+				this.strStatus = "Отложена";
+				break;
+			case 7:
+				this.strStatus = "Отменена";
+				break;
+			default:
+				this.strStatus = "unknown";
+		}
 
+		this.setUpdates(Number(item.UPDATES_COUNT));
 
-        this.setUpdates(Number(item.UPDATES_COUNT));
+		this.deadline = item.DEADLINE
+			? TimeHelper.bitrixDateTimeToJs(item.DEADLINE)
+			: null;
 
-        this.deadline=item.DEADLINE?TimeHelper.bitrixDateTimeToJs(item.DEADLINE):null;
-		
-		this.createdAt=TimeHelper.bitrixDateTimeToJs(item.CREATED_DATE);
+		this.createdAt = TimeHelper.bitrixDateTimeToJs(item.CREATED_DATE);
 
-         this.closedDate=TimeHelper.bitrixDateTimeToJs(item.CLOSED_DATE);
+		this.closedDate = TimeHelper.bitrixDateTimeToJs(item.CLOSED_DATE);
 
-
- 		const defaultSorting = Math.floor(this.createdAt / 1000);
- 		this.sorting = item.XML_ID ? Number(item.XML_ID) : defaultSorting;
- 		if (isNaN(this.sorting) || this.sorting>this.maxSort) {
- 			this.sorting = defaultSorting;
- 		}
+		const defaultSorting = Math.floor(this.createdAt / 1000);
+		this.sorting = item.XML_ID ? Number(item.XML_ID) : defaultSorting;
+		if (isNaN(this.sorting) || this.sorting > this.maxSort) {
+			this.sorting = defaultSorting;
+		}
 
 		this.setPriority(Number(item.PRIORITY));
 
-        this.favorite=item.FAVORITE==='Y';
+		this.favorite = item.FAVORITE === "Y";
 
- 		this.viewUrl='/company/personal/user/'+this.user+'/tasks/task/view/'+this.id+'/';
+		this.viewUrl =
+			"/company/personal/user/" +
+			this.user +
+			"/tasks/task/view/" +
+			this.id +
+			"/";
 
- 		if (recalc) this.recalcTime();
+		if (recalc) this.recalcTime();
 		this.setUpdating(false);
 		return true;
 	}
 
 	changeStatus(newStatus) {
-		if (newStatus===3 && !window.confirm("Начать выполнение задачи "+this.id+"?")) return false;
-		if (newStatus===2 && !window.confirm("Остановить выполнение задачи "+this.id+"?")) return false;
-		this.update({status:newStatus},true);
+		if (
+			newStatus === 3 &&
+			!window.confirm("Начать выполнение задачи " + this.id + "?")
+		)
+			return false;
+		if (
+			newStatus === 2 &&
+			!window.confirm("Остановить выполнение задачи " + this.id + "?")
+		)
+			return false;
+		this.update({ status: newStatus }, true);
 	}
-	
-	constructor(item,data,list) {
-		super(item,data,list);
-	
-		makeObservable(this,{
-			status:observable,
-			mark:observable,
-			strStatus:observable,
-			updatesCount:observable,
-			setStatus:action,
-			setUpdates:action,
-		})
-	
-			//console.log(this);
+
+	constructor(item, data, list) {
+		super(item, data, list);
+
+		makeObservable(this, {
+			status: observable,
+			mark: observable,
+			strStatus: observable,
+			updatesCount: observable,
+			setStatus: action,
+			setUpdates: action,
+		});
+
+		//console.log(this);
 	}
 }
 export default TaskItem;
