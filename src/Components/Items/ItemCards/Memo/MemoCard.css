@@ -1,25 +1,25 @@
 ul li.userMemo.closed {
-    color: var(--memo-text-closed);
-    border-color: var(--memo-border-closed);
-    box-shadow: var(--memo-shadow-closed);
-    text-shadow: var(--job-text-shadow-closed);
-    background: var(--memo-bg-closed);
+	color: var(--memo-text-closed);
+	border-color: var(--memo-border-closed);
+	box-shadow: var(--memo-shadow-closed);
+	text-shadow: var(--job-text-shadow-closed);
+	background: var(--memo-bg-closed);
 }
 
 ul li.userMemo.open {
-	display: inline-block;
+	display: block;
 	outline: none;
 	cursor: pointer;
 	border-radius: 0 !important;
 	border: var(--memo-border-open) solid 1px;
-	transition-property: background-color,border-color,color,box-shadow,filter;
-	transition-duration: .3s;
+	transition-property:
+		background-color, border-color, color, box-shadow, filter;
+	transition-duration: 0.3s;
 	color: var(--memo-text-open);
 	background-color: var(--memo-bg-open);
 	margin: 0 4px 10px 2px !important;
 	box-shadow: var(--shadow-memo);
 }
-
 
 li.userMemo span.memoToggle {
 	float: right;
@@ -32,13 +32,13 @@ li.userMemo span.memoToggle {
 }
 
 li.userMemo:hover span.memoToggle {
-	display: block
+	display: block;
 }
 
 li.userMemo.expanded span.memoToggle:before {
-	content: '⊟'
+	content: "⊟";
 }
 
 li.userMemo.compact span.memoToggle:before {
-	content: '⊞'
+	content: "⊞";
 }

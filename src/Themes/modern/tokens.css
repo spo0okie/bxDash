@@ -12,17 +12,6 @@
  *   - Радиусы 0.
  */
 
-/* keyframes для пульсации closeMe (4px info-полоса слева пульсирует opacity) */
-@keyframes modern-closeMe-pulse {
-	0%,
-	100% {
-		box-shadow: inset 4px 0 0 0 rgba(59, 130, 246, 1);
-	}
-	50% {
-		box-shadow: inset 4px 0 0 0 rgba(59, 130, 246, 0.35);
-	}
-}
-
 [data-theme="modern"] {
 	/* =====================================================================
 	 * §1. Семантические статусные цвета. См. §8.1 спецификации.
@@ -50,7 +39,7 @@
 	 * Page чуть светлее предыдущей версии (#171b25 vs #0a0d12) — карточки
 	 * на нём остаются яркими, но не «кричат» как на чистом чёрном.
 	 * ===================================================================== */
-	--surface-page: #1c1c1c;
+	--surface-page: #2c2c2c;
 	--surface-app-bar: #1f2430;
 	--surface-app-bar-text-shadow: none;
 	--surface-sidebar-resizer-hover: #475569;
@@ -152,7 +141,6 @@
 	   карточки (присутствующая в classic) отключается через transparent. */
 	--task-bg-closeMe-border: transparent;
 	--task-shadow-closeMe: inset 4px 0 0 0 var(--sem-info);
-	--task-closeMe-animation: modern-closeMe-pulse 1.5s ease-in-out infinite;
 
 	/* negative: 4px danger-полоса слева + 20% danger-overlay фона */
 	--task-bg-negative: ;
