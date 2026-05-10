@@ -267,7 +267,7 @@
 	/* =====================================================================
 	 * §12.1. USER CELL HEADER
 	 * ===================================================================== */
-	--user-cell-header-bg: linear-gradient(180deg, #2a3142 0%, #1f2430 100%);
+	--user-cell-header-bg: #2a3142;
 	--user-cell-header-text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
 	/* Counters — оттенки соответствующих type-цветов:
 	   open ticket = магента, closed ticket = голубой,
@@ -440,7 +440,7 @@
 }
 
 [data-theme="modern"] li.userItem .content {
-	padding: 0 0 1px 3px;
+	padding: 1px 0 1px 3px;
 }
 
 [data-theme="modern"] span.userTaskLink,
@@ -454,6 +454,11 @@
 		calc(100% - var(--cut)) 100%,
 		0 100%
 	);
+}
+
+[data-theme="modern"] div.userCellHeader {
+	min-height: calc(var(--font-size-lg)+1px);
+	margin: 1px;
 }
 
 /*[data-theme="modern"] li.userItem.hovered {

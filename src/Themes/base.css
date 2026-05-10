@@ -89,7 +89,7 @@
 	--task-border-closed: #124d77;
 	--task-shadow-closed: inset 0 1px 0 0 #54a3f7;
 	--task-text-shadow-closed: 0 1px 0 #154682;
-	--task-bg-closeMe-border: #54a3f7;
+	--task-bg-closeMe-border: 2px solid #54a3f7;
 	--task-shadow-closeMe: inset 0 0 5px 5px rgba(84, 163, 247, 0.2);
 	--task-stripe-active-now: limegreen;
 	--task-bg-negative: linear-gradient(to bottom, #a83516 5%, #852511 100%);

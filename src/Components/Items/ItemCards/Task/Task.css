@@ -8,7 +8,7 @@ li.userItem.userTask {
 
 /* ожидает закрытия */
 li.userTask.closeMe {
-	border: 2px solid var(--task-bg-closeMe-border);
+	border: var(--task-bg-closeMe-border);
 	box-shadow: var(--task-shadow-closeMe);
 	animation: var(--task-closeMe-animation);
 }
