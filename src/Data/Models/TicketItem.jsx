@@ -1,6 +1,7 @@
-import { action, makeObservable, observable } from "mobx";
+import { action, computed, makeObservable, observable } from "mobx";
 import DashItem from "./DashItem";
 import TimeHelper from "Helpers/TimeHelper";
+import { ticketSlaWorkDays } from "config.priv";
 
 class TicketItem extends DashItem {
 	
@@ -120,12 +121,47 @@ class TicketItem extends DashItem {
 			});
 	}
 
+	/**
+	 * Активен ли SLA-таймер.
+	 * Тикет «в работе» = не закрыт, не отложен, не ожидает закрытия (status==='blue').
+	 * isClosed уже включает blue, но проверяем явно — на случай рассинхрона флагов.
+	 */
+	get isSlaActive() {
+		return !this.isClosed && !this.isOnHold && this.status !== 'blue';
+	}
+
+	/**
+	 * Крайний срок SLA в мс (реальный Unix-таймстамп) или null, если не применим.
+	 * Реактивный по schedule.compiled — при изменении расписания пересчитается.
+	 */
+	get slaDeadlineMs() {
+		const schedule = this.context?.schedule;
+		if (!schedule) return null;
+		if (!this.createdAt) return null;
+		if (!this.isSlaActive) return null;
+		return schedule.addWorkDays(this.createdAt, ticketSlaWorkDays);
+	}
+
+	/**
+	 * Сколько нерабочих календарных дней пришлось на интервал
+	 * [createdAt..slaDeadlineMs]. Для подсказки на TicketCard.
+	 */
+	get slaNonWorkDays() {
+		const schedule = this.context?.schedule;
+		const deadline = this.slaDeadlineMs;
+		if (!schedule || !deadline) return 0;
+		return schedule.countNonWorkDays(this.createdAt, deadline);
+	}
+
 	constructor(item, data, list) {
 		super(item, data, list);
-		
+
 		makeObservable(this, {
 			owner: observable,
 			message: observable,
+			isSlaActive: computed,
+			slaDeadlineMs: computed,
+			slaNonWorkDays: computed,
 		});
 	}
 }

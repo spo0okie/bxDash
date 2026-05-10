@@ -13,8 +13,8 @@ li.userTicket span.slaCountdown {
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
-	font-size: 22px;
-	font-weight: 900;
+	font-size: 28px;
+	font-weight: 700;
 	font-variant-numeric: tabular-nums;
 	letter-spacing: 0.04em;
 	color: var(--ticket-stripe-red, --sem-danger);

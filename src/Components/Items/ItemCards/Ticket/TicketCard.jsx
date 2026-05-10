@@ -1,21 +1,13 @@
-import React, { useRef, useContext, useCallback } from "react";
+import React, { useRef, useContext, useCallback, Fragment } from "react";
 import { observer } from "mobx-react";
 import { get } from "mobx";
-import { Element } from "react-scroll";
+import { Tooltip } from "antd";
 
 import "./TicketCard.css";
 import classNames from "classnames";
 import { StoreContext } from "Data/Stores/StoreProvider";
 import TimeHelper from "Helpers/TimeHelper";
 import ModalLink from "Components/Layout/Modal/ModalLink";
-import { ticketSlaWorkDays } from "config.priv";
-
-// Тикет считается "в работе" для SLA, если он не закрыт, не отложен
-// и не ожидает закрытия (status==='blue'). isClosed уже включает blue,
-// но проверяем явно, чтобы не зависеть от пересечения флагов.
-function isTicketSlaActive(item) {
-	return !item.isClosed && !item.isOnHold && item.status !== "blue";
-}
 
 function formatRemaining(ms) {
 	const negative = ms < 0;
@@ -28,16 +20,12 @@ function formatRemaining(ms) {
 	return negative ? "" : `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
-const SlaCountdown = observer(({ item, schedule, time }) => {
-	if (!schedule?.runtime) return null;
-	if (!item.createdAt) return null;
-	if (!isTicketSlaActive(item)) return null;
+const SlaCountdown = observer(({ item, time }) => {
+	const deadlineMs = item.slaDeadlineMs;
+	if (deadlineMs === null) return null;
 
 	// Подписка на time.strTime даёт перерисовку раз в секунду.
 	void time.strTime;
-
-	const deadlineMs = schedule.addWorkDays(item.createdAt, ticketSlaWorkDays);
-	if (deadlineMs === null) return null;
 
 	const remaining = deadlineMs - Date.now();
 	const text = formatRemaining(remaining);
@@ -46,7 +34,6 @@ const SlaCountdown = observer(({ item, schedule, time }) => {
 		<span
 			className={classNames("slaCountdown", { overdue: remaining < 0 })}
 			aria-hidden="true"
-			title={"Крайний срок SLA: " + TimeHelper.strDateTimeHumanLong(deadlineMs)}
 		>
 			{text}
 		</span>
@@ -65,7 +52,7 @@ const TicketCard = observer((props) => {
 
 	//console.log(item);
 
-	const TicketDeadline = (props) => {
+	const TicketDeadline = observer((props) => {
 		const task = props.item;
 
 		let date = TimeHelper.strDateHuman(task.createdAt);
@@ -77,15 +64,30 @@ const TicketCard = observer((props) => {
 			tips.push(
 				"Крайний срок: " + TimeHelper.strDateTimeHumanLong(task.deadline),
 			);
-			//date = task.deadlineStr;
+			if (task.slaDeadlineMs) {
+				tips.push(
+					"Крайний срок SLA: " + TimeHelper.strDateTimeHumanLong(task.slaDeadlineMs),
+				);
+				const nonWork = task.slaNonWorkDays;
+				if (nonWork > 0) {
+					tips.push("Нерабочих дней до SLA: " + nonWork);
+				}
+			}
 		}
 
 		return (
-			<span className="deadline" title={tips.join("\n")}>
-				{date}
-			</span>
+			<Tooltip
+				title={tips.map((line, i) => (
+					<Fragment key={i}>
+						{line}
+						{i < tips.length - 1 && <br />}
+					</Fragment>
+				))}
+			>
+				<span className="deadline">{date}</span>
+			</Tooltip>
 		);
-	};
+	});
 
 	return (
 		<li
@@ -112,11 +114,7 @@ const TicketCard = observer((props) => {
 			ref={ref}
 			//title={item.sorting}
 		>
-			<SlaCountdown
-				item={item}
-				schedule={context.schedule}
-				time={context.time}
-			/>
+			<SlaCountdown item={item} time={context.time} />
 			<div className="content" name={item.uid}>
 				<ModalLink item={item} />
 				<TicketDeadline item={item} />

@@ -166,13 +166,14 @@ class ItemsMultiStore {
 		return isLoading;
 	}
 
-    constructor(main,time,users,periods) {
+    constructor(main,time,users,periods,schedule) {
         console.log('Items construct');
         this.main=main;
 		this.types=main.itemsTypes;
         this.time=time;
         this.users=users;
         this.periods=periods;
+        this.schedule=schedule;
 		this.periods.attachItemsStore(this);
 
 		this.types.forEach(type => this[type] = new ItemsStore(type, this))

@@ -136,6 +136,7 @@ class ItemsStore {
 			items: this,
 			users: this.users,
 			periods: this.periods,
+			schedule: this.schedule,
 		};
 	}
 
@@ -421,6 +422,7 @@ class ItemsStore {
 		this.time = master.time;
 		this.users = master.users;
 		this.periods = master.periods;
+		this.schedule = master.schedule;
         makeObservable(this,{
         items:observable,
         isLoading:observable,

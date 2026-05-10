@@ -52,9 +52,9 @@ export function createStores() {
 	// периоды зависят от раскладки и времени
 	const periods = new PeriodsStore(main, layout, time);
 
-	// элементы зависят от настроек, времени, пользователей и периодов;
+	// элементы зависят от настроек, времени, пользователей, периодов и расписания;
 	// конструктор сам вызывает periods.attachItemsStore(this)
-	const items = new ItemsMultiStore(main, time, users, periods);
+	const items = new ItemsMultiStore(main, time, users, periods, schedule);
 
 	// WS опционален — может быть отключён в конфиге
 	const ws = wsUrl ? new WsStore(wsUrl, main, users, items) : null;

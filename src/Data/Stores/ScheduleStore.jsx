@@ -1,27 +1,62 @@
-import { action, makeObservable, observable, runInAction, when } from 'mobx';
+import { action, computed, makeObservable, observable, runInAction, when } from 'mobx';
 import { ScheduleRuntime, strToTsm, tsmToStr, MS_IN_MINUTE, MINUTES_IN_DAY } from 'Vendor/scheduleRuntime/scheduleRuntime';
 
 /**
- * ScheduleStore — загружает compiled_json рабочего расписания из Inventory
- * и держит ScheduleRuntime для SLA-расчётов.
+ * Фоллбэк-расписание (структура compiled_json без обращения к Inventory).
+ * Используется до загрузки реального расписания и если оно недоступно:
+ *   пн-пт 09:00-18:00, сб/вс — выходной, праздничных дней нет.
  *
- * Запросы к Inventory идут только когда BackendSystem подтвердил OK availability+auth,
- * иначе fetch() кидает «Backend is unreachable». Поэтому загрузку откладываем
- * через mobx.when().
+ * tz_shift_tsm = 180 минут (UTC+3, MSK) — приложение работает в МСК.
+ */
+const FALLBACK_COMPILED = Object.freeze({
+	tz: 'Europe/Moscow',
+	tz_shift_tsm: 180,
+	main: {
+		name: 'fallback (Mon-Fri 09:00-18:00)',
+		start: null, start_tsm: null,
+		end: null, end_tsm: null,
+		default: { schedule: '09:00-18:00', intervals: [[540, 1080, {}]] },
+		weekdays: {
+			'6': { schedule: '-', intervals: [] },
+			'7': { schedule: '-', intervals: [] },
+		},
+		dates: {},
+		periods: [],
+	},
+	overrides: [],
+});
+
+const RELOAD_INTERVAL_MS = 5 * 60 * 1000;
+
+/**
+ * ScheduleStore — держит compiled_json рабочего расписания из Inventory
+ * и предоставляет ScheduleRuntime для расчётов SLA.
+ *
+ * - До загрузки или при отсутствии расписания работает фоллбэк (пн-пт 09-18).
+ * - После успешной загрузки `compiled` подменяется на полученный JSON;
+ *   `runtime` — computed, поэтому все потребители (computed-поля моделей,
+ *   observer-компоненты) автоматически пересчитают свои значения.
+ * - Раз в 5 минут расписание перетягивается. Если JSON не изменился — observable
+ *   не трогаем (нет лишних реактивных пересчётов); если изменился — заменяем,
+ *   и зависящие SLA-вычисления пересчитываются.
  */
 class ScheduleStore {
 	main;
 	scheduleId;
 
-	/** @type {Object|null} compiled_json из Inventory */
+	/** @type {Object|null} compiled_json из Inventory; null = используем фоллбэк */
 	compiled = null;
-	/** Время последней загрузки, для отладки */
+
+	/** Когда последний раз успешно загрузили (мс), null = ещё не загружали */
 	loadedAt = null;
-	/** Текст ошибки, если загрузка не удалась */
+
+	/** Текст ошибки последней попытки загрузки (для отладки) */
 	error = null;
 
-	/** @type {ScheduleRuntime|null} Не observable (тяжёлый, и используется как «чёрный ящик»). */
-	runtime = null;
+	/** Сырое JSON-тело compiled_json для дешёвого сравнения «изменилось/нет». Не observable. */
+	_compiledRaw = null;
+	/** Идентификатор setInterval, чтобы можно было его остановить. */
+	_reloadTimer = null;
 
 	constructor(main, scheduleId) {
 		this.main = main;
@@ -31,6 +66,9 @@ class ScheduleStore {
 			compiled: observable.ref,
 			loadedAt: observable,
 			error: observable,
+			runtime: computed,
+			hasLoadedSchedule: computed,
+			tzShiftMin: computed,
 			setCompiled: action,
 			setError: action,
 		});
@@ -39,51 +77,45 @@ class ScheduleStore {
 
 		when(
 			() => this.main.inventory.availability === 'OK' && this.main.inventory.authStatus === 'OK',
-			() => this.load(),
+			() => {
+				this.load();
+				this._reloadTimer = setInterval(() => this.load(), RELOAD_INTERVAL_MS);
+			},
 		);
+	}
+
+	dispose() {
+		if (this._reloadTimer) clearInterval(this._reloadTimer);
+		this._reloadTimer = null;
 	}
 
 	setCompiled(compiled) {
 		this.compiled = compiled;
 		this.loadedAt = Date.now();
 		this.error = null;
-		this.runtime = compiled ? new ScheduleRuntime(compiled) : null;
 	}
 
 	setError(error) {
 		this.error = error;
-		this.runtime = null;
 	}
 
-	async load() {
-		if (!this.scheduleId) return;
-		try {
-			const response = await this.main.inventory.fetch(`api/schedules/${this.scheduleId}`);
-			if (!response.ok) {
-				console.error('ScheduleStore: load failed', response.status, response.statusText);
-				this.setError(`HTTP ${response.status}`);
-				return;
-			}
-			const data = await response.json();
-			let compiled = data?.compiled_json ?? null;
-			if (typeof compiled === 'string') {
-				try { compiled = JSON.parse(compiled); }
-				catch (e) { console.error('ScheduleStore: compiled_json parse error', e); compiled = null; }
-			}
-			if (!compiled || !compiled.main) {
-				this.setError('compiled_json пуст или некорректен');
-				return;
-			}
-			runInAction(() => this.setCompiled(compiled));
-		} catch (error) {
-			console.error('ScheduleStore: load error', error);
-			this.setError(String(error));
-		}
+	/**
+	 * @returns {ScheduleRuntime} Активный рантайм. До загрузки — поверх фоллбэка.
+	 *  Computed: новый инстанс создаётся только при изменении `compiled`,
+	 *  потребители (computed-поля моделей, observer-ы) видят новое значение
+	 *  и пересчитываются автоматически.
+	 */
+	get runtime() {
+		return new ScheduleRuntime(this.compiled ?? FALLBACK_COMPILED);
+	}
+
+	get hasLoadedSchedule() {
+		return this.compiled !== null;
 	}
 
 	/** Минуты сдвига часового пояса расписания относительно UTC. */
 	get tzShiftMin() {
-		const v = this.compiled?.tz_shift_tsm;
+		const v = (this.compiled ?? FALLBACK_COMPILED).tz_shift_tsm;
 		return typeof v === 'number' ? v : 0;
 	}
 
@@ -91,7 +123,7 @@ class ScheduleStore {
 	 * Преобразует «реальный» Unix-timestamp (мс) в строку 'YYYY-MM-DD HH:MM',
 	 * которую ScheduleRuntime интерпретирует как UTC.
 	 *
-	 * Compiled_json хранит даты как «локальное TZ, упакованное в UTC-минуты»
+	 * compiled_json хранит даты как «локальное TZ, упакованное в UTC-минуты»
 	 * (см. SchedulesCompiler::tzShiftMinutes), поэтому к реальному UTC прибавляем сдвиг TZ.
 	 */
 	realMsToScheduleStr(ms) {
@@ -111,14 +143,24 @@ class ScheduleStore {
 	}
 
 	/**
-	 * Прибавляет к moment N рабочих дней по расписанию и возвращает реальный мс-таймстамп.
-	 * Алгоритм: идём от ближайшего рабочего дня вперёд, пропуская выходные.
+	 * Прибавляет к startMs N рабочих дней по расписанию и возвращает реальный мс-таймстамп.
 	 *
-	 * Возвращает null, если ScheduleRuntime ещё не загружен или не нашлось N рабочих дней
-	 * в обозримом окне (защитный лимит — 365 дней).
+	 * Модель: SLA 2 рабочих дня = 48 часов wall-clock, в которых нерабочие
+	 * календарные дни «не идут» (стрелка часов на них замирает).
+	 *
+	 * Пример: тикет создан в чт 15:30, SLA 2 рабочих дня:
+	 *   - кусок чт (15:30 → 24:00) = 8ч30м
+	 *   - вся пт = 24ч
+	 *   - сб/вс пропускаются
+	 *   - кусок пн (00:00 → 15:30) = 15ч30м
+	 *   итого 48ч, дедлайн = пн 15:30.
+	 *
+	 * Если день — рабочий (рассчитывается через runtime.isWorkDay), он засчитывается
+	 * как 24ч независимо от рабочих интервалов внутри. Если нерабочий — целиком пропускается.
 	 *
 	 * @param {number} startMs - реальный мс
-	 * @param {number} workDays - сколько рабочих дней прибавить
+	 * @param {number} workDays - сколько рабочих дней (по 24ч) прибавить
+	 * @returns {number|null} мс или null
 	 */
 	addWorkDays(startMs, workDays) {
 		const rt = this.runtime;
@@ -128,25 +170,87 @@ class ScheduleStore {
 		const startTsm = strToTsm(this.realMsToScheduleStr(startMs));
 		if (startTsm === null) return null;
 
-		// дата создания: сам день считается рабочим, если в нём есть работа.
-		// SLA в N рабочих дней от созданной заявки = после N полных рабочих дней
-		// от дня создания (включая текущий, если он рабочий).
-		let cursorDate = Math.floor(startTsm / MINUTES_IN_DAY) * MINUTES_IN_DAY;
-		let counted = 0;
+		let remaining = workDays * MINUTES_IN_DAY;
+		let cursor = startTsm;
 		const safety = 365;
-		for (let i = 0; i < safety && counted < workDays; i++) {
-			const dayStr = tsmToStr(cursorDate).slice(0, 10);
-			if (rt.isWorkDay(dayStr)) counted++;
-			if (counted < workDays) cursorDate += MINUTES_IN_DAY;
+		for (let i = 0; i < safety && remaining > 0; i++) {
+			const dayStart = Math.floor(cursor / MINUTES_IN_DAY) * MINUTES_IN_DAY;
+			const dayEnd = dayStart + MINUTES_IN_DAY;
+			const dayStr = tsmToStr(dayStart).slice(0, 10);
+			if (rt.isWorkDay(dayStr)) {
+				const consume = Math.min(remaining, dayEnd - cursor);
+				cursor += consume;
+				remaining -= consume;
+			} else {
+				cursor = dayEnd;
+			}
 		}
-		if (counted < workDays) return null;
+		if (remaining > 0) return null;
+		return this.scheduleTsmToRealMs(cursor);
+	}
 
-		// Конец рабочего дня = последний интервал.
-		const intervals = rt.getDateIntervals(cursorDate);
-		if (!intervals.length) return null;
-		const lastEndMin = intervals[intervals.length - 1][1];
-		const deadlineTsm = cursorDate + lastEndMin;
-		return this.scheduleTsmToRealMs(deadlineTsm);
+	/**
+	 * Считает количество нерабочих календарных дней в интервале [fromMs..toMs]
+	 * (обе границы считаются по дате в часовом поясе расписания).
+	 *
+	 * Используется для подсказки в карточке тикета: "сколько выходных/праздников
+	 * пришлось на период от создания тикета до крайнего срока SLA".
+	 *
+	 * @param {number} fromMs - нижняя граница (реальный мс)
+	 * @param {number} toMs - верхняя граница (реальный мс)
+	 * @returns {number} количество нерабочих дней
+	 */
+	countNonWorkDays(fromMs, toMs) {
+		const rt = this.runtime;
+		if (!rt) return 0;
+		if (toMs == null || fromMs == null || toMs < fromMs) return 0;
+
+		const fromStr = this.realMsToScheduleStr(fromMs).slice(0, 10);
+		const toStr = this.realMsToScheduleStr(toMs).slice(0, 10);
+		const startTsm = strToTsm(fromStr);
+		const endTsm = strToTsm(toStr);
+		if (startTsm === null || endTsm === null) return 0;
+
+		let cursor = startTsm;
+		let count = 0;
+		const safety = 366;
+		let i = 0;
+		while (cursor <= endTsm && i < safety) {
+			const dayStr = tsmToStr(cursor).slice(0, 10);
+			if (!rt.isWorkDay(dayStr)) count++;
+			cursor += MINUTES_IN_DAY;
+			i++;
+		}
+		return count;
+	}
+
+	async load() {
+		if (!this.scheduleId) return;
+		try {
+			const response = await this.main.inventory.fetch(`api/schedules/${this.scheduleId}`);
+			if (!response.ok) {
+				console.error('ScheduleStore: load failed', response.status, response.statusText);
+				runInAction(() => this.setError(`HTTP ${response.status}`));
+				return;
+			}
+			const data = await response.json();
+			let compiled = data?.compiled_json ?? null;
+			if (typeof compiled === 'string') {
+				try { compiled = JSON.parse(compiled); }
+				catch (e) { console.error('ScheduleStore: compiled_json parse error', e); compiled = null; }
+			}
+			if (!compiled || !compiled.main) {
+				runInAction(() => this.setError('compiled_json пуст или некорректен'));
+				return;
+			}
+			const newRaw = JSON.stringify(compiled);
+			if (newRaw === this._compiledRaw) return; // не изменилось — реактивный мир не дёргаем
+			this._compiledRaw = newRaw;
+			runInAction(() => this.setCompiled(compiled));
+		} catch (error) {
+			console.error('ScheduleStore: load error', error);
+			runInAction(() => this.setError(String(error)));
+		}
 	}
 }
 
