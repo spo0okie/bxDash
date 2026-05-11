@@ -5,11 +5,11 @@ span.CreateItemButton {
 	border-collapse: collapse;
 	padding: 0;
 	opacity: 70%;
-	margin: 0 2px ;
+	margin: 0 2px;
 }
 
-div.memoCell:hover  span.CreateItemButton,
-td.userCell:hover  span.CreateItemButton{
+div.memoCell:hover span.CreateItemButton,
+td.userCell:hover span.CreateItemButton {
 	opacity: 100%;
 }
 
@@ -39,26 +39,31 @@ div.userCellContent span.CreateItemButton span.create {
 }
 
 div.userCellContent span.CreateItemButton span.task:hover {
-	background: var(--create-task-hover);
+	background: var(--task-bg);
+	color: var(--task-text);
 	opacity: 100%;
 }
 
 div.userCellContent span.CreateItemButton span.job:hover {
-	background: var(--create-job-hover);
+	background: var(--job-bg-open);
+	color: var(--job-text-open);
 	opacity: 100%;
 }
 
 div.userCellContent span.CreateItemButton span.closedJob:hover {
-	background: var(--create-closedJob-hover);
+	background: var(--job-bg-closed);
+	color: var(--job-text-closed);
 	opacity: 100%;
 }
 
 div.userCellContent span.CreateItemButton span.ticket:hover {
-	background: var(--create-ticket-hover);
+	background: var(--ticket-bg-open);
+	color: var(--ticket-text-open);
 	opacity: 100%;
 }
 
 div.userCellContent span.CreateItemButton span.plan:hover {
-	background: var(--create-plan-hover);
+	background: var(--plan-bg);
+	color: var(--plan-text);
 	opacity: 100%;
 }

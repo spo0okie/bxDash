@@ -36,7 +36,8 @@ export function createStores() {
 	main.setAsteriskUrl(asteriskUrl);
 	main.setZabbixUrl(zabbixUrl);
 
-	// время — от него зависят почти все остальные
+	// время — от него зависят почти все остальные.
+	// TimeStore сам прокидывает себя в TimeHelper через setStore() в конструкторе.
 	const time = new TimeStore(main);
 
 	// расписание — нужно для расчёта SLA по тикетам, грузится из Inventory

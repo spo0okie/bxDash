@@ -78,11 +78,13 @@ test('renders bxDash app', () => {
 **Расположение:** `src/Helpers/TimeHelper.test.ts`
 **Описание:** Тесты утилит работы со временем
 **Что тестирует:**
-- `getTime()` - возвращает объект Date
+- `getTime()` - возвращает объект Date в текущей TZ-маске (зависит от `TimeStore.tzMode`)
 - `getTimestamp()` - возвращает число timestamp
 - `zeroPad()` - добавление ведущего нуля
 - `strDate()` - форматирование даты в YYYY-MM-DD
-- `bitrixDateTimeToJs()` - парсинг даты Bitrix
+- `bitrixDateTimeToJs()` - парсинг даты Bitrix ВСЕГДА с `+03:00` (бэк форсит MSK, см. [docs/intervals.md → Часовые пояса](docs/intervals.md#часовые-пояса-tz-цепочка))
+- `tzOffest` / `tsStrOffset` — реактивные геттеры, читают из `TimeStore` (при отсутствии стора — fallback на MSK)
+- `mskOffsetMs` — статическая константа `+3ч` для интеропа с бэком, НЕ зависит от `tzMode`
 
 #### ArrayHelper.test.ts
 **Расположение:** `src/Helpers/ArrayHelper.test.ts`

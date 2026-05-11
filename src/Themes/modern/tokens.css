@@ -196,7 +196,7 @@
 	--ticket-shadow-blue: inset 4px 0 0 0 var(--ticket-stripe-blue); /* legacy */
 
 	/* base (open) ticket — плоский фон без рамки и градиента, в духе modern */
-	--ticket-bg-open: #63646a;
+	--ticket-bg-open: #666;
 	--ticket-text-open: var(--text-primary);
 	--ticket-border-open: transparent;
 	--ticket-shadow-open: none;
@@ -261,12 +261,12 @@
 	   open ticket = магента, closed ticket = голубой,
 	   open job = оранж, closed job = зелёный,
 	   open task = slate, closed task = синий */
-	--counter-open-tickets: #e879f9; /* fuchsia */
-	--counter-closed-tickets: #67e8f9; /* cyan */
-	--counter-open-jobs: #fb923c; /* orange */
-	--counter-closed-jobs: #4ade80; /* green */
-	--counter-open-tasks: #cbd5e1; /* slate-light */
-	--counter-closed-tasks: #60a5fa; /* blue */
+	--counter-open-tickets: var(--ticket-bg-open); /* fuchsia */
+	--counter-closed-tickets: var(--ticket-bg-closed); /* cyan */
+	--counter-open-jobs: var(--job-bg-open); /* orange */
+	--counter-closed-jobs: var(--job-bg-closed); /* green */
+	--counter-open-tasks: var(--task-bg); /* slate-light */
+	--counter-closed-tasks: var(--task-bg-closed); /* blue */
 
 	/* =====================================================================
 	 * §7. ПОДСВЕТКА КАРТОЧЕК (hover/parent/child).
@@ -445,8 +445,12 @@
 }
 
 [data-theme="modern"] div.userCellHeader {
-	min-height: calc(var(--font-size-lg)+1px);
+	min-height: 17px;
 	margin: 1px;
+}
+
+[data-theme="modern"] li.userTicket span.slaCountdown {
+	color: var(--sem-danger-strong);
 }
 
 /*[data-theme="modern"] li.userItem.hovered {

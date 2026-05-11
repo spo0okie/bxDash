@@ -1,11 +1,28 @@
 /*
-Задача класса выдавать результаты все время в одном часовом поясе
+Задача класса выдавать результаты в выбранном TimeStore часовом поясе.
+Сам режим TZ хранится в TimeStore.tzMode, инжектится через setStore().
+До инжекта (например, в самом раннем bootstrap) — fallback на MSK +3.
 */
 class TimeHelper {
 	tz='Europe/Moscow';		//нигде не используется, просто памятка
-	tzOffest=3*3600*1000;	//смещение нужного нам часового пояса в мкс относительно UTC
-	tzHoursOffset=3;		//смещение нужного нам часового пояса в часах относительно UTC
-	tsStrOffset='+03:00';	//смещение нужного нам часового пояса относительно UTC в текстовом виде
+
+	/** Фиксированный MSK-сдвиг для интеропа с бэкендом — НЕ зависит от режима отображения.
+	 *  Бэк всегда работает в MSK (CTimeZone::Disable() в api.php), поэтому при отправке
+	 *  и приёме данных используем именно эту константу, а не display-TZ. */
+	mskOffsetMs=3*3600*1000;
+
+	/** TimeStore инжектится через setStore() в StoreProvider. */
+	_store=null;
+
+	/** Сдвиг текущей TZ-маски ОТОБРАЖЕНИЯ в мс относительно UTC. Реактивно из TimeStore. */
+	get tzOffest() { return this._store?.tzOffsetMs ?? this.mskOffsetMs; }
+	/** Сдвиг отображения в часах. */
+	get tzHoursOffset() { return Math.round(this.tzOffest/3600000); }
+	/** Текстовый offset отображения для подстановки в ISO. */
+	get tsStrOffset() { return this._store?.tzStrOffset ?? '+03:00'; }
+
+	/** Однократная инъекция из StoreProvider после создания TimeStore. */
+	setStore(store) { this._store=store; }
 
 	weekLen=7*24*3600*1000;	//неделя в мкс
 	dayLen=24*3600*1000;	//сутки в мкс
@@ -148,15 +165,17 @@ class TimeHelper {
 	}
 
 
-	//приводит текстовую запись даты-времени в формате Битрикса к формату JS
+	//приводит текстовую запись даты-времени в формате Битрикса к формату JS.
+	//Бэкенд (api.php) форсит MSK во всех слоях (PHP, MySQL, CTimeZone::Disable),
+	//поэтому здесь жёсткий '+03:00' — НЕ зависит от режима отображения tzMode.
 	bitrixDateTimeToJs(time) {
     	if (typeof time !== 'string') return null;
     	let $tokens=time.split(' ');
     	let $newDate=$tokens[0].split('.').reverse().join('-');
     	if ($tokens.length===2) {
-        	return Date.parse($newDate+'T'+$tokens[1]+this.tsStrOffset);
+        	return Date.parse($newDate+'T'+$tokens[1]+'+03:00');
     	} else {
-        	return Date.parse($newDate+'T00:00:00'+this.tsStrOffset);
+        	return Date.parse($newDate+'T00:00:00'+'+03:00');
     	}
 	}
 

@@ -488,6 +488,8 @@ flowchart TD
 
 ### Обновление при смене дня
 
+Подробнее про сам `TimeStore` (включая `tzMode` и всю TZ-цепочку backend→frontend) — см. [intervals.md → TimeStore](intervals.md#timestore--источник-истины-о-времени) и [intervals.md → Часовые пояса](intervals.md#часовые-пояса-tz-цепочка).
+
 Когда `TimeStore.today` изменяется (например, при переходе через полночь):
 
 1. **TimeStore** обновляет `monday0`, `sunday0`, ПОТОМ `today` (порядок важен — см. [intervals.md](intervals.md#порядок-обновлений-todaymonday0sunday0-критично))

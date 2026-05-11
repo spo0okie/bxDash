@@ -51,26 +51,70 @@
 
 ## TimeStore — источник истины о времени
 
-**Назначение:** хранит текущее время и вычисляет границы недель.
+**Назначение:** хранит текущее время, режим отображения часового пояса и вычисляет границы недель.
 
 **Ключевые поля (observable):**
 
-- `today` — timestamp начала текущего дня (00:00 МСК)
+- `today` — timestamp начала текущего дня (00:00 в текущей TZ-маске отображения)
 - `monday0` — timestamp начала текущей недели (00:00 понедельника)
 - `sunday0` — timestamp конца текущей недели (00:00 воскресенья)
 - `weekMin`, `weekMax` — диапазон отображаемых недель (по умолчанию -4..+4)
+- `tzMode` — режим отображения TZ: `'msk'` (фиксированный +3, дефолт) или `'browser'` (локальный браузера). Сохраняется в куки `time.tzMode`.
+
+**Computed:**
+
+- `tzOffsetMin` / `tzOffsetMs` — сдвиг текущего режима отображения в минутах/мс относительно UTC
+- `tzStrOffset` — текстовый offset вида `'+03:00'` / `'+05:00'`
+- `tzLabel` — человекочитаемый ярлык для UI (`'МСК (+3)'` / `'локально (+5)'`)
 
 **Методы:**
 
 - `weekStart(id)` = `monday0 + weekLen * id`
 - `weekEnd(id)` = `sunday0 + weekLen * id`
 - `weeksRange(bucket)` — массив id недель `[weekMin..weekMax]`, при `bucket=true` ещё `+1` (для долгого ящика)
+- `setTzMode(mode)` — переключает режим, сбрасывает кэш `day`, форсит `updateTime()` для немедленного пересчёта `today/monday0/sunday0`
 
 **Жизненный цикл:**
 
 1. Создаётся при старте через `createStores()` ([StoreProvider.jsx](../src/Data/Stores/StoreProvider.jsx))
-2. `updateTime()` запускается каждую секунду через `setInterval`
-3. При смене дня обновляются `today`, `monday0`, `sunday0` (см. раздел «Порядок обновлений» ниже)
+2. В конструкторе сразу вызывает `TimeHelper.setStore(this)` — TimeHelper-singleton получает реактивный доступ к `tzOffsetMs`/`tzStrOffset` ДО первого `updateTime()`.
+3. `updateTime()` запускается каждую секунду через `setInterval`
+4. При смене дня обновляются `today`, `monday0`, `sunday0` (см. раздел «Порядок обновлений» ниже)
+
+## Часовые пояса (TZ-цепочка)
+
+Из-за исторической специфики DB (MySQL у нас живёт в TZ `+06:00`, и все даты в `b_ticket`/`b_tasks`/etc. лежат как `+6 wall-clock`) бэкенд требует особой настройки, чтобы фронт получал даты в MSK.
+
+### Бэкенд ([back/api.php](../back/api.php))
+
+1. **Подмена куки** `$_COOKIE['BITRIX_SM_TIME_ZONE'] = '-180'` **ДО** `prolog_before.php` — заставляет Bitrix считать юзера московским независимо от его реального TZ. Bitrix `CTimeZone` тогда применяет сдвиг `user_TZ(+3) - server_TZ(+6) = -3ч` → DB raw (+6 wall) превращается в MSK строку.
+2. **PHP TZ** явно `Europe/Moscow` (defensive, в случае если по умолчанию не MSK).
+3. **MySQL session.time_zone и `CTimeZone::Disable()` НЕ трогаются** — иначе сломается интерпретация легаси-данных (DB-строки начнут парситься в чужой TZ).
+
+### Фронт ([TimeHelper.jsx](../src/Helpers/TimeHelper.jsx))
+
+- **Парсинг** (`bitrixDateTimeToJs`): хардкод `+03:00` — round-trip корректный, потому что бэк гарантирует MSK.
+- **Отображение** (`objDate` / `strDateTimeHumanLong` / `getTime`): использует `this.tzOffest` (геттер), который читает `_store.tzOffsetMs` из `TimeStore`. Зависит от `tzMode`.
+- **Запись на бэк** ([DashItem.jsx](../src/Data/Models/DashItem.jsx) `params.deadline`/`closedDate`): использует `TimeHelper.mskOffsetMs` — статическая константа `+3ч`, НЕ зависит от `tzMode`. Бэкенд ждёт MSK-таймстампы.
+
+### Реактивность
+
+При смене `tzMode`:
+1. `TimeStore.setTzMode()` обновляет observable `tzMode`, сохраняет в куки, сбрасывает `day=null`, зовёт `updateTime()`.
+2. Computed `tzOffsetMs` / `tzStrOffset` пересчитываются.
+3. `TimeHelper.tzOffest` (геттер) при следующем чтении вернёт новое значение.
+4. Все observer-компоненты, которые во время render читали `TimeHelper.objDate(...)`/`TimeHelper.strDateTimeHumanLong(...)`, видят что зависимость `_store.tzOffsetMs` изменилась → MobX перерисовывает их автоматически. Никаких ручных подписок не требуется.
+
+### UI
+
+В [ControlPanel](../src/Components/Layout/ControlPanel/ControlPanel.jsx) (раздел «Настройки» → «Часовой пояс») кнопки `МСК (+3)` и `локальный`. Рядом с текущим временем в нижнем блоке показывается метка `TZ ${tzLabel}`.
+
+### Что НЕ делать
+
+- НЕ вызывать `CTimeZone::Disable()` глобально — это вернёт DB raw (`+6 wall`), фронт распарсит как MSK и всё съедет на `+3ч`.
+- НЕ выполнять `SET time_zone='+03:00'` на MySQL-сессии — у легаси-данных поедет интерпретация по той же причине (DB-строки `+6 wall` будут парситься как `+3 wall`).
+- НЕ привязывать `bitrixDateTimeToJs` к `tzMode` — парсинг ВСЕГДА `+03:00`. Переключатель режима влияет только на **отображение**.
+- НЕ использовать `TimeHelper.tzOffest` для интеропа с бэком — там должен быть `mskOffsetMs`. Иначе при `tzMode='browser'` запись на бэк уедет на разницу `browser_TZ - MSK`.
 
 ## PeriodsStore — контейнер интервалов
 

@@ -190,6 +190,44 @@ class ScheduleStore {
 	}
 
 	/**
+	 * Считает рабочее wall-clock время в мс между двумя моментами,
+	 * пропуская нерабочие сутки целиком (та же модель, что в addWorkDays).
+	 *
+	 * Используется для закрытых тикетов: «сколько рабочего времени прошло
+	 * от создания до закрытия». Час, проведённый на работе в субботу
+	 * (в день, помеченный как нерабочий), не считается; час во вторник
+	 * считается как 60 минут.
+	 *
+	 * @param {number} fromMs - реальный мс начала интервала
+	 * @param {number} toMs - реальный мс конца интервала
+	 * @returns {number} мс рабочего времени; 0 при некорректных аргументах
+	 */
+	workMsBetween(fromMs, toMs) {
+		const rt = this.runtime;
+		if (!rt) return 0;
+		if (fromMs == null || toMs == null || toMs <= fromMs) return 0;
+
+		const startTsm = strToTsm(this.realMsToScheduleStr(fromMs));
+		const endTsm = strToTsm(this.realMsToScheduleStr(toMs));
+		if (startTsm === null || endTsm === null) return 0;
+
+		let cursor = startTsm;
+		let workMin = 0;
+		const safety = 366;
+		for (let i = 0; i < safety && cursor < endTsm; i++) {
+			const dayStart = Math.floor(cursor / MINUTES_IN_DAY) * MINUTES_IN_DAY;
+			const dayEnd = dayStart + MINUTES_IN_DAY;
+			const dayStr = tsmToStr(dayStart).slice(0, 10);
+			const segmentEnd = Math.min(dayEnd, endTsm);
+			if (rt.isWorkDay(dayStr)) {
+				workMin += segmentEnd - cursor;
+			}
+			cursor = segmentEnd;
+		}
+		return workMin * MS_IN_MINUTE;
+	}
+
+	/**
 	 * Считает количество нерабочих календарных дней в интервале [fromMs..toMs]
 	 * (обе границы считаются по дате в часовом поясе расписания).
 	 *

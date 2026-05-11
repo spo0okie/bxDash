@@ -1,59 +1,65 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react';
-import { observer } from 'mobx-react-lite';
-import './controlPanel.css';
-import { StoreContext } from 'Data/Stores/StoreProvider';
-import ConnectionStates from 'Components/Layout/ConnectionStates/ConnectionStates';
-import { debugLogin, debugPassword, debugAutoLogin, showTimeDebugUI } from 'config.priv';
-import classNames from 'classnames';
-import MenuButton from '../Header/Menu/MenuIButton';
+import React, { useContext, useEffect, useState, useCallback } from "react";
+import { observer } from "mobx-react-lite";
+import "./controlPanel.css";
+import { StoreContext } from "Data/Stores/StoreProvider";
+import ConnectionStates from "Components/Layout/ConnectionStates/ConnectionStates";
+import {
+	debugLogin,
+	debugPassword,
+	debugAutoLogin,
+	showTimeDebugUI,
+} from "config.priv";
+import classNames from "classnames";
+import MenuButton from "../Header/Menu/MenuIButton";
 
 const ControlPanel = observer(function ControlPanel() {
-    const [login, setLogin] = useState('');
-    const [password, setPassword] = useState('');
-    const [status, setStatus] = useState('typing');
-    const context = useContext(StoreContext);
+	const [login, setLogin] = useState("");
+	const [password, setPassword] = useState("");
+	const [status, setStatus] = useState("typing");
+	const context = useContext(StoreContext);
 
-    // Автозаполнение из конфигурации и автовход для отладки
-    useEffect(() => {
-        if (debugLogin && debugPassword) {
-            setLogin(debugLogin);
-            setPassword(debugPassword);
+	// Автозаполнение из конфигурации и автовход для отладки
+	useEffect(() => {
+		if (debugLogin && debugPassword) {
+			setLogin(debugLogin);
+			setPassword(debugPassword);
 
-            // Если включен автовход - сразу выполняем авторизацию
-            if (debugAutoLogin
-				&& context.main.bx.authStatus !== 'OK'
-				&& context.main.zabbix.authStatus !== 'OK'
-				&& context.main.inventory.authStatus !== 'OK'
+			// Если включен автовход - сразу выполняем авторизацию
+			if (
+				debugAutoLogin &&
+				context.main.bx.authStatus !== "OK" &&
+				context.main.zabbix.authStatus !== "OK" &&
+				context.main.inventory.authStatus !== "OK"
 			) {
-                setStatus('submitting');
-                context.main.authenticate(
-                    debugLogin,
-                    debugPassword,
-                    () => setStatus('success'),
-                    () => setStatus('error')
-                );
-            }
-        }
-    }, [context.main]);
+				setStatus("submitting");
+				context.main.authenticate(
+					debugLogin,
+					debugPassword,
+					() => setStatus("success"),
+					() => setStatus("error"),
+				);
+			}
+		}
+	}, [context.main]);
 
-    async function handleSubmit(e) {
-        e.preventDefault();
-        setStatus('submitting');
-        context.main.authenticate(
-            login,
-            password,
-            () => setStatus('success'),
-            () => setStatus('error')
-        );
-    }
+	async function handleSubmit(e) {
+		e.preventDefault();
+		setStatus("submitting");
+		context.main.authenticate(
+			login,
+			password,
+			() => setStatus("success"),
+			() => setStatus("error"),
+		);
+	}
 
-    function handleLoginChange(e) {
-        setLogin(e.target.value);
-    }
+	function handleLoginChange(e) {
+		setLogin(e.target.value);
+	}
 
-    function handlePasswordChange(e) {
-        setPassword(e.target.value);
-    }
+	function handlePasswordChange(e) {
+		setPassword(e.target.value);
+	}
 
 	/** Переключение в режим планирования */
 	const planningMode = useCallback(() => {
@@ -110,128 +116,175 @@ const ControlPanel = observer(function ControlPanel() {
 
 	const { theme } = context;
 
-
-    return (
-		<div className={classNames(
-			'controlPanel',
-			{hasErrors: context.main.hasErrors,}
-		)}>
-			<div className='section'>
-				<div className='menu'>
-					<div className='options'>
-						Опции:<br/>
-						<MenuButton property='expand' title='дни' />
-						<MenuButton property='expand' title='недели' classNames={['off', 'on']} />
-						<br/>
-						<MenuButton property='tasksVisible' title='задачи' />
-						<MenuButton property='accomplicesVisible' title='помогаю' />
-						<br/>
-						<MenuButton property='jobsVisible' title='работы' />
-						<br/>
-						<MenuButton property='ticketsVisible' title='заявки' />
-						<br/>
-						<MenuButton property='plansVisible' title='планы' />
-						<MenuButton property='keepPlanning' title='keepPlanning' />
+	return (
+		<div
+			className={classNames("controlPanel", {
+				hasErrors: context.main.hasErrors,
+			})}
+		>
+			<div className="section">
+				<div className="menu">
+					<div className="options">
+						Опции:
+						<br />
+						<MenuButton property="expand" title="дни" />
+						<MenuButton
+							property="expand"
+							title="недели"
+							classNames={["off", "on"]}
+						/>
+						<br />
+						<MenuButton property="tasksVisible" title="задачи" />
+						<MenuButton property="accomplicesVisible" title="помогаю" />
+						<br />
+						<MenuButton property="jobsVisible" title="работы" />
+						<br />
+						<MenuButton property="ticketsVisible" title="заявки" />
+						<br />
+						<MenuButton property="plansVisible" title="планы" />
+						<MenuButton property="keepPlanning" title="keepPlanning" />
 					</div>
-					<div className='presets'>
-						Пресеты:<br/>
-						<button onClick={planningMode} className="small">Режим планирования</button>
-						<br/>
-						<button onClick={defaultMode} className="small">Сброс</button>
-						<br/>
-						<MenuButton property='useSplitBucket' title={['1 корзина', '3 корзины']} />
-						<br/>
-						{theme.availableThemes.length >= 2 && (
+					<div className="presets">
+						Пресеты:
+						<br />
+						<button onClick={planningMode} className="small">
+							Режим планирования
+						</button>
+						<br />
+						<button onClick={defaultMode} className="small">
+							Сброс
+						</button>
+					</div>
+					<div className="options">
+						Настройки:
+						<br />
+						<MenuButton
+							property="useSplitBucket"
+							title={["1 корзина", "3 корзины"]}
+						/>
+						<br />
+						Часовой пояс:
+						<br />
+						<button
+							onClick={() => context.time.setTzMode("msk")}
+							className={classNames(
+								{ on: context.time.tzMode === "msk" },
+								{ off: context.time.tzMode !== "msk" },
+							)}
+						>
+							МСК (+3)
+						</button>
+						<button
+							onClick={() => context.time.setTzMode("browser")}
+							className={classNames(
+								{ on: context.time.tzMode === "browser" },
+								{ off: context.time.tzMode !== "browser" },
+							)}
+						>
+							локальный
+						</button>
+						<br />
+						Темы:
+						<br />
+						{theme.availableThemes.map((t) => (
 							<>
-								Тема:<br/>
-								{theme.availableThemes.map(t => (
-									<button
-										key={t.id}
-										onClick={() => theme.setTheme(t.id)}
-										className={classNames('small', {active: theme.currentThemeId === t.id})}
-									>
-										{t.name}
-									</button>
-								))}
+								<button
+									key={t.id}
+									onClick={() => theme.setTheme(t.id)}
+									className={classNames(
+										{ on: theme.currentThemeId === t.id },
+										{ off: theme.currentThemeId !== t.id },
+									)}
+								>
+									{t.name}
+								</button>
+								<br />
 							</>
-						)}
+						))}
 					</div>
 				</div>
 			</div>
-			<div className='section'>
+			<div className="section">
 				<h2>dash::Авторизация</h2>
 				<form onSubmit={handleSubmit}>
 					<input
 						value={login}
 						onChange={handleLoginChange}
-						disabled={status === 'submitting'}
+						disabled={status === "submitting"}
 					/>
 					<br />
 					<input
 						value={password}
 						type="password"
 						onChange={handlePasswordChange}
-						disabled={status === 'submitting'}
+						disabled={status === "submitting"}
 					/>
 					<br />
 					<button
 						disabled={
 							login.length === 0 ||
 							password.length === 0 ||
-							status === 'submitting'
+							status === "submitting"
 						}
 					>
 						Вход
 					</button>
-					{status === 'error' && (
-						<p className="Error">Ошибка входа</p>
-					)}
+					{status === "error" && <p className="Error">Ошибка входа</p>}
 				</form>
 			</div>
-            <div className='section'>
-				<ConnectionStates/>
-				<p className='p-1'>Time: {context.time.strTime}</p>
+			<div className="section">
+				<ConnectionStates />
+				<p className="p-1">
+					Time: {context.time.strTime} TZ {context.time.tzLabel}
+				</p>
 				{context.time.isOverridden && (
-					<p className='p-1 warning'>⚠️ Дата переопределена!</p>
+					<p className="p-1 warning">⚠️ Дата переопределена!</p>
 				)}
 			</div>
 			{showTimeDebugUI && (
-			<div className='section debug-section'>
-				<div className='debug-time-controls'>
-					<button className="small" onClick={handleNextWeek}>
-						+1 неделя
-					</button>
-					<button className="small" onClick={handlePrevWeek}>
-						-1 неделя
-					</button>
-					<button className="small" onClick={handleNextDay}>
-						+1 день
-					</button>
-					<button className="small" onClick={handlePrevDay}>
-						-1 день
-					</button>
-					<button
-						className="small reset"
-						onClick={handleResetTime}
-						disabled={!context.time.isOverridden}
-					>
-						Сбросить
-					</button>
-				</div>
-				<div className='debug-time-info'>
-					<h3>Отладка времени</h3>
+				<div className="section debug-section">
+					<div className="debug-time-controls">
+						<button className="small" onClick={handleNextWeek}>
+							+1 неделя
+						</button>
+						<button className="small" onClick={handlePrevWeek}>
+							-1 неделя
+						</button>
+						<button className="small" onClick={handleNextDay}>
+							+1 день
+						</button>
+						<button className="small" onClick={handlePrevDay}>
+							-1 день
+						</button>
+						<button
+							className="small reset"
+							onClick={handleResetTime}
+							disabled={!context.time.isOverridden}
+						>
+							Сбросить
+						</button>
+					</div>
+					<div className="debug-time-info">
+						<h3>Отладка времени</h3>
 
-					<small>
-						today: {context.time.today ? new Date(context.time.today).toLocaleDateString('ru-RU') : '—'}<br/>
-						monday0: {context.time.monday0 ? new Date(context.time.monday0).toLocaleDateString('ru-RU') : '—'}<br/>
-						overridden: {context.time.isOverridden ? 'да' : 'нет'}
-					</small>
+						<small>
+							today:{" "}
+							{context.time.today
+								? new Date(context.time.today).toLocaleDateString("ru-RU")
+								: "—"}
+							<br />
+							monday0:{" "}
+							{context.time.monday0
+								? new Date(context.time.monday0).toLocaleDateString("ru-RU")
+								: "—"}
+							<br />
+							overridden: {context.time.isOverridden ? "да" : "нет"}
+						</small>
+					</div>
 				</div>
-			</div>
 			)}
-
-        </div>
-    );
+		</div>
+	);
 });
 
 export default ControlPanel;

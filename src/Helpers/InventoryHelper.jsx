@@ -1,6 +1,7 @@
 const getUserId=async (be)=>{
+	if (!be.login) return false;
 	try {
-		const response = await be.fetch('api/users/search?login='+be.login);
+		const response = await be.fetch('api/users/search?login='+encodeURIComponent(be.login));
 		
 		if (!response.ok) {
 			console.error('Inventory request failed:', response.status, response.statusText);

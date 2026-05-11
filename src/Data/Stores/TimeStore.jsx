@@ -1,4 +1,4 @@
-import { observable, action, makeObservable } from 'mobx';
+import { observable, action, makeObservable, computed } from 'mobx';
 import TimeHelper from 'Helpers/TimeHelper';
 
 /**
@@ -16,13 +16,13 @@ class TimeStore {
 	weekMax = 4;                // сколько недель после этой отображается
 
 	strTime = 'uninitialized';  // время в формате чч:мм:сс (пока только для отладки)
-	hours = '??';               // текущее МСК время (часы)
-	minutes = '??';             // текущее МСК время (мин)
-	seconds = '??';             // текущее МСК время (сек)
-	day = '??';                 // текущее МСК время (число месяца)
-	month = '??';               // текущее МСК время (месяц)
-	year = '??';                // текущее МСК время (год)
-	wday = '??';                // текущее МСК время (день недели)
+	hours = '??';               // текущее время (часы) в выбранной TZ
+	minutes = '??';             // текущее время (мин)
+	seconds = '??';             // текущее время (сек)
+	day = '??';                 // текущее время (число месяца)
+	month = '??';               // текущее время (месяц)
+	year = '??';                // текущее время (год)
+	wday = '??';                // текущее время (день недели)
 
 	monday0 = null;
 	sunday0 = null;
@@ -30,8 +30,14 @@ class TimeStore {
 
 	isOverridden = false;       // флаг принудительного переопределения даты
 
+	/** Режим часового пояса для отображения: 'msk' = фиксированный +3, 'browser' = локальный браузера. */
+	tzMode = 'msk';
+
 	constructor(main) {
 		this.main = main;
+		// Прокидываем себя в TimeHelper-синглтон ДО первого updateTime(),
+		// чтобы getTime() сразу читал актуальный tzOffsetMs.
+		TimeHelper.setStore(this);
 
 		// Явное объявление реактивных свойств через makeObservable
 		makeObservable(this, {
@@ -50,16 +56,23 @@ class TimeStore {
 			sunday0: observable,
 			today: observable,
 			isOverridden: observable,
+			tzMode: observable,
+			tzOffsetMin: computed,
+			tzOffsetMs: computed,
+			tzStrOffset: computed,
+			tzLabel: computed,
 			// Actions - методы, изменяющие observable свойства
 			updateTime: action,
 			overrideDate: action,
 			resetToRealTime: action,
 			setWeekMin: action,
 			setWeekMax: action,
+			setTzMode: action,
 		});
 
 		this.weekMax = this.loadOption('weekMax') ?? 4;
 		this.weekMin = this.loadOption('weekMin') ?? -4;
+		this.tzMode = this.loadOption('tzMode') ?? 'msk';
 		this.updateTime();
 
 		setInterval(() => {
@@ -175,6 +188,47 @@ class TimeStore {
 	resetToRealTime() {
 		console.log('timeStore: resetting to real time');
 		this.isOverridden = false;
+		this.updateTime();
+	}
+
+	// === Часовой пояс отображения ===
+
+	/** Сдвиг текущей TZ-маски в минутах относительно UTC. */
+	get tzOffsetMin() {
+		if (this.tzMode === 'browser') return -new Date().getTimezoneOffset();
+		return 180; // 'msk' — фиксированный +3
+	}
+
+	/** Сдвиг текущей TZ-маски в миллисекундах относительно UTC. */
+	get tzOffsetMs() { return this.tzOffsetMin * 60 * 1000; }
+
+	/** Текстовый offset вида '+03:00' / '-04:30' для подстановки в ISO-строки. */
+	get tzStrOffset() {
+		const off = this.tzOffsetMin;
+		const sign = off >= 0 ? '+' : '-';
+		const abs = Math.abs(off);
+		const hh = String(Math.floor(abs / 60)).padStart(2, '0');
+		const mm = String(abs % 60).padStart(2, '0');
+		return `${sign}${hh}:${mm}`;
+	}
+
+	/** Человекочитаемый ярлык TZ для UI. */
+	get tzLabel() {
+		if (this.tzMode === 'msk') return 'МСК (+3)';
+		const off = this.tzOffsetMin;
+		const sign = off >= 0 ? '+' : '-';
+		const h = Math.floor(Math.abs(off) / 60);
+		return `локально (${sign}${h})`;
+	}
+
+	setTzMode(mode) {
+		if (mode !== 'msk' && mode !== 'browser') return;
+		if (this.tzMode === mode) return;
+		this.tzMode = mode;
+		this.saveOption('tzMode', mode);
+		// Сбрасываем закэшированный day, чтобы updateTime() пересчитал
+		// today/monday0/sunday0 — они привязаны к TZ.
+		this.day = null;
 		this.updateTime();
 	}
 

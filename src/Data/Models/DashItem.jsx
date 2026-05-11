@@ -216,11 +216,11 @@ export default class DashItem {
 
 		//смена крайнего срока и даты закрытия
 		if (params.deadline !== undefined && params.deadline!==null) {
-			params.deadline = Math.round((params.deadline - TimeHelper.tzOffest) / 1000) ;
+			params.deadline = Math.round((params.deadline - TimeHelper.mskOffsetMs) / 1000) ;
 		}
 
 		if (params.closedDate !== undefined && params.closedDate !== null) {
-			params.closedDate = Math.round((params.closedDate - TimeHelper.tzOffest) / 1000);
+			params.closedDate = Math.round((params.closedDate - TimeHelper.mskOffsetMs) / 1000);
 		}
 
 		this.setUpdating(true);

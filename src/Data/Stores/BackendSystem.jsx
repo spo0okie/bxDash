@@ -193,9 +193,12 @@ class BackendSystem {
 
 	/**
 	 * Проверка статуса аутентификации
-	 * Периодически вызывается для подтверждения активной сессии
+	 * Периодически вызывается для подтверждения активной сессии.
+	 * Без login/password смысла дёргать бэкенд нет — иначе интервал стартует
+	 * сразу после setUrl() и шлёт в API «...?login=null», ловя 401.
 	 */
 	async checkAuthStatus() {
+		if (!this.login || !this.password) return;
 		try {
 			const auth = await this.authConfig.authCheck(this);
 			if (auth) {

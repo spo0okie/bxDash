@@ -242,11 +242,11 @@ class controller_ticket {
 		
 		$MESSAGE_ID = 0;
 		$NEW_TICKET_ID = CTicket::Set($arFields, $MESSAGE_ID, 0, "N");
-		
+
 		if (!$NEW_TICKET_ID) {
 			router::haltJson('error creating ticket', 500);
 		}
-		
+
 		echo '{"result":"ok","id":'.$NEW_TICKET_ID.'}';
 	}
 

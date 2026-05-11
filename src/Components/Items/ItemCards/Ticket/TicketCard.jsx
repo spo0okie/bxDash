@@ -20,22 +20,17 @@ function formatRemaining(ms) {
 	return negative ? "" : `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
-const SlaCountdown = observer(({ item, time }) => {
-	const deadlineMs = item.slaDeadlineMs;
-	if (deadlineMs === null) return null;
-
-	// Подписка на time.strTime даёт перерисовку раз в секунду.
-	void time.strTime;
-
-	const remaining = deadlineMs - Date.now();
-	const text = formatRemaining(remaining);
+const SlaCountdown = observer(({ item }) => {
+	// item.slaRemainingMs подписан на time.strTime — observer пересчитает раз в секунду.
+	const remaining = item.slaRemainingMs;
+	if (remaining === null) return null;
 
 	return (
 		<span
 			className={classNames("slaCountdown", { overdue: remaining < 0 })}
 			aria-hidden="true"
 		>
-			{text}
+			{formatRemaining(remaining)}
 		</span>
 	);
 });
@@ -60,13 +55,15 @@ const TicketCard = observer((props) => {
 		if (task.isClosed) {
 			tips.push("Закрыта: " + TimeHelper.strDateTimeHumanLong(task.closedDate));
 			date = task.closedDateStr;
+			tips.push("Выполнено за " + item.workDaysToClose.toFixed(1) + "дн");
 		} else {
-			tips.push(
+			/*tips.push(
 				"Крайний срок: " + TimeHelper.strDateTimeHumanLong(task.deadline),
-			);
+			);*/
 			if (task.slaDeadlineMs) {
 				tips.push(
-					"Крайний срок SLA: " + TimeHelper.strDateTimeHumanLong(task.slaDeadlineMs),
+					"Крайний срок SLA: " +
+						TimeHelper.strDateTimeHumanLong(task.slaDeadlineMs),
 				);
 				const nonWork = task.slaNonWorkDays;
 				if (nonWork > 0) {
@@ -84,10 +81,14 @@ const TicketCard = observer((props) => {
 					</Fragment>
 				))}
 			>
-				<span className="deadline">{date}</span>
+				<span className="deadline">
+					{item.isClosed ? item.workDaysToClose.toFixed(1) : date}
+				</span>
 			</Tooltip>
 		);
 	});
+
+	const overdue = item.isSlaOverdue;
 
 	return (
 		<li
@@ -104,8 +105,8 @@ const TicketCard = observer((props) => {
 
 				{ closed: item.isClosed && item.status !== "blue" }, //признак что закрыта
 
-				{ green: !item.isClosed && item.status === "green" }, //зеленый
-				{ red: !item.isClosed && item.status === "red" }, //красный
+				{ green: !item.isClosed && item.status === "green" && !overdue }, //зеленый
+				{ red: (!item.isClosed && item.status === "red") || overdue }, //красный
 				{ blue: item.status === "blue" }, //красный
 			)}
 			onMouseEnter={handleMouseEnter}
@@ -114,7 +115,7 @@ const TicketCard = observer((props) => {
 			ref={ref}
 			//title={item.sorting}
 		>
-			<SlaCountdown item={item} time={context.time} />
+			<SlaCountdown item={item} />
 			<div className="content" name={item.uid}>
 				<ModalLink item={item} />
 				<TicketDeadline item={item} />
