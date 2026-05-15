@@ -20,6 +20,20 @@ import EditItem from "../../EditItem/EditItem";
 import ModalLink from "Components/Layout/Modal/ModalLink";
 import { Dropdown, Tooltip } from "antd";
 
+const DeadlineCountdown = observer(({ task }) => {
+	const remaining = task.deadlineRemainingMs;
+	if (remaining === null) return null;
+
+	return (
+		<span
+			className={classNames("deadlineCountdown", { overdue: remaining < 0 })}
+			aria-hidden="true"
+		>
+			{TimeHelper.strRemaining(remaining)}
+		</span>
+	);
+});
+
 const TaskStatusUpdates = observer((props) => {
 	//trace();
 	const context = useContext(StoreContext);
@@ -250,6 +264,7 @@ const TaskCard = observer((props) => {
 					ref={ref}
 					id={task.uid}
 				>
+					<DeadlineCountdown task={task} />
 					<div className="content" name={task.uid}>
 						{task.isNew ? (
 							<EditItem item={task} items={context.items.tasks} />

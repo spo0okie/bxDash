@@ -9,17 +9,6 @@ import { StoreContext } from "Data/Stores/StoreProvider";
 import TimeHelper from "Helpers/TimeHelper";
 import ModalLink from "Components/Layout/Modal/ModalLink";
 
-function formatRemaining(ms) {
-	const negative = ms < 0;
-	const abs = Math.abs(ms);
-	const totalSec = Math.floor(abs / 1000);
-	const h = Math.floor(totalSec / 3600);
-	const m = Math.floor((totalSec % 3600) / 60);
-	const s = totalSec % 60;
-	const pad = (n) => String(n).padStart(2, "0");
-	return negative ? "" : `${pad(h)}:${pad(m)}:${pad(s)}`;
-}
-
 const SlaCountdown = observer(({ item }) => {
 	// item.slaRemainingMs подписан на time.strTime — observer пересчитает раз в секунду.
 	const remaining = item.slaRemainingMs;
@@ -30,7 +19,7 @@ const SlaCountdown = observer(({ item }) => {
 			className={classNames("slaCountdown", { overdue: remaining < 0 })}
 			aria-hidden="true"
 		>
-			{formatRemaining(remaining)}
+			{TimeHelper.strRemaining(remaining)}
 		</span>
 	);
 });

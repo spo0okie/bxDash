@@ -322,6 +322,16 @@ class controller_task {
 			$oTaskItem->Update(['DEADLINE'=>$deadline]);
 		}
 
+		$startDatePlan=router::getRoute(null,'startDatePlan','##UNSET');
+		if ($startDatePlan!=='##UNSET') {
+			if ($startDatePlan=='null' || !$startDatePlan) {
+				$startDatePlan='';
+			} else {
+				$startDatePlan=date('d.m.Y',$startDatePlan).' 09:00:00';
+			}
+			$oTaskItem->Update(['START_DATE_PLAN'=>$startDatePlan]);
+		}
+
 		if ($status=router::getRoute(null,'status')) {
 			$oTaskItem->Update(['STATUS'=>$status]);
 		}
@@ -346,6 +356,7 @@ class controller_task {
 		if (!($text=router::getRoute(null,'title'))) router::haltJson('no text data');
 		if (!($responsible=router::getRoute(null,'user'))) router::haltJson('no responsible');
 		if (($deadline=router::getRoute(null,'deadline',-1))===-1) router::haltJson('no deadline');
+		$startDatePlan=router::getRoute(null,'startDatePlan',null);
 		$sorting=router::getRoute(null,'sorting');
 
 		$lines=explode("\n",$text);
@@ -361,6 +372,7 @@ class controller_task {
 			'TITLE' => $title,
 			'DESCRIPTION'=>$description,
 			'DEADLINE'=>$deadline?ConvertTimeStamp($deadline,'FULL'):'',
+			'START_DATE_PLAN'=>($startDatePlan && $startDatePlan!=='null')?ConvertTimeStamp($startDatePlan,'FULL'):'',
 			'ALLOW_CHANGE_DEADLINE'=>$allowMoveDeadline,
 			'RESPONSIBLE_ID'=>$responsible,
 			'XML_ID' => $sorting

@@ -30,7 +30,7 @@ const CreateTaskButton = (props) => {
 			{
 				id: items.getMaxId() + 64,
 				user: props.cell.user,
-				deadline: props.cell.dropT,
+				startDatePlan: props.cell.dropT,
 				isNew: true,
 				isEdit: true,
 				sorting: props.cell.maxSorting ? props.cell.maxSorting + 20 : null,

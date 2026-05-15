@@ -68,8 +68,9 @@ function isDropOnSelf(targetCell, sourceCell, oldIndex, dropOnItem) {
  * только по релевантным полям.
  */
 function buildMoveParams(item, sourceCell, targetCell, newSort) {
+    const tField = item.dropTimeField || 'deadline';
     const params = {
-        deadline: item.deadline,
+        [tField]: item[tField],
         user: item.user,
         sorting: item.sorting,
     };
@@ -78,8 +79,8 @@ function buildMoveParams(item, sourceCell, targetCell, newSort) {
         params.sorting = newSort;
     }
     if (targetCell.data.cell.t !== sourceCell.data.cell.t) {
-        console.log('changing time => ' + targetCell.data.cell.dropT);
-        params.deadline = targetCell.data.cell.dropT;
+        console.log('changing ' + tField + ' => ' + targetCell.data.cell.dropT);
+        params[tField] = targetCell.data.cell.dropT;
     }
     if (targetCell.data.cell.user !== sourceCell.data.cell.user) {
         console.log('changing user => ' + targetCell.data.cell.user);

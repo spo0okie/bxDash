@@ -47,6 +47,8 @@
 	--accent-danger: #ff4d4f;
 	--accent-info: deepskyblue;
 
+	--sem-danger: #ff4d4f;
+
 	/* ===== Типографика ===== */
 	--font-family-base: "Helvetica Neue", Helvetica, Arial, sans-serif;
 	--font-family-mono:

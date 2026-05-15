@@ -250,21 +250,21 @@ class ItemsMultiStore {
 			switch(e.key) {
 				case 'toTop': task.update({ sorting: cell.maxSorting?cell.maxSorting+100:100 }, true); break;
 				case 'toBottom': task.update({ sorting: cell.minSorting?cell.minSorting-100:100 }, true); break;
-				case 'weekLater1': task.update({ deadline: task.t+week*1 }, true); break;
-				case 'weekLater2': task.update({ deadline: task.t+week*2 }, true); break;
-				case 'monthLater1': task.update({ deadline: task.t+month*1 }, true); break;
-				case 'monthLater2': task.update({ deadline: task.t+month*2 }, true); break;
+				case 'weekLater1': task.update({ startDatePlan: task.t+week*1 }, true); break;
+				case 'weekLater2': task.update({ startDatePlan: task.t+week*2 }, true); break;
+				case 'monthLater1': task.update({ startDatePlan: task.t+month*1 }, true); break;
+				case 'monthLater2': task.update({ startDatePlan: task.t+month*2 }, true); break;
 				case 'bucketTop': {
-					let bucketTasks=[...values(this['task'].items), ...values(this['job'].items)].filter((t)=>t.deadline===null && t.isOpen && t.user===cell.user);
-					let bucketMaxSorting=bucketTasks.length?Math.max(...bucketTasks.map((t)=>t.sorting))+100:100;
-					task.update({ sorting: bucketMaxSorting, deadline: null }, true); 
+					let bucketTasks=[...values(this['task'].items), ...values(this['job'].items)].filter((it)=>it.t===null && it.isOpen && it.user===cell.user);
+					let bucketMaxSorting=bucketTasks.length?Math.max(...bucketTasks.map((it)=>it.sorting))+100:100;
+					task.update({ sorting: bucketMaxSorting, startDatePlan: null }, true);
 					break;
 				}
-				
+
 				case 'bucketBottom': {
-					let bucketTasks=[...values(this['task'].items), ...values(this['job'].items)].filter((t)=>t.deadline===null && t.isOpen && t.user===cell.user);
-					let bucketMinSorting=bucketTasks.length?Math.max(...bucketTasks.map((t)=>t.sorting))-100:0;
-					task.update({ sorting: bucketMinSorting, deadline: null }, true); 
+					let bucketTasks=[...values(this['task'].items), ...values(this['job'].items)].filter((it)=>it.t===null && it.isOpen && it.user===cell.user);
+					let bucketMinSorting=bucketTasks.length?Math.max(...bucketTasks.map((it)=>it.sorting))-100:0;
+					task.update({ sorting: bucketMinSorting, startDatePlan: null }, true);
 					break;
 				}
 	

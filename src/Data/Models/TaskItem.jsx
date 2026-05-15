@@ -1,4 +1,4 @@
-import { action, makeObservable, observable } from "mobx";
+import { action, computed, makeObservable, observable } from "mobx";
 import DashItem from "./DashItem";
 import TimeHelper from "Helpers/TimeHelper";
 
@@ -8,6 +8,7 @@ class TaskItem extends DashItem {
 
 	initDefaults() {
 		this.type = "task"; //тип
+		this.dropTimeField = "startDatePlan"; //атрибут, которым задача позиционируется в календаре
 		this.updatesCount = 0; //количество обновлений в задаче
 		this.accomplices = []; //соисполнители
 		this.title = "Заголовок задачи\nОписание задачи";
@@ -15,6 +16,7 @@ class TaskItem extends DashItem {
 		this.status = 1; //новая
 		this.mark = 0;
 		this.strStatus = "unknown";
+		this.startDatePlan = null; //плановая дата (задаёт позицию в календаре)
 	}
 
 	recalcTime() {
@@ -27,8 +29,8 @@ class TaskItem extends DashItem {
 		} else if (this.isNow) {
 			this.t = this.context.time.today;
 		} else {
-			this.t = this.deadline
-				? Math.max(this.deadline, this.context.time.today)
+			this.t = this.startDatePlan
+				? Math.max(this.startDatePlan, this.context.time.today)
 				: null;
 		}
 
@@ -117,6 +119,10 @@ class TaskItem extends DashItem {
 			? TimeHelper.bitrixDateTimeToJs(item.DEADLINE)
 			: null;
 
+		this.startDatePlan = item.START_DATE_PLAN
+			? TimeHelper.bitrixDateTimeToJs(item.START_DATE_PLAN)
+			: null;
+
 		this.createdAt = TimeHelper.bitrixDateTimeToJs(item.CREATED_DATE);
 
 		this.closedDate = TimeHelper.bitrixDateTimeToJs(item.CLOSED_DATE);
@@ -157,6 +163,24 @@ class TaskItem extends DashItem {
 		this.update({ status: newStatus }, true);
 	}
 
+	/**
+	 * Остаток до дедлайна в мс (отрицательный — просрочено).
+	 * Подписан на time.strTime, чтобы пересчитываться раз в секунду через mobx.
+	 * null — если задача закрыта или дедлайн не задан.
+	 */
+	get deadlineRemainingMs() {
+		if (this.isClosed) return null;
+		if (!this.deadline) return null;
+		void this.context?.time?.strTime;
+		return this.deadline - Date.now();
+	}
+
+	/** Просрочен ли дедлайн (для css-классов карточки). */
+	get isDeadlineOverdue() {
+		const r = this.deadlineRemainingMs;
+		return r !== null && r < 0;
+	}
+
 	constructor(item, data, list) {
 		super(item, data, list);
 
@@ -165,6 +189,9 @@ class TaskItem extends DashItem {
 			mark: observable,
 			strStatus: observable,
 			updatesCount: observable,
+			startDatePlan: observable,
+			deadlineRemainingMs: computed,
+			isDeadlineOverdue: computed,
 			setStatus: action,
 			setUpdates: action,
 		});

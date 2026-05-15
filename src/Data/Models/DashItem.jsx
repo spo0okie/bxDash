@@ -211,12 +211,18 @@ export default class DashItem {
 			if (params.user === undefined) 			params.user = this.user;
 			if (params.title === undefined) 		params.title = this.title;
 			if (params.sorting === undefined)		params.sorting = this.sorting;
-			if (params.priority === undefined)		params.priority = this.priority;			
+			if (params.priority === undefined)		params.priority = this.priority;
+			if (this.startDatePlan !== undefined && params.startDatePlan === undefined)
+				params.startDatePlan = this.startDatePlan;
 		}
 
 		//смена крайнего срока и даты закрытия
 		if (params.deadline !== undefined && params.deadline!==null) {
 			params.deadline = Math.round((params.deadline - TimeHelper.mskOffsetMs) / 1000) ;
+		}
+
+		if (params.startDatePlan !== undefined && params.startDatePlan !== null) {
+			params.startDatePlan = Math.round((params.startDatePlan - TimeHelper.mskOffsetMs) / 1000);
 		}
 
 		if (params.closedDate !== undefined && params.closedDate !== null) {
@@ -298,6 +304,15 @@ export default class DashItem {
 				confirm.push("Срок выполнения убираем (в долгий ящик)");
 			} else {
 				confirm.push("Срок выполнения на " + TimeHelper.strDateTimeHumanLong(params.deadline));
+			}
+		}
+
+		//смена запланированной даты (для задач — это основной атрибут календаря)
+		if (params.startDatePlan !== undefined && params.startDatePlan !== this.startDatePlan) {
+			if (params.startDatePlan === null) {
+				confirm.push("Запланировано: убираем (в долгий ящик)");
+			} else {
+				confirm.push("Запланировано на " + TimeHelper.strDateTimeHumanLong(params.startDatePlan));
 			}
 		}
 
