@@ -24,17 +24,10 @@ li.userTask span.deadlineCountdown {
 	z-index: 0;
 }
 
-li.userTask span.deadlineCountdown.overdue {
-	background: repeating-linear-gradient(
-		45deg,
-		var(--sem-danger) 0,
-		var(--sem-danger) 5px,
-		transparent 5px,
-		transparent 10px
-	);
-	width: 100%;
-	height: 100%;
-	opacity: 0.6;
+span.userTaskLink.overdue,
+li.userTask.overdue {
+	border-left: var(--task-overdue-border-left);
+	box-shadow: var(--task-shadow-inset), var(--task-overdue-shadow);
 }
 
 li.userTask .content {
@@ -43,6 +36,7 @@ li.userTask .content {
 }
 
 /* ожидает закрытия */
+span.userTaskLink.closeMe,
 li.userTask.closeMe {
 	border: var(--task-bg-closeMe-border);
 	box-shadow: var(--task-shadow-closeMe);
@@ -50,6 +44,7 @@ li.userTask.closeMe {
 }
 
 /* задача в работе*/
+span.userTaskLink.activeNow,
 li.userTask.activeNow {
 	border-left: var(--task-active-now-border-left);
 	box-shadow: var(--task-shadow-inset), var(--task-active-now-shadow);
@@ -63,11 +58,7 @@ span.userTaskLink {
 	color: var(--card-link-text);
 }
 
-span.userTaskLink.activeNow {
-	border-left: var(--task-active-now-border-left);
-	box-shadow: var(--task-shadow-inset), var(--task-active-now-shadow);
-}
-
+li.userItem.userTask.closed,
 span.userTaskLink.closed {
 	color: var(--task-text-closed);
 	border-color: var(--task-border-closed);
@@ -81,21 +72,14 @@ li.userItem.userTask.dimmedOut {
 	opacity: 60%;
 }
 
-li.userItem.userTask.closed.negative {
+li.userItem.userTask.closed.negative,
+span.userTaskLink.closed.negative {
 	color: var(--task-text-negative);
 	box-shadow: var(--task-shadow-negative);
 	background: var(--task-bg-negative);
 	background-color: var(--task-bg-negative-color);
 	border: 1px solid var(--task-border-negative);
 	text-shadow: var(--task-text-shadow-negative);
-}
-
-li.userItem.userTask.closed {
-	color: var(--task-text-closed);
-	border-color: var(--task-border-closed);
-	box-shadow: var(--task-shadow-closed);
-	text-shadow: var(--task-text-shadow-closed);
-	background: var(--task-bg-closed);
 }
 
 li.userTask .task-item-updates {

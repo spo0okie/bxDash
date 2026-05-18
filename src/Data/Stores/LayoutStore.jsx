@@ -4,6 +4,7 @@
 import 'reflect-metadata';
 import {observable, makeObservable, action, computed, observe} from 'mobx';
 import { scroller } from 'react-scroll';
+import TimeHelper from 'Helpers/TimeHelper';
 
 /**
  * Дефолты для всех персистируемых настроек раскладки.
@@ -21,6 +22,7 @@ const PREF_DEFAULTS = {
 	keepFavorites: false,          //не скрывать относящееся к избранному
 	useSplitBucket: false,         //разделить долгий ящик на три приоритета
 	sidebarWidth: 300,             //ширина sidebar (валидируется clamp'ом в setter'е)
+	currentInterval: null,         //timestamp верхнего/левого видимого периода — восстанавливается при смене layout
 };
 
 const SIDEBAR_MIN = 150;
@@ -92,6 +94,31 @@ class LayoutStore {
 		this.scrollTo('period' + lastWeek, duration);
 	}
 
+	/**
+	 * Перематывает к сохранённому currentInterval с учётом текущего layout.
+	 * Если периоды сейчас — недели (expand=false), пересчитывает сохранённый день к началу содержащей недели.
+	 * В expand=true округляет к началу дня внутри той же недели.
+	 * Длительность по умолчанию — как у scrollToday (плавная анимация для кнопки "home").
+	 */
+	scrollToCurrentInterval(duration = 1200) {
+		const target = this.currentInterval;
+		if (target == null || this.time.monday0 == null) return;
+
+		const offsetFromMonday0 = target - this.time.monday0;
+		const weekIdx = Math.floor(offsetFromMonday0 / TimeHelper.weekLen);
+		const weekStart = this.time.monday0 + weekIdx * TimeHelper.weekLen;
+
+		let periodTs;
+		if (this.expand) {
+			const dayIdx = Math.floor((target - weekStart) / TimeHelper.dayLen);
+			const clamped = Math.max(0, Math.min(6, dayIdx));
+			periodTs = weekStart + clamped * TimeHelper.dayLen;
+		} else {
+			periodTs = weekStart;
+		}
+		this.scrollTo('period' + periodTs, duration);
+	}
+
 	// === Управление модалками (не персистируется) ===
 
 	setModalVisible(visible) {
@@ -142,6 +169,7 @@ class LayoutStore {
 	setKeepPlanning(v)       { this.setPref('keepPlanning', v); }
 	setKeepFavorites(v)      { this.setPref('keepFavorites', v); }
 	setUseSplitBucket(v)     { this.setPref('useSplitBucket', v); }
+	setCurrentInterval(v)    { this.setPref('currentInterval', v); }
 
 	/** sidebarWidth имеет ОТДЕЛЬНЫЙ setter с clamp-валидацией. */
 	setSidebarWidth(value) {
@@ -163,6 +191,7 @@ class LayoutStore {
 	get keepFavorites()      { return this.prefs.get('keepFavorites'); }
 	get useSplitBucket()     { return this.prefs.get('useSplitBucket'); }
 	get sidebarWidth()       { return this.prefs.get('sidebarWidth'); }
+	get currentInterval()    { return this.prefs.get('currentInterval'); }
 
 	loadOption(name)        { return this.main.loadOption('layout.' + name); }
 	saveOption(name, value) { return this.main.saveOption('layout.' + name, value); }
@@ -209,6 +238,7 @@ class LayoutStore {
 			keepFavorites: computed,
 			useSplitBucket: computed,
 			sidebarWidth: computed,
+			currentInterval: computed,
 		});
 
 		// Авто-сохранение любых изменений prefs в куки.

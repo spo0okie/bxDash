@@ -258,6 +258,7 @@ const TaskCard = observer((props) => {
 						{ closed: task.isClosed }, //признак что закрыта
 						{ negative: task.mark === -1 }, //негативная оценка
 						{ closeMe: task.status === 4 }, //признак что требует закрытия (подтверждения)
+						{ overdue: task.deadlineRemainingMs < 0 },
 					)}
 					onMouseEnter={handleMouseEnter}
 					onMouseLeave={handleMouseLeave}

@@ -112,6 +112,10 @@
 	   в modern — через box-shadow inset top. Тема выбирает, чем рисовать. */
 	--task-active-now-border-left: 4px solid var(--task-stripe-active-now);
 	--task-active-now-shadow: none;
+
+	--task-overdue-border-left: 4px solid var(--sem-danger);
+	--task-overdue-now-shadow: none;
+
 	/* анимация closeMe — пульсация, по умолчанию выключена; modern включает */
 	--task-closeMe-animation: none;
 
