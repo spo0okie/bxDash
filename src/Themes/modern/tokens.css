@@ -453,7 +453,8 @@
 	color: var(--sem-danger-strong);
 }
 
-[data-theme="modern"] li.userTask span.deadlineCountdown.overdue {
+[data-theme="modern"] li.userTask span.deadlineCountdown.overdue,
+[data-theme="modern"] li.userTicket span.slaCountdown.overdue {
 	background: repeating-linear-gradient(
 		45deg,
 		var(--sem-danger) 0,
@@ -465,7 +466,3 @@
 	height: 100%;
 	opacity: 0.6;
 }
-
-/*[data-theme="modern"] li.userItem.hovered {
-	transform: rotateX(10deg) rotateY(-10deg);
-	}*/
