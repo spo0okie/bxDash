@@ -5,11 +5,12 @@ import LayoutStore from './LayoutStore';
 import TimeStore from './TimeStore';
 import PeriodsStore from './Periods/PeriodsStore';
 import ItemsMultiStore from './Items/ItemsMultiStore';
-import { userList, inventoryUrl, apiUrl, wsUrl, asteriskUrl, zabbixUrl, workScheduleId } from 'config.priv';
+import { userList, inventoryUrl, apiUrl, wsUrl, asteriskUrl, zabbixUrl, workScheduleId, incomingCallConfig } from 'config.priv';
 import { WsStore } from './WsStore';
 import AlertsStore from './Items/AlertsStore';
 import ThemeStore from './ThemeStore';
 import ScheduleStore from './ScheduleStore';
+import IncomingCallsStore from './IncomingCallsStore';
 
 /**
  * React-контекст со всеми стораджами приложения.
@@ -65,7 +66,10 @@ export function createStores() {
 	// тема — глобальная, нужен только main (cookies)
 	const theme = new ThemeStore(main);
 
-	return { main, time, users, layout, periods, items, ws, alerts, theme, schedule };
+	// входящие вызовы — слушают phoneStatus у current user
+	const incomingCalls = new IncomingCallsStore(main, users, layout, incomingCallConfig);
+
+	return { main, time, users, layout, periods, items, ws, alerts, theme, schedule, incomingCalls };
 }
 
 /**

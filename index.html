@@ -16,8 +16,9 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <!-- Конфигурация - загружается до основного бандла -->
-    <script src="/config.priv.js"></script>
+    <!-- Конфигурация - загружается до основного бандла.
+         Cache-busting'ом гарантируем, что правки public/config.priv.js подхватываются без hard reload. -->
+    <script>document.write('<script src="config.priv.js?v=' + Date.now() + '"><\/script>');</script>
     <script type="module" src="/src/index.jsx"></script>
   </body>
 </html>

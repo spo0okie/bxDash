@@ -4,6 +4,7 @@ import BackendSystem from './BackendSystem';
 import { bxAuthScheme } from 'Helpers/BxHelper';
 import { zabbixAuthScheme } from 'Helpers/ZabbixHelper';
 import { inventoryAuthScheme } from 'Helpers/InventoryHelper';
+import { ast22AuthScheme } from 'Helpers/Ast22Helper';
 import { ITEM_TYPE_NAMES } from 'Data/itemTypes';
 
 /**
@@ -16,6 +17,7 @@ class MainStore {
 	bx;           // BackendSystem для Bitrix
 	zabbix;       // BackendSystem для Zabbix
 	inventory;    // BackendSystem для Inventory
+	ast22;        // BackendSystem для ast22-phones (телефония)
 
 	// === Свойства, которые НЕ должны быть observable ===
 	cookies = new Cookies(null, { path: '/' });  // Работа с cookies
@@ -31,6 +33,7 @@ class MainStore {
 		this.bx = new BackendSystem('Bitrix', bxAuthScheme);
 		this.zabbix = new BackendSystem('Zabbix', zabbixAuthScheme);
 		this.inventory = new BackendSystem('Inventory', inventoryAuthScheme);
+		this.ast22 = new BackendSystem('Ast22', ast22AuthScheme);
 
 		// Явное объявление реактивных свойств (стандарт MobX проекта)
 		makeObservable(this, {
@@ -60,11 +63,11 @@ class MainStore {
     }
 
     setAsteriskUrl(url) {
-        //this.asteriskUrl=url; 
+        this.ast22.setUrl(url);
     }
 
 	setZabbixUrl(url) {
-        this.zabbix.setUrl(url); 
+        this.zabbix.setUrl(url);
     }
 
 	get hasErrors() {
@@ -82,6 +85,7 @@ class MainStore {
 		this.bx.setLoginCredentials(user,password);
 		this.zabbix.setLoginCredentials(user,password);
 		this.inventory.setLoginCredentials(user,password);
+		this.ast22.setLoginCredentials(user,password);
 		when (()=>this.bx.authStatus!=='Pending' && this.zabbix.authStatus!=='Pending' && this.inventory.authStatus!=='Pending',()=>{
 			if (this.bx.authStatus==='OK' && this.zabbix.authStatus==='OK' && this.inventory.authStatus==='OK') {
 				if (onSuccess) onSuccess();

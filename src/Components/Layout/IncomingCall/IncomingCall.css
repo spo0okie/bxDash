@@ -1,0 +1,113 @@
+.IncomingCallsStack {
+	position: fixed;
+	top: 46px; /* высота AppHeader */
+	left: 0;
+	right: 0;
+	z-index: 985; /* ниже AppHeader (990), выше дашборда */
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	pointer-events: none;
+}
+
+.IncomingCallCard {
+	pointer-events: auto;
+	background: var(--surface-card, #fff);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+	border-bottom: 1px solid var(--border-card, #ccc);
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.IncomingCallCard .header {
+	display: flex;
+	align-items: center;
+	height: 25px;
+	padding: 0 12px;
+	gap: 12px;
+	font-weight: bold;
+	background: var(--surface-incoming-call-header, #fef9e6);
+	border-bottom: 1px solid var(--border-card, #ddd);
+	flex-shrink: 0;
+}
+
+.IncomingCallCard .header .title {
+	flex-shrink: 0;
+	white-space: nowrap;
+}
+
+.IncomingCallCard .header .tabs {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	gap: 4px;
+	overflow-x: auto;
+}
+
+.IncomingCallCard .header .tabs .tab {
+	padding: 4px 10px;
+	border: 1px solid var(--border-card, #ccc);
+	border-radius: 4px 4px 0 0;
+	cursor: pointer;
+	background: var(--surface-card, #fff);
+	font-weight: normal;
+	white-space: nowrap;
+}
+
+.IncomingCallCard .header .tabs .tab.active {
+	background: var(--surface-incoming-call-header, #fef9e6);
+	border-bottom-color: transparent;
+	font-weight: bold;
+}
+
+.IncomingCallCard .header .controls {
+	display: flex;
+	gap: 4px;
+	flex-shrink: 0;
+	margin-left: auto; /* всегда справа, даже если нет вкладок */
+}
+
+.IncomingCallCard .header .controls button {
+	width: 28px;
+	height: 28px;
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	font-size: 16px;
+	line-height: 1;
+	border-radius: 4px;
+}
+
+.IncomingCallCard .header .controls button:hover {
+	background: rgba(0, 0, 0, 0.08);
+}
+
+.IncomingCallCard .body {
+	flex: 1;
+	overflow: hidden;
+	position: relative;
+}
+
+.IncomingCallCard .body .loaderOverlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--surface-card, #fff);
+	z-index: 1;
+}
+
+.IncomingCallCard .body iframe {
+	width: 100%;
+	height: 100%;
+	border: none;
+	display: block;
+}
+
+.IncomingCallCard .body .placeholder {
+	padding: 20px;
+	color: var(--text-muted, #888);
+	text-align: center;
+}

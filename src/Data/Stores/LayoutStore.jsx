@@ -23,6 +23,8 @@ const PREF_DEFAULTS = {
 	useSplitBucket: false,         //разделить долгий ящик на три приоритета
 	sidebarWidth: 300,             //ширина sidebar (валидируется clamp'ом в setter'е)
 	currentInterval: null,         //timestamp верхнего/левого видимого периода — восстанавливается при смене layout
+	incomingCallsVisible: true,    //показывать карточки входящих звонков
+	outgoingCallsVisible: true,    //показывать карточки исходящих звонков
 };
 
 const SIDEBAR_MIN = 150;
@@ -170,6 +172,8 @@ class LayoutStore {
 	setKeepFavorites(v)      { this.setPref('keepFavorites', v); }
 	setUseSplitBucket(v)     { this.setPref('useSplitBucket', v); }
 	setCurrentInterval(v)    { this.setPref('currentInterval', v); }
+	setIncomingCallsVisible(v) { this.setPref('incomingCallsVisible', v); }
+	setOutgoingCallsVisible(v) { this.setPref('outgoingCallsVisible', v); }
 
 	/** sidebarWidth имеет ОТДЕЛЬНЫЙ setter с clamp-валидацией. */
 	setSidebarWidth(value) {
@@ -192,6 +196,8 @@ class LayoutStore {
 	get useSplitBucket()     { return this.prefs.get('useSplitBucket'); }
 	get sidebarWidth()       { return this.prefs.get('sidebarWidth'); }
 	get currentInterval()    { return this.prefs.get('currentInterval'); }
+	get incomingCallsVisible() { return this.prefs.get('incomingCallsVisible'); }
+	get outgoingCallsVisible() { return this.prefs.get('outgoingCallsVisible'); }
 
 	loadOption(name)        { return this.main.loadOption('layout.' + name); }
 	saveOption(name, value) { return this.main.saveOption('layout.' + name, value); }
@@ -239,6 +245,8 @@ class LayoutStore {
 			useSplitBucket: computed,
 			sidebarWidth: computed,
 			currentInterval: computed,
+			incomingCallsVisible: computed,
+			outgoingCallsVisible: computed,
 		});
 
 		// Авто-сохранение любых изменений prefs в куки.

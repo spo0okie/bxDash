@@ -55,6 +55,12 @@ const ConnectionStates = observer(function ConnectionStates() {
 					<td className='status'>{statusItem(context.main.inventory.authStatus)}</td>
 					<td className='id'>{context.main.inventory.userId}</td>
 				</tr>
+				<tr>
+					<td>Подключение Asterisk</td>
+					<td className='status'>{statusItem(context.main.ast22.availability)}</td>
+					<td className='status'>{statusItem(context.main.ast22.authStatus)}</td>
+					<td className='id'>{context.main.ast22.userId}</td>
+				</tr>
 
 			</tbody>
 		</table>
