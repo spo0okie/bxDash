@@ -25,6 +25,9 @@ export const incomingCallConfig = {
 	maxRetries: typeof ic.maxRetries === "number" ? ic.maxRetries : 10,
 	panelHeightVh: typeof ic.panelHeightVh === "number" ? ic.panelHeightVh : 50,
 	iframeZoom: typeof ic.iframeZoom === "number" ? ic.iframeZoom : 1,
+	// Периодичность опроса callback-заявок в ast22 (мс). 0 — выключить опрос.
+	callbackPollIntervalMs:
+		typeof ic.callbackPollIntervalMs === "number" ? ic.callbackPollIntervalMs : 60000,
 	// Заглушка: пока ast22 API не готов, при ringing сразу подставляем этот caller_num,
 	// минуя реальный запрос звонка. Убрать (== null) когда телефония заработает.
 	stubCallerNum: ic.stubCallerNum ?? null,

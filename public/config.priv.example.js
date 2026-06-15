@@ -23,6 +23,7 @@ window.__CONFIG__ = {
 		maxRetries: 10,        // Максимум попыток (с retryDelayMs=500 это ~5 секунд)
 		panelHeightVh: 50,     // Высота развёрнутой карточки (vh)
 		iframeZoom: 1,         // Масштаб содержимого карточки в iframe (например 0.8 = 80%)
+		callbackPollIntervalMs: 60000, // Периодичность опроса callback-заявок в ast22 (0 — выключить)
 		stubCallerNum: null,   // Заглушка: подставлять этот caller_num вместо запроса в ast22 (для отладки до готовности API)
 	},
 

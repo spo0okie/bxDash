@@ -32,6 +32,15 @@
 	flex-shrink: 0;
 }
 
+/* Callback-заявка: иной цвет шапки и левая полоса-индикатор. */
+.IncomingCallCard.callback {
+	border-left: 4px solid var(--surface-callback-accent, #d97706);
+}
+
+.IncomingCallCard.callback .header {
+	background: var(--surface-callback-header, #fff1d6);
+}
+
 .IncomingCallCard .header .title {
 	flex-shrink: 0;
 	white-space: nowrap;

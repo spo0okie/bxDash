@@ -1,31 +1,36 @@
 import { observable, action, computed, makeObservable, reaction, runInAction, get } from 'mobx';
 
 /**
- * Карточка одного звонка (входящего или исходящего).
+ * Карточка одного звонка или callback-заявки.
+ * kind='call'     → активный звонок (входящий/исходящий из ast22 calls)
+ * kind='callback' → заявка на обратный звонок (callback_requests)
+ *
  * Pipeline: callPolling → userSearching → ready | noUsers | error.
- * Карточка добавляется в стек только после получения звонка из ast22.
+ * Карточка добавляется в стек только после получения данных от ast22.
  */
 class IncomingCall {
 	store;
-	key;                    // временный ключ карточки (myPhone + startedAt)
+	key;                    // ключ для React (kind+id или myPhone+startedAt)
 	myPhone;                // номер current user
 	startedAt;              // timestamp начала pipeline
+	kind;                   // 'call' | 'callback'
 
 	// === observable ===
 	phase = 'callPolling';  // 'callPolling' | 'userSearching' | 'ready' | 'noUsers' | 'error'
-	call = null;            // { call_uuid, caller_num, callee_num, ... } | null
-	direction = null;       // 'incoming' | 'outgoing' (определяется после получения звонка)
+	call = null;            // {call_uuid, caller_num, callee_num, ...} | callback {id, caller_num, ...}
+	direction = null;       // 'incoming' | 'outgoing' | 'callback'
 	users = [];             // [{ id, login, ename, shortName }]
 	activeUserId = null;
 	collapsed = false;
 	closed = false;
 	attempts = 0;
 
-	constructor(store, myPhone) {
+	constructor(store, myPhone, kind = 'call') {
 		this.store = store;
 		this.myPhone = myPhone;
+		this.kind = kind;
 		this.startedAt = Date.now();
-		this.key = `${myPhone}/${this.startedAt}`;
+		this.key = `${kind}/${myPhone}/${this.startedAt}`;
 
 		makeObservable(this, {
 			phase: observable,
@@ -62,16 +67,19 @@ class IncomingCall {
 	close() { this.closed = true; }
 	incAttempts() { this.attempts += 1; }
 
-	/** Номер второй стороны: для incoming — caller_num, для outgoing — callee_num. */
+	/** Номер второй стороны: для incoming/callback — caller_num, для outgoing — callee_num. */
 	get otherParty() {
 		if (!this.call) return null;
 		return this.direction === 'outgoing' ? this.call.callee_num : this.call.caller_num;
 	}
 
 	get title() {
-		if (!this.call) return 'Вызов';
-		const prefix = this.direction === 'outgoing' ? 'Исходящий вызов на' : 'Входящий вызов с';
-		let t = `${prefix} номера ${this.otherParty}`;
+		if (!this.call) return this.kind === 'callback' ? 'Обратный вызов' : 'Вызов';
+		let prefix;
+		if (this.kind === 'callback') prefix = '↩ Перезвонить на номер';
+		else if (this.direction === 'outgoing') prefix = 'Исходящий вызов на номер';
+		else prefix = 'Входящий вызов с номера';
+		let t = `${prefix} ${this.otherParty}`;
 		if (this.phase === 'noUsers') t += ' — пользователь не найден';
 		return t;
 	}
@@ -89,8 +97,10 @@ class IncomingCallsStore {
 	layout;
 	config;
 
-	cards = [];           // массив IncomingCall в порядке создания
+	cards = [];                          // массив IncomingCall в порядке создания
 	prevPhoneStatus = null;
+	dismissedCallbackIds = new Set();    // id callback-заявок которые пользователь закрыл — не показываем снова
+	callbackPollHandle = null;
 
 	constructor(main, users, layout, config) {
 		this.main = main;
@@ -122,6 +132,27 @@ class IncomingCallsStore {
 				}
 			}
 		);
+
+		// Periodic poll callback-заявок (если включено). Первый poll — как только
+		// ast22 авторизован, дальше — по интервалу из config.
+		if (config.callbackPollIntervalMs > 0) {
+			reaction(
+				() => this.main.ast22?.authStatus === 'OK' && this.currentUser?.phone,
+				ready => {
+					if (ready) {
+						this.pollCallbacks();
+						this.callbackPollHandle = setInterval(
+							() => this.pollCallbacks(),
+							config.callbackPollIntervalMs
+						);
+					} else if (this.callbackPollHandle) {
+						clearInterval(this.callbackPollHandle);
+						this.callbackPollHandle = null;
+					}
+				},
+				{ fireImmediately: true }
+			);
+		}
 	}
 
 	get currentUser() {
@@ -285,6 +316,83 @@ class IncomingCallsStore {
 			console.warn('[IncomingCalls] inventory phones/filter-by-num failed:', e.message);
 			return [];
 		}
+	}
+
+	// ====================== Callback-заявки ======================
+
+	/**
+	 * Periodic poll списка pending-заявок на обратный звонок.
+	 * Для каждой новой заявки (не в стеке и не закрытой ранее) создаёт карточку
+	 * с kind='callback'. Дедуп по id заявки.
+	 */
+	async pollCallbacks() {
+		const phone = this.currentUser?.phone;
+		if (!phone) return;
+		const list = await this.fetchCallbacks(phone);
+		if (!list.length) return;
+
+		const existingIds = new Set(
+			this.cards
+				.filter(c => c.kind === 'callback' && !c.closed)
+				.map(c => c.call?.id)
+		);
+
+		for (const cb of list) {
+			if (!cb?.id) continue;
+			if (existingIds.has(cb.id)) continue;
+			if (this.dismissedCallbackIds.has(cb.id)) continue;
+			this.spawnCallback(cb);
+		}
+	}
+
+	async fetchCallbacks(myPhone) {
+		const ast22 = this.main.ast22;
+		const params = new URLSearchParams({
+			status: 'pending',
+			callee_num: myPhone,
+		});
+		try {
+			const response = await ast22.fetch(`api/v1/callback-requests/search?${params.toString()}`);
+			if (response.status === 404) return [];
+			if (!response.ok) {
+				console.warn('[IncomingCalls] ast22 callback-requests/search returned', response.status);
+				return [];
+			}
+			const json = await response.json();
+			return Array.isArray(json?.data) ? json.data : [];
+		} catch (e) {
+			console.warn('[IncomingCalls] ast22 callback-requests/search fetch failed:', e.message);
+			return [];
+		}
+	}
+
+	/**
+	 * Создать карточку для конкретной callback-заявки и сразу запустить
+	 * поиск пользователя по caller_num (как в обычном incoming).
+	 */
+	async spawnCallback(cbRequest) {
+		const phone = this.currentUser?.phone;
+		if (!phone) return;
+		const card = new IncomingCall(this, phone, 'callback');
+		card.setCall(cbRequest, 'callback');
+		card.setPhase('userSearching');
+		this.addCard(card);
+		this.expandCard(card);
+		try {
+			await this.searchUser(card);
+		} catch (e) {
+			console.error('[IncomingCalls] callback pipeline error:', e);
+			if (!card.closed) card.setPhase('error');
+		}
+	}
+
+	/** Закрытие карточки запоминается, чтобы следующий poll не воскресил её. */
+	dismissCard(card) {
+		if (card.kind === 'callback' && card.call?.id) {
+			this.dismissedCallbackIds.add(card.call.id);
+		}
+		card.close();
+		this.removeCard(card);
 	}
 }
 

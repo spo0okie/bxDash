@@ -31,8 +31,7 @@ const IncomingCallCard = observer(({ card }) => {
 		}
 	}, [card, incomingCalls]);
 	const onClose = useCallback(() => {
-		card.close();
-		incomingCalls.removeCard(card);
+		incomingCalls.dismissCard(card);
 	}, [card, incomingCalls]);
 	const onTabClick = useCallback(
 		(id) => {
@@ -61,7 +60,10 @@ const IncomingCallCard = observer(({ card }) => {
 
 	return (
 		<div
-			className={classNames("IncomingCallCard", { collapsed: card.collapsed })}
+			className={classNames("IncomingCallCard", {
+				collapsed: card.collapsed,
+				callback: card.kind === 'callback',
+			})}
 			style={{ height: cardHeight }}
 		>
 			<div className="header">
