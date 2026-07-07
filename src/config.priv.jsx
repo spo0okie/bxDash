@@ -27,10 +27,30 @@ export const incomingCallConfig = {
 	iframeZoom: typeof ic.iframeZoom === "number" ? ic.iframeZoom : 1,
 	// Периодичность опроса callback-заявок в ast22 (мс). 0 — выключить опрос.
 	callbackPollIntervalMs:
-		typeof ic.callbackPollIntervalMs === "number" ? ic.callbackPollIntervalMs : 60000,
+		typeof ic.callbackPollIntervalMs === "number"
+			? ic.callbackPollIntervalMs
+			: 60000,
+	// Через сколько мс после ухода своего телефона в IDLE перечитать заявки
+	// (по только что завершённому звонку мог сформироваться callback). 0 — выкл.
+	callbackAfterIdleMs:
+		typeof ic.callbackAfterIdleMs === "number" ? ic.callbackAfterIdleMs : 25000,
+	// Через сколько мс после перехода своего телефона в INUSE перечитать заявки
+	// (callback мог сформироваться ещё во время проигрывания сообщения). 0 — выкл.
+	callbackAfterBusyMs:
+		typeof ic.callbackAfterBusyMs === "number" ? ic.callbackAfterBusyMs : 5000,
+	// Пояс, в котором ast22 отдаёт "голые" datetime без TZ-метки (created_at/started_at).
+	// Прод-Postgres отдаёт UTC, поэтому дефолт "+00:00". TimeHelper затем переводит
+	// в выбранный пояс отображения (МСК/локальный). Если в строке есть TZ-маркер
+	// (Z/±HH:MM) — это значение игнорируется.
+	sourceTimeOffset:
+		typeof ic.sourceTimeOffset === "string" ? ic.sourceTimeOffset : "+00:00",
 	// Заглушка: пока ast22 API не готов, при ringing сразу подставляем этот caller_num,
 	// минуя реальный запрос звонка. Убрать (== null) когда телефония заработает.
 	stubCallerNum: ic.stubCallerNum ?? null,
+	// База URL сервиса отдачи записей (http/elma365.php в ast22-phones):
+	// голосовое = <voiceBaseUrl>/<call_uuid>-voicemail.wav. Пусто — кнопка
+	// Play остаётся заглушкой.
+	voiceBaseUrl: typeof ic.voiceBaseUrl === "string" ? ic.voiceBaseUrl : "",
 };
 
 // === Конфигурация тикетов Bitrix ===

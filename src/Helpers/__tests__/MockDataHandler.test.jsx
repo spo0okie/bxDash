@@ -1,5 +1,23 @@
 // Тест для проверки работы MockDataHandler
-import MockDataHandler from '../Helpers/MockDataHandler';
+import MockDataHandler from '../MockDataHandler';
+
+// Фикстуры вместо глобального fetch-мока из setupTests (тот всегда отдаёт {})
+const fixtures = {
+  '/mocks/tasks.json': [{ id: 1, title: 'Тестовая задача' }],
+  '/mocks/zabbix.json': { triggers: [] },
+  '/mocks/jobs.json': [{ id: 1, name: 'Тестовая джоба' }],
+};
+
+beforeEach(() => {
+  global.fetch = jest.fn((url) => {
+    const data = fixtures[url];
+    return Promise.resolve({
+      ok: data !== undefined,
+      status: data !== undefined ? 200 : 404,
+      json: () => Promise.resolve(data ?? {}),
+    });
+  });
+});
 
 describe('MockDataHandler', () => {
   test('должен загружать mock данные для tasks', async () => {

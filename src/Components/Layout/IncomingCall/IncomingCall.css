@@ -41,9 +41,152 @@
 	background: var(--surface-callback-header, #fff1d6);
 }
 
+/* auto_done — диалплан распознал ответ (предположительно успех): зелёный. */
+.IncomingCallCard.autoDone {
+	border-left: 4px solid var(--surface-success-accent, #16a34a);
+}
+
+.IncomingCallCard.autoDone .header {
+	background: var(--surface-success-header, #e7f6ec);
+}
+
+.IncomingCallCard.autoDone .header .multiplier {
+	background: var(--surface-success-accent, #16a34a);
+}
+
 .IncomingCallCard .header .title {
 	flex-shrink: 0;
 	white-space: nowrap;
+}
+
+.IncomingCallCard .header .multiplier {
+	flex-shrink: 0;
+	cursor: pointer;
+	font-weight: bold;
+	padding: 1px 7px;
+	border-radius: 10px;
+	background: var(--surface-callback-accent, #d97706);
+	color: #fff;
+	font-size: 12px;
+}
+
+.IncomingCallCard .header .cardTime {
+	flex-shrink: 0;
+	font-weight: normal;
+	font-size: 12px;
+	color: var(--text-muted, #888);
+	display: inline-flex;
+	gap: 5px;
+}
+
+.IncomingCallCard .header .cardTime .elapsed {
+	font-variant-numeric: tabular-nums;
+}
+
+/* Список записей группы (callback). */
+.IncomingCallCard .recordList {
+	flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	border-bottom: 1px solid var(--border-card, #ddd);
+	max-height: 160px;
+	overflow-y: auto;
+}
+
+.IncomingCallCard .recordList .record {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 2px 12px;
+	font-size: 13px;
+	border-top: 1px solid var(--border-card, #eee);
+}
+
+.IncomingCallCard .recordList .record:first-child {
+	border-top: none;
+}
+
+.IncomingCallCard .recordList .record.voicemail {
+	background: var(--surface-voicemail-row, #f0f7ff);
+}
+
+.IncomingCallCard .recordList .record .recTime {
+	flex-shrink: 0;
+	color: var(--text-muted, #888);
+	font-variant-numeric: tabular-nums;
+}
+
+.IncomingCallCard .recordList .record .recType {
+	flex: 1;
+}
+
+.IncomingCallCard .recordList .record .playBtn,
+.IncomingCallCard .recordList .record .editBtn,
+.IncomingCallCard .recordList .record .okBtn,
+.IncomingCallCard .recordList .record .cancelBtn {
+	flex-shrink: 0;
+	width: 26px;
+	height: 22px;
+	border: 1px solid var(--border-card, #ccc);
+	border-radius: 4px;
+	background: var(--surface-card, #fff);
+	cursor: pointer;
+	line-height: 1;
+}
+
+.IncomingCallCard .recordList .record .playBtn:disabled,
+.IncomingCallCard .recordList .record .editBtn:disabled,
+.IncomingCallCard .recordList .record .okBtn:disabled,
+.IncomingCallCard .recordList .record .cancelBtn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/* Номер обратного вызова: клик — позвонить (originate через ast22). */
+.IncomingCallCard .recordList .record .recNum {
+	flex-shrink: 0;
+	font-weight: bold;
+	font-variant-numeric: tabular-nums;
+	cursor: pointer;
+}
+
+.IncomingCallCard .recordList .record .recNum:hover {
+	text-decoration: underline;
+}
+
+/* Номер изменён оператором (отличается от исходного caller_num). */
+.IncomingCallCard .recordList .record .recNum.edited {
+	color: var(--surface-callback-accent, #d97706);
+}
+
+/* Инлайн-редактирование номера. */
+.IncomingCallCard .recordList .record .recNumEdit {
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+/* Строка-плеер голосового под записью. */
+.IncomingCallCard .recordList .voicePlayer {
+	padding: 2px 12px 6px;
+	background: var(--surface-voicemail-row, #f0f7ff);
+}
+
+.IncomingCallCard .recordList .voicePlayer audio {
+	display: block;
+	width: 100%;
+	height: 30px;
+}
+
+.IncomingCallCard .recordList .record .recNumEdit input {
+	width: 130px;
+	height: 22px;
+	padding: 0 6px;
+	border: 1px solid var(--border-card, #ccc);
+	border-radius: 4px;
+	font-size: 13px;
+	font-variant-numeric: tabular-nums;
 }
 
 .IncomingCallCard .header .tabs {
@@ -92,8 +235,19 @@
 	background: rgba(0, 0, 0, 0.08);
 }
 
+.IncomingCallCard .header .controls button:disabled {
+	opacity: 0.35;
+	cursor: not-allowed;
+}
+
+.IncomingCallCard .header .controls button:disabled:hover {
+	background: transparent;
+}
+
 .IncomingCallCard .body {
-	flex: 1;
+	/* Высота задаётся инлайном (BODY_HEIGHT_PX). НЕ ставить flex:1 — flex-basis:0%
+	   перебивает height по главной оси, и без фикс-высоты карточки body схлопывается. */
+	flex: 0 0 auto;
 	overflow: hidden;
 	position: relative;
 }

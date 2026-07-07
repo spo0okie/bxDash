@@ -1,13 +1,16 @@
 // Конфигурация Jest для проекта bxDash
 export default {
 	testEnvironment: 'jsdom',
-	setupFilesAfterEnv: ['<rootDir>/src/setupTests.js'],
-	moduleNameMapping: {
+	setupFilesAfterEnv: ['<rootDir>/src/setupTests.jsx'],
+	moduleNameMapper: {
 		'^@/(.*)$': '<rootDir>/src/$1',
 		'^Components/(.*)$': '<rootDir>/src/Components/$1',
 		'^Data/(.*)$': '<rootDir>/src/Data/$1',
 		'^Helpers/(.*)$': '<rootDir>/src/Helpers/$1',
-		'^config$': '<rootDir>/src/config.priv.js',
+		'^Themes/(.*)$': '<rootDir>/src/Themes/$1',
+		'^Vendor/(.*)$': '<rootDir>/src/Vendor/$1',
+		'^config\\.priv$': '<rootDir>/src/config.priv.jsx',
+		'\\.(css|less|scss|sass)$': '<rootDir>/src/__mocks__/styleMock.js',
 	},
 	testMatch: [
 		'<rootDir>/src/**/__tests__/**/*.{js,jsx}',

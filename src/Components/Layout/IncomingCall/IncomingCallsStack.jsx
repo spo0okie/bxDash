@@ -9,7 +9,7 @@ const IncomingCallsStack = observer(() => {
 	if (!incomingCalls || incomingCalls.cards.length === 0) return null;
 	return (
 		<div className="IncomingCallsStack">
-			{incomingCalls.cards.map(card => (
+			{incomingCalls.sortedCards.map(card => (
 				<IncomingCallCard key={card.key} card={card} />
 			))}
 		</div>

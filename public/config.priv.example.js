@@ -24,7 +24,11 @@ window.__CONFIG__ = {
 		panelHeightVh: 50,     // Высота развёрнутой карточки (vh)
 		iframeZoom: 1,         // Масштаб содержимого карточки в iframe (например 0.8 = 80%)
 		callbackPollIntervalMs: 60000, // Периодичность опроса callback-заявок в ast22 (0 — выключить)
+		callbackAfterIdleMs: 5000, // Перечитать заявки через N мс после ухода телефона в IDLE (0 — выкл)
+		callbackAfterBusyMs: 3000, // Перечитать заявки через N мс после перехода телефона в INUSE (0 — выкл)
+		sourceTimeOffset: "+00:00", // Пояс "голых" datetime от ast22 (прод отдаёт UTC)
 		stubCallerNum: null,   // Заглушка: подставлять этот caller_num вместо запроса в ast22 (для отладки до готовности API)
+		voiceBaseUrl: '',      // База URL сервиса отдачи записей (голосовое = <base>/<call_uuid>-voicemail.wav); пусто — Play отключён
 	},
 
 	// === SLA / расписание ===
