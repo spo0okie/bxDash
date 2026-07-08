@@ -27,6 +27,14 @@
 	--surface-ticket-bg: url("/public/alum0.jpg");
 	--surface-favorite-icon: url("/public/fav48.png");
 
+	/* ===== Карточки входящих вызовов / callback (IncomingCall.css) ===== */
+	--surface-incoming-call-header: #fef9e6; /* шапка обычного звонка */
+	--surface-callback-header: #fff1d6; /* шапка callback-группы (pending) */
+	--surface-callback-accent: #d97706; /* полоса/множитель callback */
+	--surface-success-header: #e7f6ec; /* шапка auto_done (перезвонено) */
+	--surface-success-accent: #16a34a; /* полоса/множитель auto_done */
+	--surface-voicemail-row: #f0f7ff; /* строка голосового сообщения */
+
 	/* ===== Текст ===== */
 	--text-primary: #333;
 	--text-secondary: #666;

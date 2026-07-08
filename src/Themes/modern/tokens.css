@@ -253,6 +253,18 @@
 	--memo-shadow-closed: none;
 
 	/* =====================================================================
+	 * §12.0. INCOMING CALL / CALLBACK CARDS — тёмные шапки под светлый текст.
+	 * Дефолты в base.css — светлые (белая тема); здесь тёмные аналоги тех же
+	 * оттенков (жёлтый/янтарный/зелёный/голубой), акценты — semantic strong.
+	 * ===================================================================== */
+	--surface-incoming-call-header: #3d3a26;
+	--surface-callback-header: #46331c;
+	--surface-callback-accent: var(--sem-warning);
+	--surface-success-header: #1e3a2a;
+	--surface-success-accent: var(--sem-success);
+	--surface-voicemail-row: #263349;
+
+	/* =====================================================================
 	 * §12.1. USER CELL HEADER
 	 * ===================================================================== */
 	--user-cell-header-bg: #2a3142;

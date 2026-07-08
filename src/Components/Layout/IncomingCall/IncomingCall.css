@@ -130,6 +130,9 @@
 	border: 1px solid var(--border-card, #ccc);
 	border-radius: 4px;
 	background: var(--surface-card, #fff);
+	/* У <button> цвет не наследуется (UA-дефолт чёрный) — задаём токеном,
+	   иначе в тёмной теме глифы теряются на тёмном фоне. */
+	color: var(--text-primary, #333);
 	cursor: pointer;
 	line-height: 1;
 }
@@ -225,6 +228,7 @@
 	height: 28px;
 	border: none;
 	background: transparent;
+	color: var(--text-primary, #333); /* <button> не наследует цвет */
 	cursor: pointer;
 	font-size: 16px;
 	line-height: 1;
