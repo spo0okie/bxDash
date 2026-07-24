@@ -63,6 +63,14 @@ export const workScheduleId = config.workScheduleId || 0;
 export const ticketSlaWorkDays =
 	typeof config.ticketSlaWorkDays === "number" ? config.ticketSlaWorkDays : 2;
 
+// === Дежурный техподдержки (телефония ast22) ===
+// ID расписания техподдержки в ЛОКАЛЬНОЙ таблице schedules ast22-phones
+// (НЕ inventory_id, см. `yii schedule/list`); 0 = механизм отключён.
+export const dutyScheduleId = config.dutyScheduleId || 0;
+// Периодичность опроса дежурного (мс)
+export const dutyPollIntervalMs =
+	typeof config.dutyPollIntervalMs === "number" ? config.dutyPollIntervalMs : 60000;
+
 // === Список пользователей ===
 export const userList = config.userList || {};
 

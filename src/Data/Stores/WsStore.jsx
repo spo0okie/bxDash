@@ -132,7 +132,9 @@ export class WsStore {
 
 	/**
 	 * Собирает map обработчиков WS-событий.
-	 * Системные события (ping, wsConnected, techSupport*, phonesStatusUpdate) — заданы явно.
+	 * Системные события (ping, wsConnected, techSupportTicketer, phonesStatusUpdate) — заданы явно.
+	 * Дежурный по телефону больше НЕ приходит по WS (событие techSupportShift со старой
+	 * телефонии упразднено) — его опрашивает DutyStore из ast22 (GET /api/v1/duty).
 	 * События обновления элементов (taskUpdate/jobUpdate/...) — генерируются из реестра ITEM_TYPES,
 	 * чтобы добавление нового типа элемента сводилось к одной записи в реестре.
 	 */
@@ -147,9 +149,6 @@ export class WsStore {
 			},
 			techSupportTicketer: data => {
 				if (this.users) this.users.setDutyTicketer(data.user);
-			},
-			techSupportShift: data => {
-				if (this.users) this.users.setDutyPhone(data.phone);
 			},
 			phonesStatusUpdate: data => {
 				// data.data: { phone1: state1, phone2: state2, ... }

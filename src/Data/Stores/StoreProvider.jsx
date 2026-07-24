@@ -5,12 +5,13 @@ import LayoutStore from './LayoutStore';
 import TimeStore from './TimeStore';
 import PeriodsStore from './Periods/PeriodsStore';
 import ItemsMultiStore from './Items/ItemsMultiStore';
-import { userList, inventoryUrl, apiUrl, wsUrl, asteriskUrl, zabbixUrl, workScheduleId, incomingCallConfig } from 'config.priv';
+import { userList, inventoryUrl, apiUrl, wsUrl, asteriskUrl, zabbixUrl, workScheduleId, dutyScheduleId, dutyPollIntervalMs, incomingCallConfig } from 'config.priv';
 import { WsStore } from './WsStore';
 import AlertsStore from './Items/AlertsStore';
 import ThemeStore from './ThemeStore';
 import ScheduleStore from './ScheduleStore';
 import IncomingCallsStore from './IncomingCallsStore';
+import DutyStore from './DutyStore';
 
 /**
  * React-контекст со всеми стораджами приложения.
@@ -48,6 +49,9 @@ export function createStores() {
 	const users = new UsersStore(main);
 	users.init(userList);
 
+	// дежурный техподдержки — опрашивается из телефонии ast22, кладётся в users.dutyPhone
+	const duty = new DutyStore(main, users, dutyScheduleId, dutyPollIntervalMs);
+
 	// раскладка зависит от настроек, времени и пользователей
 	const layout = new LayoutStore(main, time, users);
 
@@ -69,7 +73,7 @@ export function createStores() {
 	// входящие вызовы — слушают phoneStatus у current user
 	const incomingCalls = new IncomingCallsStore(main, users, layout, incomingCallConfig);
 
-	return { main, time, users, layout, periods, items, ws, alerts, theme, schedule, incomingCalls };
+	return { main, time, users, layout, periods, items, ws, alerts, theme, schedule, duty, incomingCalls };
 }
 
 /**

@@ -37,7 +37,8 @@ class UsersStore {
 	/** @type {number|null} ID текущего авторизованного пользователя */
 	current = null;
 
-	/** @type {number|null} ID дежурного по телефону */
+	/** @type {number|null} Номер телефона дежурного техподдержки (null = нерабочее время).
+	 *  Источник — DutyStore (опрос ast22 GET /api/v1/duty). */
 	dutyPhone = null;
 
 	/** @type {number|null} ID дежурного по тикетам */
@@ -241,11 +242,11 @@ class UsersStore {
 
 	/**
 	 * Устанавливает дежурного по телефону
-	 * @param {number|null} id - ID пользователя
+	 * @param {number|null} phone - Номер телефона дежурного (null = нерабочее время)
 	 */
-	setDutyPhone(id) {
-		if (this.dutyPhone === id) return;
-		this.dutyPhone = id;
+	setDutyPhone(phone) {
+		if (this.dutyPhone === phone) return;
+		this.dutyPhone = phone;
 	}
 
 	/**

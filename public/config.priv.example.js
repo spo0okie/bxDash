@@ -35,6 +35,10 @@ window.__CONFIG__ = {
 	workScheduleId: 0,     // ID рабочего расписания в Inventory (0 = отключено)
 	ticketSlaWorkDays: 2,  // SLA для тикетов в рабочих днях
 
+	// === Дежурный техподдержки ===
+	dutyScheduleId: 4,       // ID расписания техподдержки в ast22-phones (локальная таблица schedules, НЕ inventory_id; 0 = отключено)
+	dutyPollIntervalMs: 60000, // Периодичность опроса дежурного через GET /api/v1/duty (мс)
+
 	// === Список пользователей ===
 	// Массив объектов с информацией о пользователях
 	userList: [],
