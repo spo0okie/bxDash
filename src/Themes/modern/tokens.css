@@ -264,6 +264,16 @@
 	--surface-success-accent: var(--sem-success);
 	--surface-voicemail-row: #263349;
 
+	/* Всплывающие уведомления — поверхность elevated, акценты semantic */
+	--toast-bg: var(--surface-card-elevated);
+	--toast-error-bg: #4a2327;
+	--toast-text: var(--text-primary);
+	--toast-shadow: var(--shadow-modal);
+	--toast-success: var(--sem-success);
+	--toast-info: var(--sem-info);
+	--toast-warning: var(--sem-warning);
+	--toast-error: var(--sem-danger);
+
 	/* =====================================================================
 	 * §12.1. USER CELL HEADER
 	 * ===================================================================== */

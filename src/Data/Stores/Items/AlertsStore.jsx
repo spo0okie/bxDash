@@ -15,7 +15,7 @@ class AlertsStore {
 
 	service = observable.map(); // Changed to observable.map
     support = observable.map(); // Changed to observable.map
-	
+
 	// Состояние фиксации тултипа: { username, type, severity } или null
 	pinnedAlertGroup = null;
 
@@ -44,11 +44,11 @@ class AlertsStore {
 		this.pinnedAlertGroup = group;
 	}
 
-    //загрузить задачи из битрикс с отметки времени from и до отметки to
+    //загрузить алерты заббикс
     loadItems() {
 		console.log('loading ' + this.type + 's');
 		const request={
-			output: 'extend',
+			output: ['eventid','objectid','name','severity'],
       		//value: 1,
 			source: 0,
 			"tags": [
@@ -60,11 +60,13 @@ class AlertsStore {
 			suppressed: false,
 			evaltype:2,
       		selectTags: 'extend',
-			limit:1000,
+			sortfield: 'eventid',
+			sortorder: 'DESC',	//при упоре в limit теряем старые события, а не свежие
+			limit:2000,
 		};
-        
+
 		this.setLoading(true);
-		when(()=>this.main.zabbix.authStatus==='OK',()=>{ 
+		when(()=>this.main.zabbix.authStatus==='OK',()=>{
 			this.main.zabbix.fetch('api_jsonrpc.php',{body:JSON.stringify({jsonrpc: '2.0', method: 'problem.get', params: request, id: 1})})
 			.then((response) => response.json())
 			.then((data) => {
@@ -76,11 +78,9 @@ class AlertsStore {
 				});
 
 				const triggerRequest = {
-					output: 'extend',//['triggerid', 'description','status','value','state','error'],
+					output: ['triggerid','status','state','value'],
 					triggerids: Array.from(triggerIds),
-					selectHosts: 'extend',//['hostid', 'name', 'status'],
-					selectItems: 'extend',//['state','status'],
-					selectDependencies: 'extend',
+					selectHosts: ['hostid','name','status'],
 					skipDependent: true,
 				};
 
@@ -92,8 +92,8 @@ class AlertsStore {
 							triggerMap.set(trigger.triggerid, trigger);
 						});
 
-						// Collect all current event IDs
-						const currentEventIds = new Set(data.result.map(event => event.eventid));
+						// Events that passed all the filtering checks — only these must stay in storage
+						const activeEventIds = new Set();
 
 						// Process events and update storage
 						data.result.forEach(event => {
@@ -104,22 +104,24 @@ class AlertsStore {
 									if (trigger.hosts[0].status === '1') return; //unmonitored host
 									event.host = trigger.hosts[0].name; // Add host attribute
 								}
-								
+
 								if (trigger.status === '1') return; // Skip if trigger is not enabled
 								if (trigger.state === '1') return; // Skip if trigger is unknown state
 								if (trigger.value !== '1') return; // Skip if trigger is not problem
 							} else return;
+
+							activeEventIds.add(event.eventid);
 
 							const servicemanTag = event.tags.find(tag => tag.tag === 'serviceman');
 							const nodeServiceTag = event.tags.find(tag => tag.tag === 'node-service');
 							const supportTeamTag = event.tags.find(tag => tag.tag === 'supportteam');
 							const nodeSupportTag = event.tags.find(tag => tag.tag === 'node-support');
 
-							const serviceKeys = servicemanTag ? 
-								(servicemanTag.value ? servicemanTag.value.split(/[\s,]+/) : []): 
+							const serviceKeys = servicemanTag ?
+								(servicemanTag.value ? servicemanTag.value.split(/[\s,]+/) : []):
 								(nodeServiceTag?.value ? nodeServiceTag.value.split(/[\s,]+/) : []);
-							const supportKeys = supportTeamTag ? 
-								(supportTeamTag.value ? supportTeamTag.value.split(/[\s,]+/) : []): 
+							const supportKeys = supportTeamTag ?
+								(supportTeamTag.value ? supportTeamTag.value.split(/[\s,]+/) : []):
 								(nodeSupportTag?.value ? nodeSupportTag.value.split(/[\s,]+/) : []);
 
 							serviceKeys.forEach(serviceKey => {
@@ -151,7 +153,7 @@ class AlertsStore {
 						// Remove closed problems from service storage
 						this.service.forEach((serviceMap, serviceKey) => {
 							serviceMap.forEach((_, eventId) => {
-								if (!currentEventIds.has(eventId)) {
+								if (!activeEventIds.has(eventId)) {
 									serviceMap.delete(eventId);
 								}
 							});
@@ -163,7 +165,7 @@ class AlertsStore {
 						// Remove closed problems from support storage
 						this.support.forEach((supportMap, supportKey) => {
 							supportMap.forEach((_, eventId) => {
-								if (!currentEventIds.has(eventId)) {
+								if (!activeEventIds.has(eventId)) {
 									supportMap.delete(eventId);
 								}
 							});
@@ -183,11 +185,11 @@ class AlertsStore {
 			.catch(error=>{
 				console.error(error);
 				this.setLoading(false);
-			});	
+			});
 		})
 		setTimeout(()=>this.loadItems(),15000);
     }
-    
+
 }
 
 export default AlertsStore;

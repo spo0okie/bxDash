@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import ItemsStore from './ItemsStore';
 import { get, values, has} from 'mobx';
+import notify from 'Helpers/Notify';
 
 
 class ItemsMultiStore {
@@ -244,7 +245,9 @@ class ItemsMultiStore {
 				console.log(e.key.split(':'));
 				const userId=Number(e.key.split(':')[1]);
 				console.log(userId);
-				task.update({ user: userId }, true);
+				const userName = get(this.users.items, userId)?.name ?? ('пользователь ' + userId);
+				const label = task.label;
+				task.update({ user: userId }, true, () => notify.success('Ответственный изменён: ' + userName, { title: label }));
 				return;
 			}
 			switch(e.key) {

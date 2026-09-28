@@ -2,6 +2,7 @@ import { attachClosestEdge, extractClosestEdge} from '@atlaskit/pragmatic-drag-a
 import { draggable,	dropTargetForElements} from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import ArrayHelper from './ArrayHelper';
+import notify from './Notify';
 
 
 /**
@@ -218,7 +219,13 @@ export function dashItemDragLogic(dropData,ref,setClosestEdge) {
 				console.log('drag complete');
 				setCell(null);                          //гасим ячейку
 				dropData.item.setDragging(false);       //говорим что закончили тащить элемент
-				dashItemsDrop(dropData.item,location);  //обрабатываем бросок
+				try {
+					dashItemsDrop(dropData.item,location);  //обрабатываем бросок
+				} catch (error) {
+					//исключения из onDrop библиотека глотает молча — выводим явно
+					console.error(error);
+					notify.error(notify.describe(error), { title: 'Ошибка при переносе: ' + dropData.item.label });
+				}
 			},
 		}),
 			

@@ -150,11 +150,34 @@ class router
 		
 		// создаем контроллер
 		$controller = new $controller_name;
-		if(method_exists($controller, $action_name))
-			$controller->$action_name();
-		else
+		if(!method_exists($controller, $action_name))
 			router::errorNoAction($action_name);
-	
+
+		// любое исключение (в т.ч. TasksException битрикса: нет прав и т.п.) отдаём фронту JSON'ом,
+		// а не HTML-трейсом — фронт покажет текст ошибки во всплывающем уведомлении
+		try {
+			$controller->$action_name();
+		} catch (\Throwable $e) {
+			error_log('bxDash '.$controller_name.'::'.$action_name.': '.get_class($e).': '.$e->getMessage());
+			router::haltJson(static::exceptionMessage($e), 500, ['class' => get_class($e)]);
+		}
+	}
+
+	/**
+	 * Человекочитаемый текст исключения.
+	 * Старый API задач битрикса (CTaskItem) кладёт в message сериализованный массив ошибок.
+	 */
+	static function exceptionMessage($e) {
+		$msg = $e->getMessage();
+		$errors = @unserialize($msg, ['allowed_classes' => false]);
+		if (is_array($errors)) {
+			$texts = [];
+			foreach ($errors as $err)
+				$texts[] = is_array($err) ? ($err['text'] ?? $err['TEXT'] ?? json_encode($err, JSON_UNESCAPED_UNICODE)) : (string)$err;
+			if ($texts) $msg = implode("\n", $texts);
+		}
+		if ($msg === '' || $msg === null) $msg = get_class($e);
+		return $msg;
 	}
 
 	function errorNoClass($ctl)
@@ -177,8 +200,9 @@ class router
 			'error'=>$text
 		];
 		if ($info) $output['info']=$info;
-		echo json_encode($output);
+		// код ответа — до вывода тела, иначе заголовки уже могут быть отправлены
 		http_response_code($code);
+		echo json_encode($output, JSON_UNESCAPED_UNICODE);
 		exit();
 	}
 

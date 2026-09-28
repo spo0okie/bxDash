@@ -12,6 +12,8 @@ import ThemeStore from './ThemeStore';
 import ScheduleStore from './ScheduleStore';
 import IncomingCallsStore from './IncomingCallsStore';
 import DutyStore from './DutyStore';
+import NotificationsStore from './NotificationsStore';
+import notify from 'Helpers/Notify';
 
 /**
  * React-контекст со всеми стораджами приложения.
@@ -31,6 +33,11 @@ export const StoreContext = createContext(null);
  * из теста, который хочет получить чистый стек с моками.
  */
 export function createStores() {
+	// уведомления — самыми первыми, чтобы остальные могли сообщать об ошибках уже при инициализации.
+	// Инжектим в хелпер notify — он доступен и из моделей, где нет React-контекста.
+	const notifications = new NotificationsStore();
+	notify.setStore(notifications);
+
 	// настройки инициализируем первыми, т.к. они ни от чего не зависят
 	const main = new MainStore();
 	main.setInventoryUrl(inventoryUrl);
@@ -73,7 +80,7 @@ export function createStores() {
 	// входящие вызовы — слушают phoneStatus у current user
 	const incomingCalls = new IncomingCallsStore(main, users, layout, incomingCallConfig);
 
-	return { main, time, users, layout, periods, items, ws, alerts, theme, schedule, duty, incomingCalls };
+	return { main, time, users, layout, periods, items, ws, alerts, theme, schedule, duty, incomingCalls, notifications };
 }
 
 /**

@@ -94,33 +94,24 @@ class TicketItem extends DashItem {
 		this.setUpdating(true);
 
 		// Используем стандартный механизм но с кастомным URL и параметрами
-		this.context.main.bx
-			.fetch(this.type + "/create/" + this.id, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(ticketParams),
-			})
-			.then((response) => response.json())
+		this.bxJson(this.type + "/create/" + this.id, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(ticketParams),
+		})
 			.then((data) => {
-				if (data.id !== undefined && data.id) {
-					const id = Number(data.id);
-					// Стандартная логика: загружаем новый, удаляем временный
-					this.list.loadItem(id, () => {
-						this.list.deleteItem(this);
-					});
-					this.list.broadcastUpdate(id);
-					if (onSuccess !== null) onSuccess();
-				} else {
-					this.setUpdating(false);
-					this.alertItem();
-					if (onFail !== null) onFail();
-				}
+				if (!data.id) throw new Error("Сервер не вернул id заявки");
+				const id = Number(data.id);
+				// Стандартная логика: загружаем новый, удаляем временный
+				this.list.loadItem(id, () => {
+					this.list.deleteItem(this);
+				});
+				this.list.broadcastUpdate(id);
+				if (onSuccess !== null) onSuccess();
 			})
 			.catch((error) => {
-				this.setUpdating(false);
-				this.alertItem();
+				this.reportFail("создание", error);
 				if (onFail !== null) onFail();
-				console.error("Error creating ticket:", error);
 			});
 	}
 

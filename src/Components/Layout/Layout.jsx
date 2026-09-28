@@ -11,6 +11,7 @@ import Sidebar from "./Sidebar/Sidebar";
 import MemoCell from "./Sidebar/MemoCell";
 import Modals from "./Modals";
 import IncomingCallsStack from "./IncomingCall/IncomingCallsStack";
+import NotificationsStack from "./Notifications/NotificationsStack";
 import CalendarGrid from "./CalendarGrid";
 import RightPaneBucket from "./RightPaneBucket";
 import { useGlobalShortcuts } from "./useGlobalShortcuts";
@@ -46,6 +47,7 @@ const Layout = observer(() => {
 
 			<Modals />
 			<IncomingCallsStack />
+			<NotificationsStack />
 
 			<AppHeader />
 			<TaskSearch />

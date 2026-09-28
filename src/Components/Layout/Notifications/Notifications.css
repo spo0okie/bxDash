@@ -1,0 +1,96 @@
+.NotificationsStack {
+	position: fixed;
+	right: 12px;
+	bottom: 12px;
+	z-index: 1100; /* выше модалок и AppHeader (990) — ошибка важнее */
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 6px;
+	/* явная ширина: у fixed-контейнера "по содержимому" width:100% детей схлопывается */
+	width: 420px;
+	max-width: calc(100vw - 24px);
+	pointer-events: none;
+}
+
+.Notification {
+	pointer-events: auto;
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 8px 6px 8px 10px;
+	background: var(--toast-bg);
+	color: var(--toast-text);
+	border-left: 4px solid var(--toast-accent);
+	border-radius: var(--radius-md, 4px);
+	box-shadow: var(--toast-shadow);
+	font-size: var(--font-size-md, 13px);
+	line-height: 1.35;
+	animation: notificationIn 0.18s ease-out;
+}
+
+.Notification.success { --toast-accent: var(--toast-success); }
+.Notification.info    { --toast-accent: var(--toast-info); }
+.Notification.warning { --toast-accent: var(--toast-warning); }
+.Notification.error   { --toast-accent: var(--toast-error); background: var(--toast-error-bg); }
+
+.Notification .icon {
+	flex-shrink: 0;
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	background: var(--toast-accent);
+	color: #fff;
+	font-size: 11px;
+	font-weight: bold;
+	line-height: 18px;
+	text-align: center;
+}
+
+.Notification .content {
+	flex: 1;
+	min-width: 0;
+	/* текст ошибки бывает длинным и без пробелов (URL, stack) */
+	overflow-wrap: anywhere;
+	white-space: pre-line;
+	max-height: 12em;
+	overflow-y: auto;
+}
+
+.Notification .title {
+	font-weight: var(--font-weight-bold, 700);
+}
+
+.Notification .time {
+	flex-shrink: 0;
+	color: var(--text-muted, #999);
+	font-size: var(--font-size-sm, 11px);
+	font-variant-numeric: tabular-nums;
+	padding-top: 1px;
+}
+
+.Notification .close {
+	flex-shrink: 0;
+	width: 20px;
+	height: 20px;
+	border: none;
+	border-radius: 3px;
+	background: transparent;
+	color: var(--toast-text); /* <button> не наследует цвет */
+	font-size: 16px;
+	line-height: 1;
+	cursor: pointer;
+	opacity: 0.6;
+}
+
+.Notification .close:hover {
+	opacity: 1;
+	background: rgba(127, 127, 127, 0.2);
+}
+
+@keyframes notificationIn {
+	from { opacity: 0; transform: translateY(8px); }
+	to   { opacity: 1; transform: none; }
+}

@@ -1,6 +1,16 @@
-import { observable, action, makeObservable } from 'mobx';
+import { observable, action, makeObservable, get } from 'mobx';
 import TimeHelper from "Helpers/TimeHelper";
+import notify from "Helpers/Notify";
 import RelativesMixin from './Mixins/RelativesMixin';
+
+/** Человеческие названия типов — для текстов уведомлений */
+const TYPE_LABELS = {
+	task: 'Задача',
+	job: 'Работа',
+	ticket: 'Заявка',
+	plan: 'План',
+	memo: 'Заметка',
+};
 
 export default class DashItem {
     id;						//id внутри класса элементов (id задачи, заявки, работы)
@@ -177,6 +187,44 @@ export default class DashItem {
 		return this;
 	}
 
+	/** Подпись элемента для уведомлений: "Задача 123" / "Задача (новая)" */
+	get label() {
+		return (TYPE_LABELS[this.type] ?? this.type) + (this.isNew ? ' (новая)' : ' ' + this.id);
+	}
+
+	/**
+	 * Запрос к бэку Bitrix, возвращающий распарсенный JSON.
+	 * Бросает Error с человекочитаемым текстом, если: HTTP-ошибка, ответ не JSON
+	 * (например HTML PHP fatal), или бэк вернул {result:'error', error:...}.
+	 */
+	async bxJson(endpoint, options = {}) {
+		const response = await this.context.main.bx.fetch(endpoint, options);
+		const raw = await response.text();
+		let data;
+		try {
+			data = JSON.parse(raw);
+		} catch (e) {
+			throw new Error((response.ok ? 'Некорректный ответ сервера: ' : 'HTTP ' + response.status + ': ') + notify.describe(raw));
+		}
+		if (!response.ok || data?.result === 'error' || data?.error) {
+			throw new Error(notify.describe(data));
+		}
+		return data;
+	}
+
+	/**
+	 * Общая реакция на неудачную операцию с бэком: снять спиннер, мигнуть карточкой,
+	 * показать красное уведомление с причиной.
+	 * @param {string} action что делали ("сохранение", "удаление"...)
+	 * @param {*} error Error / ответ бэка / текст
+	 */
+	reportFail(action, error) {
+		this.setUpdating(false);
+		this.alertItem();
+		console.log(error);
+		notify.error(notify.describe(error), { title: this.label + ': ' + action + ' не удалось' });
+	}
+
 
 	//перечитать инфу из бэка
 	reload() {
@@ -232,37 +280,32 @@ export default class DashItem {
 		this.setUpdating(true);
 
 		//сохраняем новые значения
-		this.context.main.bx.fetch(this.type + (this.isNew ? '/create/' : '/update/') + this.id, {
+		const wasNew = this.isNew;
+		this.bxJson(this.type + (this.isNew ? '/create/' : '/update/') + this.id, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(params)
 		})
-			.then((response) => response.json())
 			.then((data) => {
-				if (data.id !== undefined && data.id) {
-					const id = Number(data.id);
-					if (id !== this.id) {	//сменился ID (новый элемент изначально имеет фейковый ID, потом меняет на реальный)
-						//загружаем новый, после загрузки удаляем себя (т.к. временный с фейковым ID)
-						this.list.loadItem(id, () => {this.list.deleteItem(this) });
-						//оповещаем что надо перечитать новый элемент
-						this.list.broadcastUpdate(id);
-					} else {
-						this.reload();			//перечитываем себя из бэка
-						this.broadcastUpdate();	//говорим всем перечитать
-					}
-					if (onSuccess!==null) onSuccess();
+				if (!data.id) throw new Error('Сервер не вернул id: ' + notify.describe(data));
+				const id = Number(data.id);
+				if (id !== this.id) {	//сменился ID (новый элемент изначально имеет фейковый ID, потом меняет на реальный)
+					//загружаем новый, после загрузки удаляем себя (т.к. временный с фейковым ID)
+					this.list.loadItem(id, () => {this.list.deleteItem(this) });
+					//оповещаем что надо перечитать новый элемент
+					this.list.broadcastUpdate(id);
 				} else {
-					this.setUpdating(false);
-					this.alertItem();
-					if (onFail !== null) onFail();
-					console.log(data);
+					this.reload();			//перечитываем себя из бэка
+					this.broadcastUpdate();	//говорим всем перечитать
 				}
+				if (onSuccess!==null) onSuccess();
 			})
 			.catch((error) => {
-				this.setUpdating(false);
-				this.alertItem();
+				this.reportFail(wasNew ? 'создание' : 'сохранение', error);
+				//локально поля уже поменяны (оптимистично) — откатываемся к состоянию бэка,
+				//иначе карточка "как будто" сохранилась до следующей перезагрузки
+				if (!wasNew) this.reload();
 				if (onFail !== null) onFail();
-				console.log(error)
 			});
 		return false;
 	}
@@ -273,37 +316,31 @@ export default class DashItem {
 		else {
 			this.setUpdating(true);
 			//удаляем в бэке
-			this.context.main.bx.fetch(this.type + '/delete/' + this.id)
-				.then((response) => response.json())
+			this.bxJson(this.type + '/delete/' + this.id)
 				.then((data) => {
-					if (data.result !== undefined && data.result==='ok') {
-						this.broadcastRemove();
-						this.list.deleteItem(this);
-					} else {
-						this.setUpdating(false);
-						this.alertItem();
-						console.log(data);
-					}
+					if (data.result !== 'ok') throw new Error(notify.describe(data));
+					this.broadcastRemove();
+					this.list.deleteItem(this);
 				})
-				.catch((error) => {
-					this.setUpdating(false);
-					this.alertItem();
-					console.log(error)
-				});
+				.catch((error) => this.reportFail('удаление', error));
 		}
 	}
 
 
 	//подтвердить новые параметры ячейки (вызывается после d-n-d в другое место) и сохранить их
 	movePosition(params) {
-		let confirm = [];
+		const confirm = [];	//вопрос перед сохранением
+		const done = [];	//что сообщить после успешного сохранения
 
 		//смена крайнего срока
 		if (params.deadline !== undefined && params.deadline !== this.deadline) {
 			if (params.deadline === null) {
 				confirm.push("Срок выполнения убираем (в долгий ящик)");
+				done.push("Срок выполнения убран (в долгий ящик)");
 			} else {
-				confirm.push("Срок выполнения на " + TimeHelper.strDateTimeHumanLong(params.deadline));
+				const str = TimeHelper.strDateTimeHumanLong(params.deadline);
+				confirm.push("Срок выполнения на " + str);
+				done.push("Срок выполнения: " + str);
 			}
 		}
 
@@ -311,26 +348,35 @@ export default class DashItem {
 		if (params.startDatePlan !== undefined && params.startDatePlan !== this.startDatePlan) {
 			if (params.startDatePlan === null) {
 				confirm.push("Запланировано: убираем (в долгий ящик)");
+				done.push("Плановая дата убрана (в долгий ящик)");
 			} else {
-				confirm.push("Запланировано на " + TimeHelper.strDateTimeHumanLong(params.startDatePlan));
+				const str = TimeHelper.strDateTimeHumanLong(params.startDatePlan);
+				confirm.push("Запланировано на " + str);
+				done.push("Запланировано на " + str);
 			}
 		}
 
 		//смена ответственного
 		if (params.user !== this.user) {
-			//console.log(this);
-			const user = get(this.context.users.items,params.user);
-			confirm.push("Выставляем ответственным " + user.name);
+			const user = get(this.context.users.items, params.user);
+			const name = user?.name ?? ('пользователь ' + params.user);
+			confirm.push("Выставляем ответственным " + name);
+			done.push("Ответственный изменён: " + name);
 		}
 
 		if (
-			!this.confirmMove 
-			|| 
-			!confirm.length 
+			!this.confirmMove
+			||
+			!confirm.length
 			||
 			window.confirm(confirm.join("\n"))
 		) {
-			this.update(params,true);
+			//простую пересортировку внутри ячейки не озвучиваем — это шум
+			const label = this.label;
+			const onSuccess = done.length
+				? () => notify.success(done.join("\n"), { title: label })
+				: null;
+			this.update(params, true, onSuccess);
 		}
 	}
 

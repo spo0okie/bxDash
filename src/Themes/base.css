@@ -35,6 +35,16 @@
 	--surface-success-accent: #16a34a; /* полоса/множитель auto_done */
 	--surface-voicemail-row: #f0f7ff; /* строка голосового сообщения */
 
+	/* ===== Всплывающие уведомления (Notifications.css) ===== */
+	--toast-bg: #ffffff;
+	--toast-error-bg: #fff1f0;
+	--toast-text: #333;
+	--toast-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+	--toast-success: #16a34a;
+	--toast-info: #1890ff;
+	--toast-warning: #d97706;
+	--toast-error: #dc2626;
+
 	/* ===== Текст ===== */
 	--text-primary: #333;
 	--text-secondary: #666;

@@ -571,10 +571,12 @@ class IncomingCallsStore {
 	async originateCall(toNum) {
 		const from = this.currentUser?.phone;
 		if (!from) throw new Error('У текущего пользователя не задан внутренний номер');
+		const to = dialableNum(toNum);
+		if (!to) throw new Error(`Номер ${toNum} нельзя набрать`);
 		return (await this.ast22Json('api/v1/calls/originate', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ from, to: toNum }),
+			body: JSON.stringify({ from, to }),
 		})).data;
 	}
 
@@ -586,10 +588,29 @@ class IncomingCallsStore {
 		const response = await this.main.ast22.fetch(url, options);
 		const json = await response.json().catch(() => null);
 		if (!response.ok || !json?.success) {
-			throw new Error(json?.error?.message || `Ошибка запроса (HTTP ${response.status})`);
+			// 422 от ast22: {error:{message:'Ошибка валидации', details:{field:[...]}}}
+			// — общий message неинформативен, добавляем тексты по полям.
+			const details = json?.error?.details;
+			const detailText = details && typeof details === 'object'
+				? Object.values(details).flat().join('; ')
+				: '';
+			const msg = [json?.error?.message || json?.message, detailText].filter(Boolean).join(': ');
+			throw new Error(msg || `Ошибка запроса (HTTP ${response.status})`);
 		}
 		return json;
 	}
+}
+
+/**
+ * Номер → вид, пригодный для набора через ast22 originate (только цифры).
+ * Российский +7XXXXXXXXXX / 7XXXXXXXXXX → 8XXXXXXXXXX — так номер набирает
+ * оператор с аппарата, и так его сопоставляет с заявкой диалплан
+ * (mark_callback_attempted нормализует 7/8). Прочее — просто без не-цифр.
+ */
+function dialableNum(num) {
+	const digits = String(num || '').replace(/\D/g, '');
+	if (digits.length === 11 && digits[0] === '7') return '8' + digits.slice(1);
+	return digits.length >= 2 ? digits : '';
 }
 
 function mapInventoryUser(data) {
