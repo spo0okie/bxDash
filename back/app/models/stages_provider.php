@@ -65,7 +65,9 @@ abstract class stages_provider {
 
 	/**
 	 * Стадии пользователя по возрастанию SORT. Если стадий нет — создаёт стадию по умолчанию.
-	 * @return array[] строки вида [ID, USER_ID, TITLE, SORT, COLOR, IS_DEFAULT]
+	 * @return array[] строки вида [ID, USER_ID, TITLE, SORT, COLOR, IS_DEFAULT, STACKED]
+	 *   STACKED = 'Y' — столбец стоит на доске ПОД предыдущим (по SORT), в одной вертикальной стопке с ним;
+	 *   'N' — начинает новую стопку. У первого столбца признак не имеет смысла.
 	 */
 	abstract public function getStages($userId);
 
@@ -84,8 +86,12 @@ abstract class stages_provider {
 	 */
 	abstract public function deleteStage($id, $moveToId = null);
 
-	/** Переписать порядок стадий пользователя: $idsInOrder — id слева направо */
-	abstract public function reorderStages($userId, array $idsInOrder);
+	/**
+	 * Переписать порядок стадий пользователя: $idsInOrder — id слева направо (внутри стопки — сверху вниз).
+	 * $stackedIds — id стадий, стоящих под предыдущей; если передан (в т.ч. пустой массив), признак STACKED
+	 * переписывается у ВСЕХ стадий пользователя; null — признак не трогаем.
+	 */
+	abstract public function reorderStages($userId, array $idsInOrder, $stackedIds = null);
 
 	/**
 	 * Привязки пачки элементов одного типа.

@@ -61,6 +61,7 @@ class stages_provider_table extends stages_provider {
 			'SORT' => (int)$row['SORT'],
 			'COLOR' => ($row['COLOR'] === null || $row['COLOR'] === '') ? null : (string)$row['COLOR'],
 			'IS_DEFAULT' => $row['IS_DEFAULT'] === 'Y' ? 'Y' : 'N',
+			'STACKED' => (isset($row['STACKED']) && $row['STACKED'] === 'Y') ? 'Y' : 'N',
 		];
 	}
 
@@ -73,6 +74,7 @@ class stages_provider_table extends stages_provider {
 				SORT INT NOT NULL DEFAULT 100,
 				COLOR VARCHAR(7) NULL,
 				IS_DEFAULT CHAR(1) NOT NULL DEFAULT 'N',
+				STACKED CHAR(1) NOT NULL DEFAULT 'N',
 				PRIMARY KEY (ID),
 				INDEX ix_bxdash_stage_user (USER_ID, SORT)
 			)"
@@ -87,11 +89,16 @@ class stages_provider_table extends stages_provider {
 				INDEX ix_bxdash_item_stage_stage (STAGE_ID)
 			)"
 		);
+
+		// таблица могла быть создана до появления стопок — доращиваем колонку
+		$res = $this->query("SHOW COLUMNS FROM " . static::T_STAGE . " LIKE 'STACKED'");
+		if (!$res->Fetch())
+			$this->query("ALTER TABLE " . static::T_STAGE . " ADD STACKED CHAR(1) NOT NULL DEFAULT 'N'");
 	}
 
 	private function selectStages($userId) {
 		$rows = $this->fetchAll(
-			"SELECT ID, USER_ID, TITLE, SORT, COLOR, IS_DEFAULT FROM " . static::T_STAGE .
+			"SELECT ID, USER_ID, TITLE, SORT, COLOR, IS_DEFAULT, STACKED FROM " . static::T_STAGE .
 			" WHERE USER_ID=" . (int)$userId . " ORDER BY SORT ASC, ID ASC"
 		);
 		$stages = [];
@@ -141,7 +148,7 @@ class stages_provider_table extends stages_provider {
 
 	public function getStage($id) {
 		$rows = $this->fetchAll(
-			"SELECT ID, USER_ID, TITLE, SORT, COLOR, IS_DEFAULT FROM " . static::T_STAGE .
+			"SELECT ID, USER_ID, TITLE, SORT, COLOR, IS_DEFAULT, STACKED FROM " . static::T_STAGE .
 			" WHERE ID=" . (int)$id
 		);
 		return count($rows) ? static::stageRow($rows[0]) : null;
@@ -219,11 +226,24 @@ class stages_provider_table extends stages_provider {
 		else
 			$this->query("UPDATE " . static::T_ITEM . " SET STAGE_ID=" . $target . " WHERE STAGE_ID=" . $stage['ID']);
 
+		// если удаляем верхний столбец стопки, следующий за ним занимает его место,
+		// а не прилипает к стопке слева
+		if ($stage['STACKED'] !== 'Y') {
+			$next = null;
+			$found = false;
+			foreach ($this->getStages($stage['USER_ID']) as $other) {
+				if ($found) { $next = $other; break; }
+				if ($other['ID'] === $stage['ID']) $found = true;
+			}
+			if ($next && $next['STACKED'] === 'Y')
+				$this->query("UPDATE " . static::T_STAGE . " SET STACKED='N' WHERE ID=" . $next['ID']);
+		}
+
 		$this->query("DELETE FROM " . static::T_STAGE . " WHERE ID=" . $stage['ID']);
 		return $target;
 	}
 
-	public function reorderStages($userId, array $idsInOrder) {
+	public function reorderStages($userId, array $idsInOrder, $stackedIds = null) {
 		$userId = static::checkUserId($userId);
 		$ids = static::checkIds($idsInOrder);
 		if (!count($ids)) throw new stages_exception('Не передан порядок столбцов');
@@ -244,6 +264,17 @@ class stages_provider_table extends stages_provider {
 		foreach (array_keys($own) as $id) {
 			$sort += static::SORT_STEP;
 			$this->query("UPDATE " . static::T_STAGE . " SET SORT=" . $sort . " WHERE ID=" . (int)$id);
+		}
+
+		// раскладка по стопкам: признак переписываем у всех стадий пользователя разом
+		if ($stackedIds !== null) {
+			$stacked = static::checkIds($stackedIds);
+			$this->query("UPDATE " . static::T_STAGE . " SET STACKED='N' WHERE USER_ID=" . $userId);
+			if (count($stacked))
+				$this->query(
+					"UPDATE " . static::T_STAGE . " SET STACKED='Y' WHERE USER_ID=" . $userId .
+					" AND ID IN (" . implode(',', $stacked) . ")"
+				);
 		}
 	}
 

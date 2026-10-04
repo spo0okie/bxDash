@@ -1,97 +1,136 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1481 376" width="1481" height="376">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1535 688" width="1535" height="688">
 <style>text{font:11px Consolas,Menlo,'DejaVu Sans Mono',monospace;fill:#1c2030}.t{font-weight:bold}.n{fill:#5b6275}.g{fill:#8a90a2;font-style:italic}</style>
-<rect width="1481" height="376" fill="#ffffff"/>
-<rect x="8" y="8" width="1464.3" height="360" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<rect width="1535" height="688" fill="#ffffff"/>
+<rect x="8" y="8" width="1518.2" height="672" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
 <text x="15" y="23" class="t">div.layout</text>
-<rect x="15" y="27" width="1450.3" height="334" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<rect x="15" y="27" width="1504.2" height="646" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
 <text x="22" y="42" class="t">div#kanbanBoard.kanbanBoard</text>
 <text x="22" y="56" class="n">прокрутка по горизонтали; вместо div.dashBoard и div.rightPane</text>
-<rect x="22" y="60" width="410.2" height="294" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
-<text x="29" y="75" class="t">div.kanbanColumn</text>
-<text x="29" y="89" class="n">столбец по умолчанию «Входящие», 200px</text>
-<rect x="29" y="93" width="396.2" height="62" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
-<text x="36" y="108" class="t">div.kanbanColumnTitle</text>
-<rect x="36" y="112" width="87.7" height="36" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
-<text x="43" y="127" class="t">button</text>
-<text x="43" y="141" class="n">.kanbanMenu</text>
-<rect x="129.7" y="112" width="67.6" height="36" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
-<text x="136.7" y="127" class="t">h3</text>
-<text x="136.7" y="141" class="n">название</text>
-<rect x="203.3" y="112" width="94.4" height="36" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
-<text x="210.3" y="127" class="t">span</text>
-<text x="210.3" y="141" class="n">.kanbanCount</text>
-<rect x="303.7" y="112" width="114.5" height="36" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
-<text x="310.7" y="127" class="t">button</text>
-<text x="310.7" y="141" class="n">.kanbanCollapse</text>
-<rect x="29" y="161" width="396.2" height="186" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
-<text x="36" y="176" class="t">div.kanbanColumnBody.userCellContent</text>
-<rect x="36" y="180" width="382.2" height="36" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
-<text x="43" y="195" class="t">span.CreateItemButton</text>
-<text x="43" y="209" class="n">работа / задача без даты</text>
-<rect x="36" y="222" width="382.2" height="118" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
-<text x="43" y="237" class="t">ul.droppableBlock</text>
-<text x="43" y="251" class="n">CardsBlock dnd=true</text>
-<rect x="43" y="255" width="368.2" height="22" rx="3" fill="#dbeafe" stroke="#7d8799"/>
-<text x="50" y="270" class="t">taskItem</text>
-<rect x="43" y="283" width="368.2" height="22" rx="3" fill="#dcfce7" stroke="#7d8799"/>
-<text x="50" y="298" class="t">jobItem</text>
-<rect x="43" y="311" width="368.2" height="22" rx="3" fill="#fee2e2" stroke="#7d8799"/>
-<text x="50" y="326" class="t">ticketItem</text>
-<rect x="438.2" y="60" width="410.2" height="294" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
-<text x="445.2" y="75" class="t">div.kanbanColumn</text>
-<text x="445.2" y="89" class="n">столбец пользователя, 200px</text>
-<rect x="445.2" y="93" width="396.2" height="62" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
-<text x="452.2" y="108" class="t">div.kanbanColumnTitle</text>
-<rect x="452.2" y="112" width="87.7" height="36" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
-<text x="459.2" y="127" class="t">button</text>
-<text x="459.2" y="141" class="n">.kanbanMenu</text>
-<rect x="545.9" y="112" width="67.6" height="36" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
-<text x="552.9" y="127" class="t">h3</text>
-<text x="552.9" y="141" class="n">название</text>
-<rect x="619.5" y="112" width="94.4" height="36" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
-<text x="626.5" y="127" class="t">span</text>
-<text x="626.5" y="141" class="n">.kanbanCount</text>
-<rect x="719.9" y="112" width="114.5" height="36" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
-<text x="726.9" y="127" class="t">button</text>
-<text x="726.9" y="141" class="n">.kanbanCollapse</text>
-<rect x="445.2" y="161" width="396.2" height="186" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
-<text x="452.2" y="176" class="t">div.kanbanColumnBody.userCellContent</text>
-<rect x="452.2" y="180" width="382.2" height="36" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
-<text x="459.2" y="195" class="t">span.CreateItemButton</text>
-<text x="459.2" y="209" class="n">работа / задача без даты</text>
-<rect x="452.2" y="222" width="382.2" height="118" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
-<text x="459.2" y="237" class="t">ul.droppableBlock</text>
-<text x="459.2" y="251" class="n">CardsBlock dnd=true</text>
-<rect x="459.2" y="255" width="368.2" height="22" rx="3" fill="#dbeafe" stroke="#7d8799"/>
-<text x="466.2" y="270" class="t">taskItem</text>
-<rect x="459.2" y="283" width="368.2" height="22" rx="3" fill="#dcfce7" stroke="#7d8799"/>
-<text x="466.2" y="298" class="t">jobItem</text>
-<rect x="854.4" y="60" width="148" height="294" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
-<text x="861.4" y="75" class="g">div.kanbanColumn × N</text>
-<text x="861.4" y="89" class="n">остальные столбцы</text>
-<text x="861.4" y="103" class="n">(то же)</text>
-<rect x="1008.4" y="60" width="121.2" height="294" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
-<text x="1015.4" y="75" class="t">div.kanbanColumn</text>
-<text x="1015.4" y="89" class="n">.collapsed</text>
-<text x="1015.4" y="103" class="n">свёрнутый:</text>
-<text x="1015.4" y="117" class="n">счётчик и h3</text>
-<text x="1015.4" y="131" class="n">вертикально</text>
-<rect x="1135.6" y="60" width="195.5" height="294" rx="3" fill="#f5f6fa" stroke="#6b7285" stroke-dasharray="5 3"/>
-<text x="1142.6" y="75" class="t">div.kanbanColumn.closed</text>
-<text x="1142.6" y="89" class="n">«Завершённые», системный</text>
-<text x="1142.6" y="103" class="n">по умолчанию свёрнут</text>
-<rect x="1142.6" y="107" width="181.5" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
-<text x="1149.6" y="122" class="t">div.kanbanColumnTitle</text>
-<text x="1149.6" y="136" class="n">без меню</text>
-<rect x="1142.6" y="149" width="181.5" height="198" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
-<text x="1149.6" y="164" class="t">div.kanbanColumnBody › ul</text>
-<text x="1149.6" y="178" class="n">CardsBlock dnd=false</text>
-<rect x="1149.6" y="182" width="167.5" height="22" rx="3" fill="#dbeafe" stroke="#7d8799"/>
-<text x="1156.6" y="197" class="t">taskItem</text>
-<rect x="1149.6" y="210" width="167.5" height="22" rx="3" fill="#dcfce7" stroke="#7d8799"/>
-<text x="1156.6" y="225" class="t">jobItem</text>
-<rect x="1337.1" y="60" width="121.2" height="294" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
-<text x="1344.1" y="75" class="t">button</text>
-<text x="1344.1" y="89" class="n">.kanbanAddColumn</text>
-<text x="1344.1" y="103" class="n">«+ столбец»</text>
+<rect x="22" y="60" width="424.2" height="606" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="29" y="75" class="t">div.kanbanStack</text>
+<text x="29" y="89" class="n">стопка из одного столбца, 200px</text>
+<rect x="29" y="93" width="410.2" height="566" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="36" y="108" class="t">div.kanbanColumn</text>
+<text x="36" y="122" class="n">столбец по умолчанию «Входящие»</text>
+<rect x="36" y="126" width="396.2" height="62" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="43" y="141" class="t">div.kanbanColumnTitle</text>
+<rect x="43" y="145" width="87.7" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="50" y="160" class="t">button</text>
+<text x="50" y="174" class="n">.kanbanMenu</text>
+<rect x="136.7" y="145" width="67.6" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="143.7" y="160" class="t">h3</text>
+<text x="143.7" y="174" class="n">название</text>
+<rect x="210.3" y="145" width="94.4" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="217.3" y="160" class="t">span</text>
+<text x="217.3" y="174" class="n">.kanbanCount</text>
+<rect x="310.7" y="145" width="114.5" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="317.7" y="160" class="t">button</text>
+<text x="317.7" y="174" class="n">.kanbanCollapse</text>
+<rect x="36" y="194" width="396.2" height="458" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="43" y="209" class="t">div.kanbanColumnBody.userCellContent</text>
+<rect x="43" y="213" width="382.2" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="50" y="228" class="t">span.CreateItemButton</text>
+<text x="50" y="242" class="n">работа / задача без даты</text>
+<rect x="43" y="255" width="382.2" height="390" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="50" y="270" class="t">ul.droppableBlock</text>
+<text x="50" y="284" class="n">CardsBlock dnd=true</text>
+<rect x="50" y="288" width="368.2" height="22" rx="3" fill="#dbeafe" stroke="#7d8799"/>
+<text x="57" y="303" class="t">taskItem</text>
+<rect x="50" y="316" width="368.2" height="22" rx="3" fill="#dcfce7" stroke="#7d8799"/>
+<text x="57" y="331" class="t">jobItem</text>
+<rect x="50" y="344" width="368.2" height="22" rx="3" fill="#fee2e2" stroke="#7d8799"/>
+<text x="57" y="359" class="t">ticketItem</text>
+<rect x="452.2" y="60" width="456.8" height="606" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="459.2" y="75" class="t">div.kanbanStack.stacked</text>
+<text x="459.2" y="89" class="n">столбцы друг под другом</text>
+<rect x="459.2" y="93" width="442.8" height="238" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="466.2" y="108" class="t">div.kanbanColumn</text>
+<text x="466.2" y="122" class="n">верхний столбец</text>
+<rect x="466.2" y="126" width="428.8" height="62" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="473.2" y="141" class="t">div.kanbanColumnTitle</text>
+<rect x="473.2" y="145" width="87.7" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="480.2" y="160" class="t">button</text>
+<text x="480.2" y="174" class="n">.kanbanMenu</text>
+<rect x="566.9" y="145" width="100.2" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="573.9" y="160" class="t">h3</text>
+<text x="573.9" y="174" class="n">название</text>
+<rect x="673.1" y="145" width="94.4" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="680.1" y="160" class="t">span</text>
+<text x="680.1" y="174" class="n">.kanbanCount</text>
+<rect x="773.5" y="145" width="114.5" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="780.5" y="160" class="t">button</text>
+<text x="780.5" y="174" class="n">.kanbanCollapse</text>
+<rect x="466.2" y="194" width="428.8" height="130" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="473.2" y="209" class="t">div.kanbanColumnBody.userCellContent</text>
+<rect x="473.2" y="213" width="414.8" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="480.2" y="228" class="t">span.CreateItemButton</text>
+<text x="480.2" y="242" class="n">работа / задача без даты</text>
+<rect x="473.2" y="255" width="414.8" height="62" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="480.2" y="270" class="t">ul.droppableBlock</text>
+<text x="480.2" y="284" class="n">CardsBlock dnd=true</text>
+<rect x="480.2" y="288" width="400.8" height="22" rx="3" fill="#dbeafe" stroke="#7d8799"/>
+<text x="487.2" y="303" class="t">taskItem</text>
+<rect x="459.2" y="337" width="442.8" height="22" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="466.2" y="352" class="t">div.kanbanResizer — подвижная граница</text>
+<rect x="459.2" y="365" width="442.8" height="266" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="466.2" y="380" class="t">div.kanbanColumn</text>
+<text x="466.2" y="394" class="n">нижний столбец</text>
+<rect x="466.2" y="398" width="428.8" height="62" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="473.2" y="413" class="t">div.kanbanColumnTitle</text>
+<rect x="473.2" y="417" width="87.7" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="480.2" y="432" class="t">button</text>
+<text x="480.2" y="446" class="n">.kanbanMenu</text>
+<rect x="566.9" y="417" width="100.2" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="573.9" y="432" class="t">h3</text>
+<text x="573.9" y="446" class="n">название</text>
+<rect x="673.1" y="417" width="94.4" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="680.1" y="432" class="t">span</text>
+<text x="680.1" y="446" class="n">.kanbanCount</text>
+<rect x="773.5" y="417" width="114.5" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="780.5" y="432" class="t">button</text>
+<text x="780.5" y="446" class="n">.kanbanCollapse</text>
+<rect x="466.2" y="466" width="428.8" height="158" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="473.2" y="481" class="t">div.kanbanColumnBody.userCellContent</text>
+<rect x="473.2" y="485" width="414.8" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="480.2" y="500" class="t">span.CreateItemButton</text>
+<text x="480.2" y="514" class="n">работа / задача без даты</text>
+<rect x="473.2" y="527" width="414.8" height="90" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="480.2" y="542" class="t">ul.droppableBlock</text>
+<text x="480.2" y="556" class="n">CardsBlock dnd=true</text>
+<rect x="480.2" y="560" width="400.8" height="22" rx="3" fill="#dbeafe" stroke="#7d8799"/>
+<text x="487.2" y="575" class="t">taskItem</text>
+<rect x="480.2" y="588" width="400.8" height="22" rx="3" fill="#dcfce7" stroke="#7d8799"/>
+<text x="487.2" y="603" class="t">jobItem</text>
+<rect x="459.2" y="637" width="442.8" height="22" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="466.2" y="652" class="t">div.kanbanColumn.collapsed.row — свёрнутый в стопке: одна строка</text>
+<rect x="915" y="60" width="141.3" height="606" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="922" y="75" class="g">div.kanbanStack × N</text>
+<text x="922" y="89" class="n">остальные стопки</text>
+<text x="922" y="103" class="n">(то же)</text>
+<rect x="1062.3" y="60" width="121.2" height="606" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="1069.3" y="75" class="t">div.kanbanStack</text>
+<text x="1069.3" y="89" class="n">.narrow ›</text>
+<text x="1069.3" y="103" class="n">div.kanbanColumn</text>
+<text x="1069.3" y="117" class="n">.collapsed</text>
+<text x="1069.3" y="131" class="n">одиночный</text>
+<text x="1069.3" y="145" class="n">свёрнутый:</text>
+<text x="1069.3" y="159" class="n">вертикально</text>
+<rect x="1189.5" y="60" width="195.5" height="606" rx="3" fill="#f5f6fa" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="1196.5" y="75" class="t">div.kanbanColumn.closed</text>
+<text x="1196.5" y="89" class="n">«Завершённые», системный</text>
+<text x="1196.5" y="103" class="n">по умолчанию свёрнут</text>
+<rect x="1196.5" y="107" width="181.5" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="1203.5" y="122" class="t">div.kanbanColumnTitle</text>
+<text x="1203.5" y="136" class="n">без меню</text>
+<rect x="1196.5" y="149" width="181.5" height="510" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="1203.5" y="164" class="t">div.kanbanColumnBody › ul</text>
+<text x="1203.5" y="178" class="n">CardsBlock dnd=false</text>
+<rect x="1203.5" y="182" width="167.5" height="22" rx="3" fill="#dbeafe" stroke="#7d8799"/>
+<text x="1210.5" y="197" class="t">taskItem</text>
+<rect x="1203.5" y="210" width="167.5" height="22" rx="3" fill="#dcfce7" stroke="#7d8799"/>
+<text x="1210.5" y="225" class="t">jobItem</text>
+<rect x="1391" y="60" width="121.2" height="606" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="1398" y="75" class="t">button</text>
+<text x="1398" y="89" class="n">.kanbanAddColumn</text>
+<text x="1398" y="103" class="n">«+ столбец»</text>
 </svg>

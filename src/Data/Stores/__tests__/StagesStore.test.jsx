@@ -6,8 +6,8 @@ import notify from 'Helpers/Notify';
 const OWNER = 5;
 const OTHER = 7;
 
-const row = (id, title, sort, isDefault = false, userId = OWNER, color = null) => ({
-	ID: id, USER_ID: userId, TITLE: title, SORT: sort, COLOR: color, IS_DEFAULT: isDefault ? 'Y' : 'N',
+const row = (id, title, sort, isDefault = false, userId = OWNER, color = null, stacked = false) => ({
+	ID: id, USER_ID: userId, TITLE: title, SORT: sort, COLOR: color, IS_DEFAULT: isDefault ? 'Y' : 'N', STACKED: stacked ? 'Y' : 'N',
 });
 
 const OWNER_ROWS = [row(1, 'Входящие', 100, true), row(2, 'Ожидание', 200), row(3, 'На проверке', 300)];
@@ -31,7 +31,9 @@ function setup(routes = {}) {
 	};
 	const main = { bx };
 	const users = observable({ selected: OWNER });
-	const layout = observable({ accomplicesVisible: false });
+	// шпион снаружи observable: mobx оборачивает функции-поля в action, и jest перестаёт видеть в них mock
+	const resetHeights = jest.fn();
+	const layout = observable({ accomplicesVisible: false, resetKanbanHeights: ids => resetHeights(ids) });
 	const time = { today: 1000, year: 2026, firstWeekStart: () => 500 };
 	const ws = { sendMessage: jest.fn() };
 	const items = { ws };
@@ -52,7 +54,7 @@ function setup(routes = {}) {
 		return item;
 	};
 
-	return { stages, bx, calls, users, layout, items, ws, add };
+	return { stages, bx, calls, users, layout, items, ws, add, resetHeights };
 }
 
 beforeEach(() => {
@@ -67,7 +69,7 @@ afterEach(() => jest.restoreAllMocks());
 describe('StagesStore: загрузка', () => {
 	test('stageFromRow приводит строку бэка к объекту стадии', () => {
 		expect(stageFromRow(row(4, 'Дальние', 400, false, OWNER, '#ffaa00'))).toEqual({
-			id: 4, userId: OWNER, title: 'Дальние', sort: 400, color: '#ffaa00', isDefault: false,
+			id: 4, userId: OWNER, title: 'Дальние', sort: 400, color: '#ffaa00', isDefault: false, stacked: false,
 		});
 		expect(stageFromRow({ ID: '1', USER_ID: '5', TITLE: 'Входящие', SORT: '100', COLOR: null, IS_DEFAULT: 'Y' }).isDefault).toBe(true);
 	});
@@ -340,26 +342,88 @@ describe('StagesStore: изменение', () => {
 		expect(stages.stagesOf(OWNER).map(s => s.id)).toEqual([3, 2, 1]);
 	});
 
-	test('move сдвигает столбец на соседнее место и не выходит за края', async () => {
-		const { stages, calls } = setup({
+	test('dropStage: под столбец — в его стопку, сбоку — отдельной стопкой', async () => {
+		// подставной бэк повторяет логику настоящего: порядок из ids, признак из stacked
+		const { stages, calls, resetHeights } = setup({
 			'stage/list/5': () => OWNER_ROWS,
-			'stage/reorder': body => ({ result: 'ok', stages: body.ids.map((id, i) => row(id, 'С' + id, (i + 1) * 100, id === 1)) }),
+			'stage/reorder': body => ({
+				result: 'ok',
+				stages: body.ids.map((id, i) => row(id, 'С' + id, (i + 1) * 100, id === 1, OWNER, null, (body.stacked ?? []).includes(id))),
+			}),
 		});
 		await stages.load(OWNER);
+		const shape = () => stages.stacksOf(OWNER).map(stack => stack.map(s => s.id));
+		expect(shape()).toEqual([[1], [2], [3]]);
 
-		expect(stages.canMove(1, -1)).toBe(false);	// первый — влево некуда
-		expect(stages.canMove(3, 1)).toBe(false);	// последний — вправо некуда
-		expect(stages.canMove(2, -1)).toBe(true);
-		expect(stages.canMove(99, 1)).toBe(false);
-		expect(await stages.move(1, -1)).toBe(false);
-		expect(calls).toHaveLength(1);				// запрос не отправлялся
+		// столбец 3 — под столбец 1
+		const done = stages.dropStage(3, 1, 'bottom');
+		expect(shape()).toEqual([[1, 3], [2]]);		// оптимистично, до ответа
+		expect(await done).toBe(true);
+		expect(calls[1]).toEqual({ endpoint: 'stage/reorder', body: { user: OWNER, ids: [1, 3, 2], stacked: [3] } });
+		expect(shape()).toEqual([[1, 3], [2]]);
 
-		expect(await stages.move(3, -1)).toBe(true);
-		expect(calls[1].body).toEqual({ user: OWNER, ids: [1, 3, 2] });
-		expect(stages.stagesOf(OWNER).map(s => s.id)).toEqual([1, 3, 2]);
+		// веса высот затронутых стопок сброшены: и той, куда пришёл столбец, и его прежней
+		expect(resetHeights).toHaveBeenLastCalledWith([3, 1, 3]);
 
-		expect(await stages.move(1, 1)).toBe(true);
-		expect(calls[2].body).toEqual({ user: OWNER, ids: [3, 1, 2] });
+		// столбец 2 — над столбцом 1, в ту же стопку
+		expect(await stages.dropStage(2, 1, 'top')).toBe(true);
+		expect(shape()).toEqual([[2, 1, 3]]);
+		expect(calls[2].body).toEqual({ user: OWNER, ids: [2, 1, 3], stacked: [1, 3] });
+
+		// столбец 1 — отдельной стопкой слева
+		expect(await stages.dropStage(1, 2, 'left')).toBe(true);
+		expect(shape()).toEqual([[1], [2, 3]]);
+		expect(calls[3].body).toEqual({ user: OWNER, ids: [1, 2, 3], stacked: [3] });
+	});
+
+	test('dropStage: перенос «на то же место» и на себя запрос не отправляет', async () => {
+		const { stages, calls } = setup({ 'stage/list/5': () => OWNER_ROWS });
+		await stages.load(OWNER);
+		expect(await stages.dropStage(2, 1, 'right')).toBe(false);	// уже стоит справа от 1
+		expect(await stages.dropStage(2, 3, 'left')).toBe(false);	// уже стоит слева от 3
+		expect(await stages.dropStage(2, 2, 'top')).toBe(false);
+		expect(await stages.dropStage(2, 99, 'top')).toBe(false);
+		expect(calls).toHaveLength(1);
+	});
+
+	test('бэкенд без поддержки стопок: стопка не сохраняется, и об этом сказано явно', async () => {
+		const old = (id, title, sort, isDefault = false) => ({ ID: id, USER_ID: OWNER, TITLE: title, SORT: sort, COLOR: null, IS_DEFAULT: isDefault ? 'Y' : 'N' });
+		const { stages } = setup({
+			'stage/list/5': () => [old(1, 'Входящие', 100, true), old(2, 'А', 200), old(3, 'Б', 300)],
+			'stage/reorder': () => ({ result: 'ok', stages: [old(1, 'Входящие', 100, true), old(3, 'Б', 200), old(2, 'А', 300)] }),
+		});
+		await stages.load(OWNER);
+		await stages.dropStage(3, 1, 'bottom');
+
+		expect(stages.stacksOf(OWNER).map(stack => stack.map(s => s.id))).toEqual([[1], [3], [2]]);
+		expect(notify.error).toHaveBeenCalledTimes(1);
+		expect(notify.error.mock.calls[0][1]).toEqual({ title: 'Стопка не сохранена' });
+	});
+
+	test('reorder без stacked раскладку по стопкам не трогает', async () => {
+		const rows = [row(1, 'Входящие', 100, true), row(2, 'Ожидание', 200, false, OWNER, null, true), row(3, 'На проверке', 300)];
+		const { stages, calls } = setup({
+			'stage/list/5': () => rows,
+			'stage/reorder': () => ({ result: 'ok', stages: [row(3, 'На проверке', 100), row(1, 'Входящие', 200, true), row(2, 'Ожидание', 300, false, OWNER, null, true)] }),
+		});
+		await stages.load(OWNER);
+		const done = stages.reorder(OWNER, [3, 1, 2]);
+		expect(stages.stacksOf(OWNER).map(stack => stack.map(s => s.id))).toEqual([[3], [1, 2]]);
+		await done;
+		expect(calls[1].body).toEqual({ user: OWNER, ids: [3, 1, 2] });
+	});
+
+	test('remove верхнего столбца стопки: нижний встаёт на его место', async () => {
+		const rows = [row(1, 'Входящие', 100, true), row(2, 'А', 200), row(3, 'Б', 300, false, OWNER, null, true)];
+		const { stages } = setup({
+			'stage/list/5': () => rows,
+			'stage/delete/2': () => ({ result: 'ok', id: 2, movedTo: 1 }),
+		});
+		await stages.load(OWNER);
+		expect(stages.stacksOf(OWNER).map(stack => stack.map(s => s.id))).toEqual([[1], [2, 3]]);
+		await stages.remove(2);
+		// без поправки столбец 3 «прилип» бы к стопке столбца 1
+		expect(stages.stacksOf(OWNER).map(stack => stack.map(s => s.id))).toEqual([[1], [3]]);
 	});
 });
 

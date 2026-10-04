@@ -23,6 +23,7 @@ const PREF_DEFAULTS = {
 	useSplitBucket: false,         //разделить долгий ящик на три приоритета
 	kanban: false,                 //персональная доска показана канбаном (столбцы), а не календарём
 	kanbanCollapsed: ['closed'],   //свёрнутые столбцы канбана: id стадий и 'closed' (завершённые)
+	kanbanHeights: {},             //доли высоты столбцов канбана в стопках: {id стадии: вес}; нет записи — поровну (вес 1)
 	sidebarWidth: 300,             //ширина sidebar (валидируется clamp'ом в setter'е)
 	currentInterval: null,         //timestamp верхнего/левого видимого периода — восстанавливается при смене layout
 	incomingCallsVisible: true,    //показывать карточки входящих звонков
@@ -199,6 +200,25 @@ class LayoutStore {
 	get useSplitBucket()     { return this.prefs.get('useSplitBucket'); }
 	get kanban()             { return this.prefs.get('kanban'); }
 	get kanbanCollapsed()    { return this.prefs.get('kanbanCollapsed'); }
+	get kanbanHeights()      { return this.prefs.get('kanbanHeights'); }
+
+	/** Вес высоты столбца в стопке: 1 — границу не двигали (поровну с соседями) */
+	kanbanHeight(stageId)    { return (this.kanbanHeights ?? {})[stageId] ?? 1; }
+
+	/** Запомнить веса высот столбцов: weights — {id стадии: вес}. Хранится локально (куки), как прочие настройки. */
+	setKanbanHeights(weights) {
+		this.setPref('kanbanHeights', { ...(this.kanbanHeights ?? {}), ...weights });
+	}
+
+	/** Забыть веса высот перечисленных столбцов — они снова делят высоту поровну */
+	resetKanbanHeights(stageIds) {
+		const next = { ...(this.kanbanHeights ?? {}) };
+		let changed = false;
+		stageIds.forEach(id => {
+			if (id in next) { delete next[id]; changed = true; }
+		});
+		if (changed) this.setPref('kanbanHeights', next);
+	}
 
 	/** Канбан есть только у персональной доски: общая (все пользователи) всегда календарь. */
 	get kanbanActive()       { return Boolean(this.kanban) && this.users.selected !== null; }
@@ -262,6 +282,7 @@ class LayoutStore {
 			useSplitBucket: computed,
 			kanban: computed,
 			kanbanCollapsed: computed,
+			kanbanHeights: computed,
 			kanbanActive: computed,
 			sidebarWidth: computed,
 			currentInterval: computed,

@@ -202,3 +202,87 @@ span.kanbanHint {
 	font-size: var(--font-size-sm);
 	opacity: 60%;
 }
+
+/* ---------- стопки: столбцы друг под другом ---------- */
+
+div.kanbanStack {
+	flex: 0 0 var(--kanban-column-width);
+	width: var(--kanban-column-width);
+	height: 100%;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+/* одиночный свёрнутый столбец — стопка сужается до полоски */
+div.kanbanStack.narrow {
+	flex-basis: var(--kanban-collapsed-width);
+	width: var(--kanban-collapsed-width);
+}
+
+/* в стопке столбец занимает всю ширину, а высоту делит с соседями по весу (flex-grow задаёт компонент) */
+div.kanbanStack > div.kanbanColumn {
+	flex: 1 1 0;
+	width: 100%;
+	height: auto;
+	min-height: 0;
+}
+
+div.kanbanColumn {
+	position: relative;		/* для индикатора места, куда встанет перетаскиваемый столбец */
+}
+
+div.kanbanColumn.dragging {
+	opacity: 40%;
+}
+
+/* за название столбец перетаскивают */
+div.kanbanTitleGrip {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	cursor: grab;
+}
+
+div.kanbanTitleGrip h3 {
+	cursor: grab;
+}
+
+/* свёрнутый столбец внутри стопки — одна строка, а не вертикальная полоска */
+div.kanbanStack > div.kanbanColumn.collapsed.row {
+	flex: 0 0 auto;
+	flex-direction: row-reverse;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 0 2px;
+}
+
+div.kanbanColumn.collapsed.row h3 {
+	margin: 0;
+	writing-mode: horizontal-tb;
+	transform: none;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+div.kanbanColumn.collapsed.row span.kanbanCount {
+	margin-top: 0;
+}
+
+/* граница между столбцами стопки — за неё меняют их высоту */
+div.kanbanResizer {
+	flex: 0 0 5px;
+	cursor: row-resize;
+	background-color: var(--surface-page);
+}
+
+div.kanbanResizer:hover,
+body.kanbanResizing div.kanbanResizer {
+	background-color: var(--surface-dropzone-active);
+}
+
+body.kanbanResizing {
+	cursor: row-resize;
+	user-select: none;
+}

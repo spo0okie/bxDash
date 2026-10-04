@@ -134,6 +134,40 @@ try {
 	$s = $p->getStages(3);
 	ok($s[0]['IS_DEFAULT'] === 'Y' && $s[1]['IS_DEFAULT'] === 'N', 'нет default: назначается первая');
 
+	// ---------- стопки: столбцы друг под другом ----------
+	$u = 2;
+	$d2 = $p->getDefaultStageId($u);
+	$s1 = $p->createStage($u, 'В работе');
+	$s2 = $p->createStage($u, 'Ожидание');
+	$s3 = $p->createStage($u, 'Дальние');
+	$stackOf = function () use ($p, $u) {
+		$out = [];
+		foreach ($p->getStages($u) as $s) $out[] = $s['ID'] . ($s['STACKED'] === 'Y' ? '^' : '');
+		return implode(' ', $out);
+	};
+	$base = array_column($p->getStages($u), 'ID');
+	ok(strpos($stackOf(), '^') === false, 'новые столбцы не в стопке: ' . $stackOf());
+
+	$p->reorderStages($u, [$d2, $s1, $s2, $s3], [$s1, $s3]);
+	ok(strpos($stackOf(), $d2 . ' ' . $s1 . '^ ' . $s2 . ' ' . $s3 . '^') !== false, 'reorder со stacked: ' . $stackOf());
+	$p->reorderStages($u, [$s2, $s3, $d2, $s1]);
+	ok(strpos($stackOf(), $s2 . ' ' . $s3 . '^ ' . $d2 . ' ' . $s1 . '^') !== false, 'reorder без stacked признак не трогает: ' . $stackOf());
+	$p->reorderStages($u, [$s2, $s3, $d2, $s1], []);
+	ok(strpos($stackOf(), '^') === false, 'пустой stacked разбирает все стопки: ' . $stackOf());
+
+	// удаление верхнего столбца стопки: нижний встаёт на его место, а не уезжает в стопку слева
+	$p->reorderStages($u, [$d2, $s1, $s2, $s3], [$s2, $s3]);
+	$p->deleteStage($s1);
+	ok(strpos($stackOf(), $d2 . ' ' . $s2 . ' ' . $s3 . '^') !== false, 'удалён верх стопки — следующий стал верхним: ' . $stackOf());
+	$p->deleteStage($s3);
+	ok(strpos($stackOf(), '^') === false, 'удалён нижний — остальные не тронуты: ' . $stackOf());
+
+	// таблица старого образца (без STACKED) доращивается сама
+	$DB->Query("ALTER TABLE bxdash_stage DROP COLUMN STACKED");
+	$fresh = new stages_provider_table();
+	$rows = $fresh->getStages($u);
+	ok(isset($rows[0]['STACKED']) && $rows[0]['STACKED'] === 'N', 'колонка STACKED добавляется при первом обращении');
+
 	// ---------- связка с контроллерами элементов ----------
 	$setInput = function ($json) {
 		foreach (['input' => $json, 'inputJson' => null] as $prop => $value) {

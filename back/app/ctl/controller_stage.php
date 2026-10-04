@@ -9,7 +9,7 @@
  *   POST stage/create        {user, title, color?, sort?}
  *   POST stage/update/{id}   {title?, color?, sort?}
  *   POST stage/delete/{id}   {moveTo?}
- *   POST stage/reorder       {user, ids:[...]}
+ *   POST stage/reorder       {user, ids:[...], stacked?:[...]}  — stacked: id столбцов, стоящих под предыдущим
  *   GET  stage/install
  */
 
@@ -94,9 +94,14 @@ class controller_stage {
 		$userId = router::getRoute(null, 'user');
 		$ids = router::getRoute(null, 'ids', []);
 		if (is_string($ids)) $ids = explode(',', $ids);
-		static::run(function ($provider) use ($userId, $ids) {
+		// stacked не передан — раскладку по стопкам не трогаем; передан (даже пустой) — переписываем
+		$stacked = router::getRoute(null, 'stacked', static::NOT_SET);
+		if ($stacked === static::NOT_SET) $stacked = null;
+		elseif (is_string($stacked)) $stacked = ($stacked === '') ? [] : explode(',', $stacked);
+		else $stacked = (array)$stacked;
+		static::run(function ($provider) use ($userId, $ids, $stacked) {
 			$userId = static::requireUser($userId);
-			$provider->reorderStages($userId, (array)$ids);
+			$provider->reorderStages($userId, (array)$ids, $stacked);
 			return ['result' => 'ok', 'stages' => $provider->getStages($userId)];
 		});
 	}

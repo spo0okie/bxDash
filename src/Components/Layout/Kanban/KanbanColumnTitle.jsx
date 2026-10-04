@@ -17,6 +17,8 @@ const COLORS = [
 
 /**
  * Заголовок столбца канбана: название, счётчик, меню управления, сворачивание.
+ * За название (div.kanbanTitleGrip) столбец перетаскивают: вбок — в другое место ряда,
+ * на верхнюю / нижнюю половину другого столбца — в стопку с ним (см. KanbanColumn).
  *
  * Название правится на месте (двойной клик или пункт меню): Enter и потеря фокуса сохраняют,
  * Escape отменяет. У системного столбца «Завершённые» (stage === null) управления нет.
@@ -100,8 +102,6 @@ const KanbanColumnTitle = observer(({ stage, title, count, onToggle }) => {
 					{ key: 'color:', label: 'без цвета' + (stage.color ? '' : ' ✓') },
 				],
 			},
-			{ key: 'left', label: 'Сдвинуть влево', disabled: !stages.canMove(stage.id, -1) },
-			{ key: 'right', label: 'Сдвинуть вправо', disabled: !stages.canMove(stage.id, 1) },
 			{ key: 'collapse', label: 'Свернуть' },
 			stage.isDefault
 				? { key: 'delete', label: 'Удалить', disabled: true, title: 'Столбец по умолчанию удалить нельзя: в нём лежит всё, что никуда не разложено' }
@@ -121,8 +121,6 @@ const KanbanColumnTitle = observer(({ stage, title, count, onToggle }) => {
 
 	const onMenuClick = useCallback(({ key }) => {
 		if (key === 'rename') return startEdit();
-		if (key === 'left') return stages.move(stage.id, -1);
-		if (key === 'right') return stages.move(stage.id, 1);
 		if (key === 'collapse') return onToggle();
 		if (key.startsWith('color:')) {
 			const color = key.slice('color:'.length) || null;
@@ -139,6 +137,7 @@ const KanbanColumnTitle = observer(({ stage, title, count, onToggle }) => {
 					<button className="kanbanMenu" title="Управление столбцом">⋯</button>
 				</Dropdown>
 			)}
+			<div className="kanbanTitleGrip">
 			{editing ? (
 				<input
 					ref={inputRef}
@@ -151,13 +150,14 @@ const KanbanColumnTitle = observer(({ stage, title, count, onToggle }) => {
 				/>
 			) : (
 				<h3
-					title={stage ? title + (stage.isDefault ? ' — столбец по умолчанию' : '') + '\nДвойной клик — переименовать' : title}
+					title={stage ? title + (stage.isDefault ? ' — столбец по умолчанию' : '') + '\nДвойной клик — переименовать, перетаскивание — переставить' : title}
 					onDoubleClick={startEdit}
 				>
 					{stage?.isDefault && <span className="kanbanDefaultMark">⌂ </span>}
 					{title}
 				</h3>
 			)}
+			</div>
 			<span className="kanbanCount">{count}</span>
 			<button className="kanbanCollapse" onClick={onToggle} title="Свернуть столбец">‹</button>
 		</div>
