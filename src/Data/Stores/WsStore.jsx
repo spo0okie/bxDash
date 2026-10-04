@@ -158,6 +158,10 @@ export class WsStore {
 					});
 				}
 			},
+			// у кого-то изменились столбцы канбан-доски (создание/правка/удаление/порядок)
+			stageUpdate: data => {
+				this.items?.stages?.onRemoteUpdate(data);
+			},
 		};
 		// taskUpdate/jobUpdate/ticketUpdate/planUpdate — из реестра.
 		// У плана id-поле называется 'id', у остальных — 'taskId'/'jobId'/'ticketId'.

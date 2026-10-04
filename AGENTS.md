@@ -138,6 +138,10 @@ export default Sidebar;
 5. **WS-обработчики из реестра**. Новый тип элемента → добавить запись в `ITEM_TYPES` (с `wsEvent`/`wsIdField`), и [`WsStore.buildHandlers`](src/Data/Stores/WsStore.jsx) автоматически пропишет обработчик `*Update`-события. Не дублировать `case 'fooUpdate':` в switch.
 6. **LayoutStore.prefs**. Все персистируемые настройки (видимость типов, expand, sidebar width) живут в `prefs = observable.map()`. Авто-сохранение в куки через `observe(this.prefs)`. Для нового флага — добавить ключ в `PREF_DEFAULTS` и опциональный геттер-обёртку для старого API.
 
+7. **Столбцы канбана — через `StagesStore` и провайдер**. Столбцы персональных досок и раскладку по ним держит [`StagesStore`](src/Data/Stores/StagesStore.jsx) (`stores.stages`); привязки элемента — `DashItem.stages` / `stageFor(userId)`. Раскладка доски считается один раз в computed `StagesStore.board` — столбцы не фильтруют элементы сами. Типы, которые раскладываются по столбцам, помечены флагом `stages` в `ITEM_TYPES`. Фронт не знает, где бэкенд хранит столбцы: только REST `stage/*` и поле `STAGES`. См. [plans/bucket_columns.md](plans/bucket_columns.md).
+8. **Ячейка — общий контракт календаря и канбана**. Карточки, `CardsBlock`, drag-and-drop и контекстное меню получают объект `cell` (`id`, `user`, `t`, `dropT`, `maxSorting`, `minSorting`, `dragOver`; у столбца канбана ещё `kanban: true` и `stage`). Новая логика, зависящая от раскладки, ветвится по `cell.kanban`, а не по тому, какой компонент её вызвал. Стили карточек привязывать к `div.userCellContent`, а не к `td.userCell` — в канбане таблицы нет.
+9. **Ошибки не глотать**. В каждом `.catch` и на каждой ветке ошибки — `notify.error` с причиной ([`Helpers/Notify`](src/Helpers/Notify.jsx)); запросы к бэку Bitrix — через [`Helpers/BxJson`](src/Helpers/BxJson.jsx) (`bxJson` / `bxPostJson`) или `DashItem.bxJson`, они превращают любой неуспешный ответ в `Error` с понятным текстом.
+
 #### Структура хранилища
 ```javascript
 import { observable, action, makeObservable, computed } from 'mobx';
@@ -294,6 +298,7 @@ src/
 ├── Components/          # React компоненты
 │   ├── Layout/         # Layout-композиция (Layout, CalendarGrid, BucketIntervals,
 │   │                   #   RightPaneBucket, Modals, useGlobalShortcuts, Sidebar/MemoCell)
+│   │   └── Kanban/     # Канбан-раскладка персональной доски (KanbanBoard, KanbanColumn, ...)
 │   └── Items/          # Компоненты элементов
 ├── Data/               # Уровень данных
 │   ├── itemTypes.jsx   # Реестр типов элементов (единый источник правды)
@@ -309,6 +314,20 @@ src/
 - `ComponentName.js` - Основной компонент
 - `ComponentName.css` - Стили компонента (если нужно)
 - `index.js` - Barrel экспорт (опционально)
+
+### Бэкенд (`back/`)
+
+- **Портал работает на PHP 5.** В `back/` нельзя использовать синтаксис PHP 7+: `??`, `<=>`, типы аргументов и возврата, анонимные классы, деструктуризацию `[$a, $b] =`. Константы и методы классов нельзя называть зарезервированными словами (`UNSET`, `LIST`, `DEFAULT`…) — на PHP 5 это ошибка разбора. Исключения ловить двумя ветками: сначала `\Exception`, потом `\Throwable`.
+- Локально PHP 5 нет, `php -l` несовместимость не покажет — проверять глазами и поиском.
+- За «так нельзя» отвечать **409**, не 401/403: их фронт принимает за слёт авторизации.
+- Столбцы канбана: `back/app/models/stages_provider.php` (интерфейс) и `stages_provider_table.php` (свои таблицы `bxdash_stage`, `bxdash_item_stage`, создаются сами при первом обращении). Проверка без портала: `cd back && php ../tools/stages-test/test_provider.php` (нужен локальный MySQL).
+
+### Проверка перед сдачей
+
+- `npm test` — unit-тесты.
+- `npm run build` — сборка. Она идёт **без ESLint**, необъявленные идентификаторы не ловит.
+- `node tools/check-undeclared.cjs` — поиск необъявленных идентификаторов в `src`.
+- После изменения раскладок: `node tools/layouts-svg.cjs` и обновить [docs/layouts.md](docs/layouts.md).
 
 ### Соображения производительности
 
@@ -386,4 +405,4 @@ docs: обновить README
 
 ---
 
-*Этот документ должен обновляться по мере развития кодовой базы. Последнее обновление: май 2026 (после рефакторинга simplify, см. [plans/simplify.md](plans/simplify.md)).*
+*Этот документ должен обновляться по мере развития кодовой базы. Последнее обновление: октябрь 2026 (канбан-раскладка, см. [plans/bucket_columns.md](plans/bucket_columns.md)); до этого — май 2026 (рефакторинг simplify, см. [plans/simplify.md](plans/simplify.md)).*

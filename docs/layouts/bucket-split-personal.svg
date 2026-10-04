@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1357 524" width="1357" height="524">
+<style>text{font:11px Consolas,Menlo,'DejaVu Sans Mono',monospace;fill:#1c2030}.t{font-weight:bold}.n{fill:#5b6275}.g{fill:#8a90a2;font-style:italic}</style>
+<rect width="1357" height="524" fill="#ffffff"/>
+<rect x="8" y="8" width="1340.8" height="508" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="15" y="23" class="t">div.layout</text>
+<rect x="15" y="27" width="208.3" height="482" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="22" y="42" class="g">div.dashBoard</text>
+<text x="22" y="56" class="n">календарь — раскладка C или D</text>
+<rect x="229.3" y="27" width="1112.5" height="482" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="236.3" y="42" class="t">div.rightPane.x3</text>
+<text x="236.3" y="56" class="n">450px</text>
+<rect x="236.3" y="60" width="1098.5" height="442" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="243.3" y="75" class="t">BucketIntervals (фрагмент, без своего DOM-узла)</text>
+<rect x="243.3" y="79" width="357.5" height="416" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="250.3" y="94" class="t">div.Interval.columnBucket</text>
+<text x="250.3" y="108" class="n">priority=2</text>
+<rect x="250.3" y="112" width="343.5" height="376" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="257.3" y="127" class="t">div.Period.column.periodN</text>
+<text x="257.3" y="141" class="n">Высокий приоритет</text>
+<rect x="257.3" y="145" width="329.5" height="336" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="264.3" y="160" class="t">div.periodContent</text>
+<rect x="264.3" y="164" width="315.5" height="22" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="271.3" y="179" class="t">div.PeriodTitle</text>
+<rect x="264.3" y="192" width="315.5" height="282" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="271.3" y="207" class="t">div.PeriodData › table.UserCells › tbody › tr</text>
+<rect x="271.3" y="211" width="301.5" height="256" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="278.3" y="226" class="t">td.userCell › div.userCellContent</text>
+<text x="278.3" y="240" class="n">выбранный пользователь</text>
+<rect x="278.3" y="244" width="287.5" height="36" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="285.3" y="259" class="t">div.userCellHeader</text>
+<text x="285.3" y="273" class="n">счётчики элементов</text>
+<rect x="278.3" y="286" width="287.5" height="36" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="285.3" y="301" class="t">ul</text>
+<text x="285.3" y="315" class="n">CardsBlock: закрытые + планы</text>
+<rect x="278.3" y="328" width="287.5" height="22" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="285.3" y="343" class="t">span.CreateItemButton</text>
+<rect x="278.3" y="356" width="287.5" height="104" rx="3" fill="#f5f6fa" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="285.3" y="371" class="t">ul.droppableBlock</text>
+<text x="285.3" y="385" class="n">CardsBlock: открытые, DnD</text>
+<text x="285.3" y="399" class="n">только если period.isOpen</text>
+<rect x="285.3" y="403" width="273.5" height="22" rx="3" fill="#dbeafe" stroke="#7d8799"/>
+<text x="292.3" y="418" class="t">taskItem</text>
+<rect x="285.3" y="431" width="273.5" height="22" rx="3" fill="#dcfce7" stroke="#7d8799"/>
+<text x="292.3" y="446" class="t">jobItem</text>
+<rect x="606.8" y="79" width="357.5" height="416" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="613.8" y="94" class="t">div.Interval.columnBucket</text>
+<text x="613.8" y="108" class="n">priority=1</text>
+<rect x="613.8" y="112" width="343.5" height="376" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="620.8" y="127" class="t">div.Period.column.periodN</text>
+<text x="620.8" y="141" class="n">Средний приоритет</text>
+<rect x="620.8" y="145" width="329.5" height="336" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="627.8" y="160" class="t">div.periodContent</text>
+<rect x="627.8" y="164" width="315.5" height="22" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="634.8" y="179" class="t">div.PeriodTitle</text>
+<rect x="627.8" y="192" width="315.5" height="282" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="634.8" y="207" class="t">div.PeriodData › table.UserCells › tbody › tr</text>
+<rect x="634.8" y="211" width="301.5" height="256" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="641.8" y="226" class="t">td.userCell › div.userCellContent</text>
+<text x="641.8" y="240" class="n">выбранный пользователь</text>
+<rect x="641.8" y="244" width="287.5" height="36" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="648.8" y="259" class="t">div.userCellHeader</text>
+<text x="648.8" y="273" class="n">счётчики элементов</text>
+<rect x="641.8" y="286" width="287.5" height="36" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="648.8" y="301" class="t">ul</text>
+<text x="648.8" y="315" class="n">CardsBlock: закрытые + планы</text>
+<rect x="641.8" y="328" width="287.5" height="22" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="648.8" y="343" class="t">span.CreateItemButton</text>
+<rect x="641.8" y="356" width="287.5" height="104" rx="3" fill="#f5f6fa" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="648.8" y="371" class="t">ul.droppableBlock</text>
+<text x="648.8" y="385" class="n">CardsBlock: открытые, DnD</text>
+<text x="648.8" y="399" class="n">только если period.isOpen</text>
+<rect x="648.8" y="403" width="273.5" height="22" rx="3" fill="#dbeafe" stroke="#7d8799"/>
+<text x="655.8" y="418" class="t">taskItem</text>
+<rect x="648.8" y="431" width="273.5" height="22" rx="3" fill="#dcfce7" stroke="#7d8799"/>
+<text x="655.8" y="446" class="t">jobItem</text>
+<rect x="970.3" y="79" width="357.5" height="416" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="977.3" y="94" class="t">div.Interval.columnBucket</text>
+<text x="977.3" y="108" class="n">priority=0</text>
+<rect x="977.3" y="112" width="343.5" height="376" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="984.3" y="127" class="t">div.Period.column.periodN</text>
+<text x="984.3" y="141" class="n">Отложено</text>
+<rect x="984.3" y="145" width="329.5" height="336" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="991.3" y="160" class="t">div.periodContent</text>
+<rect x="991.3" y="164" width="315.5" height="22" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="998.3" y="179" class="t">div.PeriodTitle</text>
+<rect x="991.3" y="192" width="315.5" height="282" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="998.3" y="207" class="t">div.PeriodData › table.UserCells › tbody › tr</text>
+<rect x="998.3" y="211" width="301.5" height="256" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="1005.3" y="226" class="t">td.userCell › div.userCellContent</text>
+<text x="1005.3" y="240" class="n">выбранный пользователь</text>
+<rect x="1005.3" y="244" width="287.5" height="36" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="1012.3" y="259" class="t">div.userCellHeader</text>
+<text x="1012.3" y="273" class="n">счётчики элементов</text>
+<rect x="1005.3" y="286" width="287.5" height="36" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="1012.3" y="301" class="t">ul</text>
+<text x="1012.3" y="315" class="n">CardsBlock: закрытые + планы</text>
+<rect x="1005.3" y="328" width="287.5" height="22" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="1012.3" y="343" class="t">span.CreateItemButton</text>
+<rect x="1005.3" y="356" width="287.5" height="104" rx="3" fill="#f5f6fa" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="1012.3" y="371" class="t">ul.droppableBlock</text>
+<text x="1012.3" y="385" class="n">CardsBlock: открытые, DnD</text>
+<text x="1012.3" y="399" class="n">только если period.isOpen</text>
+<rect x="1012.3" y="403" width="273.5" height="22" rx="3" fill="#dbeafe" stroke="#7d8799"/>
+<text x="1019.3" y="418" class="t">taskItem</text>
+<rect x="1012.3" y="431" width="273.5" height="22" rx="3" fill="#dcfce7" stroke="#7d8799"/>
+<text x="1019.3" y="446" class="t">jobItem</text>
+</svg>

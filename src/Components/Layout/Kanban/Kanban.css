@@ -1,0 +1,204 @@
+/* Канбан-раскладка персональной доски: столбцы вместо оси времени.
+   Цвета берём из токенов текущей недели календаря, чтобы доска выглядела как его часть. */
+
+div.kanbanBoard {
+	--kanban-column-width: 200px;
+	--kanban-collapsed-width: 26px;
+
+	flex: 1;
+	min-width: 0;			/* иначе flex-элемент не сожмётся и горизонтальной прокрутки не будет */
+	height: 100%;
+	display: flex;
+	flex-direction: row;
+	align-items: stretch;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+div.kanbanBoard.kanbanEmpty {
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+}
+
+div.kanbanColumn {
+	flex: 0 0 var(--kanban-column-width);
+	width: var(--kanban-column-width);
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	border-style: solid;
+	/* --kanban-color / --kanban-color-text задаёт столбец, если у него выбран цвет */
+	border-color: var(--kanban-color, var(--period-0-color));
+	border-width: 0 1px 2px 1px;
+}
+
+div.kanbanColumn.draggedOver {
+	background-color: var(--surface-dropzone-active);
+}
+
+div.kanbanColumnTitle {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 0 2px;
+	background-color: var(--kanban-color, var(--period-0-color));
+	color: var(--kanban-color-text, var(--period-0-text));
+}
+
+div.kanbanColumnTitle h3 {
+	flex: 1;
+	min-width: 0;
+	margin: 0;
+	font-size: larger;
+	text-align: center;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+span.kanbanCount {
+	flex: 0 0 auto;
+	font-size: var(--font-size-sm);
+	opacity: 70%;
+}
+
+button.kanbanCollapse {
+	flex: 0 0 auto;
+	width: 15px;
+	height: 15px;
+	margin: 0;
+	padding: 0;
+	line-height: 1;
+	text-align: center;
+	cursor: pointer;
+}
+
+div.kanbanColumnBody {
+	flex: 1;
+	min-height: 0;			/* позволяет списку карточек прокручиваться внутри столбца */
+}
+
+div.kanbanColumnBody ul {
+	flex-grow: 1;
+	min-height: 0;
+	overflow-y: auto;
+	scrollbar-width: none;
+}
+
+div.kanbanColumn:hover span.CreateItemButton {
+	opacity: 100%;
+}
+
+/* завершённые — приглушённый системный столбец */
+div.kanbanColumn.closed div.kanbanColumnTitle {
+	opacity: 80%;
+}
+
+/* свёрнутый столбец — узкая полоска: счётчик и название по вертикали */
+div.kanbanColumn.collapsed {
+	flex: 0 0 var(--kanban-collapsed-width);
+	width: var(--kanban-collapsed-width);
+	align-items: center;
+	cursor: pointer;
+	background-color: var(--kanban-color, var(--period-0-color));
+	color: var(--kanban-color-text, var(--period-0-text));
+	overflow: hidden;
+}
+
+div.kanbanColumn.collapsed h3 {
+	margin: 6px 0 0;
+	font-size: larger;
+	white-space: nowrap;
+	writing-mode: vertical-rl;
+	transform: rotate(180deg);
+}
+
+div.kanbanColumn.collapsed span.kanbanCount {
+	margin-top: 2px;
+}
+
+button.kanbanAddColumn {
+	flex: 0 0 auto;
+	align-self: flex-start;
+	margin: 4px;
+	white-space: nowrap;
+	cursor: pointer;
+	opacity: 60%;
+}
+
+button.kanbanAddColumn:hover {
+	opacity: 100%;
+}
+
+/* ---------- управление столбцами ---------- */
+
+button.kanbanMenu {
+	flex: 0 0 auto;
+	width: 15px;
+	height: 15px;
+	margin: 0;
+	padding: 0;
+	line-height: 1;
+	text-align: center;
+	cursor: pointer;
+}
+
+div.kanbanColumnTitle h3 {
+	cursor: default;
+	user-select: none;
+}
+
+span.kanbanDefaultMark {
+	opacity: 60%;
+}
+
+input.kanbanTitleInput {
+	flex: 1;
+	min-width: 0;
+	box-sizing: border-box;
+	font: inherit;
+	font-weight: bold;
+	text-align: center;
+	padding: 0 2px;
+}
+
+/* образец цвета в меню столбца */
+span.kanbanSwatchItem {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+span.kanbanSwatch {
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	border-radius: 2px;
+	border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+/* «+ столбец» в режиме ввода названия */
+div.kanbanAddColumn.editing {
+	flex: 0 0 var(--kanban-column-width);
+	width: var(--kanban-column-width);
+	align-self: flex-start;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	margin: 4px;
+	box-sizing: border-box;
+}
+
+div.kanbanAddColumn.editing input.kanbanTitleInput {
+	flex: 0 0 auto;
+	text-align: left;
+	font-weight: normal;
+}
+
+span.kanbanHint {
+	font-size: var(--font-size-sm);
+	opacity: 60%;
+}

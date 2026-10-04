@@ -21,6 +21,8 @@ const PREF_DEFAULTS = {
 	keepPlanning: false,           //не скрывать относящееся к планам
 	keepFavorites: false,          //не скрывать относящееся к избранному
 	useSplitBucket: false,         //разделить долгий ящик на три приоритета
+	kanban: false,                 //персональная доска показана канбаном (столбцы), а не календарём
+	kanbanCollapsed: ['closed'],   //свёрнутые столбцы канбана: id стадий и 'closed' (завершённые)
 	sidebarWidth: 300,             //ширина sidebar (валидируется clamp'ом в setter'е)
 	currentInterval: null,         //timestamp верхнего/левого видимого периода — восстанавливается при смене layout
 	incomingCallsVisible: true,    //показывать карточки входящих звонков
@@ -171,6 +173,7 @@ class LayoutStore {
 	setKeepPlanning(v)       { this.setPref('keepPlanning', v); }
 	setKeepFavorites(v)      { this.setPref('keepFavorites', v); }
 	setUseSplitBucket(v)     { this.setPref('useSplitBucket', v); }
+	setKanban(v)             { this.setPref('kanban', v); }
 	setCurrentInterval(v)    { this.setPref('currentInterval', v); }
 	setIncomingCallsVisible(v) { this.setPref('incomingCallsVisible', v); }
 	setOutgoingCallsVisible(v) { this.setPref('outgoingCallsVisible', v); }
@@ -194,6 +197,20 @@ class LayoutStore {
 	get keepPlanning()       { return this.prefs.get('keepPlanning'); }
 	get keepFavorites()      { return this.prefs.get('keepFavorites'); }
 	get useSplitBucket()     { return this.prefs.get('useSplitBucket'); }
+	get kanban()             { return this.prefs.get('kanban'); }
+	get kanbanCollapsed()    { return this.prefs.get('kanbanCollapsed'); }
+
+	/** Канбан есть только у персональной доски: общая (все пользователи) всегда календарь. */
+	get kanbanActive()       { return Boolean(this.kanban) && this.users.selected !== null; }
+
+	/** Свёрнут ли столбец канбана (key — id стадии или 'closed') */
+	isKanbanCollapsed(key)   { return (this.kanbanCollapsed ?? []).includes(key); }
+
+	/** Свернуть/развернуть столбец канбана. Массив заменяем целиком — так он сохранится в куки. */
+	toggleKanbanCollapsed(key) {
+		const current = Array.from(this.kanbanCollapsed ?? []);
+		this.setPref('kanbanCollapsed', current.includes(key) ? current.filter(k => k !== key) : [...current, key]);
+	}
 	get sidebarWidth()       { return this.prefs.get('sidebarWidth'); }
 	get currentInterval()    { return this.prefs.get('currentInterval'); }
 	get incomingCallsVisible() { return this.prefs.get('incomingCallsVisible'); }
@@ -243,6 +260,9 @@ class LayoutStore {
 			keepPlanning: computed,
 			keepFavorites: computed,
 			useSplitBucket: computed,
+			kanban: computed,
+			kanbanCollapsed: computed,
+			kanbanActive: computed,
 			sidebarWidth: computed,
 			currentInterval: computed,
 			incomingCallsVisible: computed,

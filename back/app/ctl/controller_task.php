@@ -3,6 +3,9 @@
  * Класс инициации исходящих звонков в астериске
  */
 
+// привязки элементов к столбцам канбан-доски (поле STAGES, параметры stage/stageUser)
+if (!class_exists('stages_provider', false)) router::loadModel('stages_provider');
+
 class controller_task {
 	const MSG_OK='OK';
 	const MSG_NO_FROM='NO_FROM_SET';
@@ -182,13 +185,13 @@ class controller_task {
 			$id=(int)$task['ID'];
 			$result[$task['ID']] = $task;
 		}
-		echo json_encode(array_values($result),JSON_UNESCAPED_UNICODE);
+		echo json_encode(stages_provider::attached('task', array_values($result)),JSON_UNESCAPED_UNICODE);
 	}
 
 	public function action_linked(){
 		// Возвращаем только объекты из ids, без фильтра по периодам/пользователям
 		$tasks = static::loadTasksByIds(router::getIds());
-		echo json_encode(array_values($tasks),JSON_UNESCAPED_UNICODE);
+		echo json_encode(stages_provider::attached('task', array_values($tasks)),JSON_UNESCAPED_UNICODE);
 	}
 
 	/**
@@ -277,7 +280,7 @@ class controller_task {
 		$tasks = static::loadTasksByIds(array_values($tasks));
 		
 		// Возвращаем в том же формате, что и action_load
-		echo json_encode(array_values($tasks), JSON_UNESCAPED_UNICODE);
+		echo json_encode(stages_provider::attached('task', array_values($tasks)),JSON_UNESCAPED_UNICODE);
 	}
 
 	public function action_get(){
@@ -289,7 +292,7 @@ class controller_task {
 		$tasks = static::loadTasksByIds($ids);
 		if (!isset($tasks[$id]))
 			router::haltJson("Error loading Task");
-		echo json_encode(array_values($tasks),JSON_UNESCAPED_UNICODE);
+		echo json_encode(stages_provider::attached('task', array_values($tasks)),JSON_UNESCAPED_UNICODE);
 	}
 
 	function action_update() {
@@ -345,6 +348,8 @@ class controller_task {
 			$oTaskItem->Update(['PRIORITY' => $priority]);
 		}
 
+		stages_provider::applyRequest('task', $id);
+
 		echo '{"result":"ok","id":'.$id.'}';
 	}
 
@@ -398,6 +403,8 @@ class controller_task {
 				'data'   => $data,
 			]);
 		}
+
+		stages_provider::applyRequest('task', $taskId);
 
 		echo '{"result":"ok","id":'.$taskId.'}';
 	}

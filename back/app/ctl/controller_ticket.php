@@ -3,6 +3,9 @@
  * Поиск тикетов
  */
 
+// привязки элементов к столбцам канбан-доски (поле STAGES, параметры stage/stageUser)
+if (!class_exists('stages_provider', false)) router::loadModel('stages_provider');
+
 class controller_ticket {
 	const MSG_OK='OK';
 	const MSG_NO_FROM='NO_FROM_SET';
@@ -180,14 +183,14 @@ class controller_ticket {
 			$id=(int)$ticket['ID'];
 			$result[$id] = $ticket;
 		}
-		echo json_encode(array_values($result),JSON_UNESCAPED_UNICODE);
+		echo json_encode(stages_provider::attached('ticket', array_values($result)),JSON_UNESCAPED_UNICODE);
 	}
 
 	public function action_linked(){
 		// Возвращаем только объекты из ids, без фильтра по периодам/пользователям
 		$ids=router::getIds();
 		$tickets = static::loadTicketsByIds($ids);
-		echo json_encode(array_values($tickets),JSON_UNESCAPED_UNICODE);
+		echo json_encode(stages_provider::attached('ticket', array_values($tickets)),JSON_UNESCAPED_UNICODE);
 	}
 
 	public function action_get(){
@@ -199,7 +202,7 @@ class controller_ticket {
 		$tickets = static::loadTicketsByIds($ids);
 		if (!isset($tickets[$id]))
 			router::haltJson("Error loading Ticket");
-		echo json_encode(array_values($tickets),JSON_UNESCAPED_UNICODE);
+		echo json_encode(stages_provider::attached('ticket', array_values($tickets)),JSON_UNESCAPED_UNICODE);
 	}
 
 	/**
@@ -247,7 +250,31 @@ class controller_ticket {
 			router::haltJson('error creating ticket', 500);
 		}
 
+		stages_provider::applyRequest('ticket', $NEW_TICKET_ID);
+
 		echo '{"result":"ok","id":'.$NEW_TICKET_ID.'}';
+	}
+
+	/**
+	 * Изменение заявки из дашборда. Саму заявку дашборд не правит (она ведётся в техподдержке),
+	 * единственное, что можно поменять — столбец канбан-доски: параметры stage и stageUser.
+	 */
+	function action_update() {
+		if (is_null($id=router::getRoute(3, 'id')))
+			router::haltJson(static::MSG_NO_TICKET_ID);
+		$id=(int)$id;
+
+		if (!stages_provider::requested())
+			router::haltJson('no data to commit', 409);
+
+		// привязываем только существующую заявку
+		$tickets = static::loadTicketsByIds([$id]);
+		if (!isset($tickets[$id]))
+			router::haltJson('Заявка '.$id.' не найдена', 404);
+
+		stages_provider::applyRequest('ticket', $id);
+
+		echo '{"result":"ok","id":'.$id.'}';
 	}
 
 }

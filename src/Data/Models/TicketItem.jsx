@@ -1,6 +1,7 @@
 import { action, computed, makeObservable, observable } from "mobx";
 import DashItem from "./DashItem";
 import TimeHelper from "Helpers/TimeHelper";
+import notify from "Helpers/Notify";
 import { ticketSlaWorkDays } from "config.priv";
 
 class TicketItem extends DashItem {
@@ -82,6 +83,17 @@ class TicketItem extends DashItem {
 	 * Используем стандартный механизм DashItem.save() но с кастомными параметрами
 	 */
 	save(params, onSuccess = null, onFail = null) {
+		// Существующую заявку дашборд не редактирует (она ведётся в техподдержке).
+		// Единственное, что сохраняется — столбец канбан-доски: ticket/update принимает только его.
+		if (!this.isNew) {
+			if (params.stage === undefined) {
+				notify.warning('Заявки из дашборда не редактируются — изменение не сохранено', { title: this.label });
+				if (onFail !== null) onFail();
+				return false;
+			}
+			return super.save({ id: this.id, stage: params.stage, stageUser: params.stageUser }, onSuccess, onFail);
+		}
+
 		// Формируем текст из title и message
 		const text = this.title + "\n" + this.message;
 

@@ -2,6 +2,8 @@ import 'reflect-metadata';
 import ItemsStore from './ItemsStore';
 import { get, values, has} from 'mobx';
 import notify from 'Helpers/Notify';
+import { ITEM_TYPES } from 'Data/itemTypes';
+import { SHIFT_INTERVALS, shiftInterval, dateFieldOf, canShiftEarlier, shiftedDate } from 'Helpers/DateShift';
 
 
 class ItemsMultiStore {
@@ -181,7 +183,37 @@ class ItemsMultiStore {
     }
 
 
-		contextMenu=(task)=>[
+	/**
+	 * Подменю «В столбец»: столбцы канбан-доски владельца ячейки (cell.user).
+	 * Работает и в календаре — там это единственный способ переложить элемент, не переключаясь в канбан.
+	 * Столбцы берём без запуска загрузки (peek): меню строится при каждом рендере карточки,
+	 * а загрузку запускает contextMenuOpen() при открытии меню.
+	 */
+	stageMenu=(task,cell)=>{
+		if (!cell || !this.stages || !ITEM_TYPES[task.type]?.stages) return [];
+		const owner=cell.user;
+		const columns=this.stages.peek(owner);
+		const current=columns?task.stageFor(owner):null;
+		return [{
+			label: 'В столбец',
+			key: 'stageMenu',
+			disabled: task.isClosed,
+			children: columns
+				? columns.map(stage=>({
+					label: stage.title+(stage.id===current?' ✓':''),
+					key: 'stage:'+stage.id,
+					disabled: task.isClosed || stage.id===current,
+				}))
+				: [{ label: 'столбцы загружаются…', key: 'stage:loading', disabled: true }],
+		}];
+	}
+
+	/** Обработчик onOpenChange контекстного меню карточки: подгружает столбцы владельца ячейки */
+	contextMenuOpen=(cell)=>(open)=>{
+		if (open && cell && this.stages) this.stages.ensure(Number(cell.user));
+	}
+
+		contextMenu=(task,cell=null)=>[
 		{
 			label: 'В начало списка',
 			key: 'toTop',
@@ -195,28 +227,22 @@ class ItemsMultiStore {
 		{
 			label: 'Отодвинуть срок',
 			disabled: task.isClosed,
-			children: [
-				{
-					label: 'на 1 неделю',
-					key: 'weekLater1',
-					disabled: task.isClosed,
-				},
-				{
-					label: 'на 2 недели',
-					key: 'weekLater2',
-					disabled: task.isClosed,
-				},
-				{
-					label: 'на 1 месяц',
-					key: 'monthLater1',
-					disabled: task.isClosed,
-				},
-				{
-					label: 'на 2 месяца',
-					key: 'monthLater2',
-					disabled: task.isClosed,
-				},
-			]
+			children: SHIFT_INTERVALS.map(interval=>({
+				label: interval.label,
+				key: 'later:'+interval.id,
+				disabled: task.isClosed,
+			})),
+		},
+		{
+			//приблизить можно только настолько, чтобы дата не ушла в прошлое;
+			//недоступные пункты приглушены, а не скрыты — меню не «прыгает»
+			label: 'Приблизить срок',
+			disabled: !SHIFT_INTERVALS.some(interval=>canShiftEarlier(task,interval.ms,this.time.today)),
+			children: SHIFT_INTERVALS.map(interval=>({
+				label: interval.label,
+				key: 'earlier:'+interval.id,
+				disabled: !canShiftEarlier(task,interval.ms,this.time.today),
+			})),
 		},
 		{
 			label: 'В долгий ящик',
@@ -234,7 +260,7 @@ class ItemsMultiStore {
 				},
 			]
 		},
-		
+		...this.stageMenu(task,cell),
 	];
 
 	contextMenuHandler=(task,cell)=>(e)=>{
@@ -250,13 +276,29 @@ class ItemsMultiStore {
 				task.update({ user: userId }, true, () => notify.success('Ответственный изменён: ' + userName, { title: label }));
 				return;
 			}
+			//перенос в столбец канбан-доски владельца ячейки
+			if (e.key.startsWith("stage:")) {
+				const stage=this.stages?.stageById(Number(e.key.split(':')[1]));
+				if (!stage) return;
+				const label = task.label;
+				//в канбане перенос виден сразу, в календаре — нет, поэтому там сообщаем
+				const done = cell.kanban ? null : () => notify.success('Столбец: «' + stage.title + '»', { title: label });
+				task.update({ stage: stage.id, stageUser: cell.user }, true, done);
+				return;
+			}
+			//сдвиг срока: later:<интервал> / earlier:<интервал>
+			if (e.key.startsWith("later:") || e.key.startsWith("earlier:")) {
+				const [direction,id]=e.key.split(':');
+				const interval=shiftInterval(id);
+				if (!interval) return;
+				const earlier = direction==='earlier';
+				if (earlier && !canShiftEarlier(task,interval.ms,this.time.today)) return;
+				task.update({ [dateFieldOf(task)]: shiftedDate(task,interval.ms,earlier?-1:1,this.time.today) }, true);
+				return;
+			}
 			switch(e.key) {
 				case 'toTop': task.update({ sorting: cell.maxSorting?cell.maxSorting+100:100 }, true); break;
 				case 'toBottom': task.update({ sorting: cell.minSorting?cell.minSorting-100:100 }, true); break;
-				case 'weekLater1': task.update({ startDatePlan: task.t+week*1 }, true); break;
-				case 'weekLater2': task.update({ startDatePlan: task.t+week*2 }, true); break;
-				case 'monthLater1': task.update({ startDatePlan: task.t+month*1 }, true); break;
-				case 'monthLater2': task.update({ startDatePlan: task.t+month*2 }, true); break;
 				case 'bucketTop': {
 					let bucketTasks=[...values(this['task'].items), ...values(this['job'].items)].filter((it)=>it.t===null && it.isOpen && it.user===cell.user);
 					let bucketMaxSorting=bucketTasks.length?Math.max(...bucketTasks.map((it)=>it.sorting))+100:100;

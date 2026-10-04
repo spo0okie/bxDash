@@ -13,6 +13,7 @@ import ScheduleStore from './ScheduleStore';
 import IncomingCallsStore from './IncomingCallsStore';
 import DutyStore from './DutyStore';
 import NotificationsStore from './NotificationsStore';
+import StagesStore from './StagesStore';
 import notify from 'Helpers/Notify';
 
 /**
@@ -69,6 +70,9 @@ export function createStores() {
 	// конструктор сам вызывает periods.attachItemsStore(this)
 	const items = new ItemsMultiStore(main, time, users, periods, schedule);
 
+	// столбцы канбан-досок; стор сам прописывается в items.stages (элементы читают его через context)
+	const stages = new StagesStore(main, users, items, layout, time);
+
 	// WS опционален — может быть отключён в конфиге
 	const ws = wsUrl ? new WsStore(wsUrl, main, users, items) : null;
 
@@ -80,7 +84,7 @@ export function createStores() {
 	// входящие вызовы — слушают phoneStatus у current user
 	const incomingCalls = new IncomingCallsStore(main, users, layout, incomingCallConfig);
 
-	return { main, time, users, layout, periods, items, ws, alerts, theme, schedule, duty, incomingCalls, notifications };
+	return { main, time, users, layout, periods, items, ws, alerts, theme, schedule, duty, incomingCalls, notifications, stages };
 }
 
 /**

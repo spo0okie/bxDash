@@ -94,6 +94,21 @@ class TimeHelper {
 		return hm + ":" + this.zeroPad(s);
 	}
 
+	//остаток времени для отсчёта до ПЛАНОВОЙ даты: она известна с точностью до дня,
+	//поэтому без секунд (и отсчёт не нужно пересчитывать каждую секунду):
+	//  - от 3 суток: "Nд";  от суток: "Nд Чч";  меньше суток: "Ч:ММ"
+	//  - отрицательный: пустая строка
+	strRemainingCoarse(ms) {
+		if (ms < 0) return "";
+		const totalMin = Math.floor(ms / 60000);
+		const days = Math.floor(totalMin / 1440);
+		const h = Math.floor((totalMin % 1440) / 60);
+		const m = totalMin % 60;
+		if (days >= 3) return days + "д";
+		if (days >= 1) return days + "д " + h + "ч";
+		return h + ":" + this.zeroPad(m);
+	}
+
 	//конверитирует разницу в мкс в вид [1d 23h 57m 11s]
 	strDiff(diff) {
 		let output = "";

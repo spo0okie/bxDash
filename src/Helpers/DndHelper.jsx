@@ -68,7 +68,20 @@ function isDropOnSelf(targetCell, sourceCell, oldIndex, dropOnItem) {
  * реально меняется относительно sourceCell — тогда movePosition покажет confirm
  * только по релевантным полям.
  */
-function buildMoveParams(item, sourceCell, targetCell, newSort) {
+export function buildMoveParams(item, sourceCell, targetCell, newSort) {
+    // Канбан: столбцы — не время и не люди. Перетаскивание меняет только порядок и столбец;
+    // плановая дата и ответственный остаются как были.
+    const target = targetCell.data.cell;
+    if (target.kanban) {
+        const params = { sorting: newSort };
+        if (item.stageFor(target.user) !== target.stage.id) {
+            console.log('changing stage => ' + target.stage.id + ' (board of ' + target.user + ')');
+            params.stage = target.stage.id;
+            params.stageUser = target.user;
+        }
+        return params;
+    }
+
     const tField = item.dropTimeField || 'deadline';
     const params = {
         [tField]: item[tField],

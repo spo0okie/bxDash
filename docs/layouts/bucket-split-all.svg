@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 542 628" width="542" height="628">
+<style>text{font:11px Consolas,Menlo,'DejaVu Sans Mono',monospace;fill:#1c2030}.t{font-weight:bold}.n{fill:#5b6275}.g{fill:#8a90a2;font-style:italic}</style>
+<rect width="542" height="628" fill="#ffffff"/>
+<rect x="8" y="8" width="525.9" height="612" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="15" y="23" class="t">div#calendarGrid.Calendar</text>
+<rect x="15" y="27" width="511.9" height="22" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="22" y="42" class="g">div.Interval.row × N — недели (раскладка A или B)</text>
+<rect x="15" y="55" width="511.9" height="182" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="22" y="70" class="t">div.Interval.row</text>
+<text x="22" y="84" class="n">корзина, priority=2</text>
+<rect x="22" y="88" width="497.9" height="142" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="29" y="103" class="t">div.Period.row.periodN</text>
+<text x="29" y="117" class="n">Высокий приоритет</text>
+<rect x="29" y="121" width="483.9" height="102" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="36" y="136" class="t">div.periodContent</text>
+<rect x="36" y="140" width="114.5" height="76" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="43" y="155" class="t">div.PeriodTitle</text>
+<text x="43" y="169" class="n">h3 повёрнут</text>
+<text x="43" y="183" class="n">вертикально</text>
+<rect x="156.5" y="140" width="349.4" height="76" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="163.5" y="155" class="t">div.PeriodData › table.UserCells › tbody › tr</text>
+<rect x="163.5" y="159" width="107.8" height="50" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="170.5" y="174" class="g">td.userCell</text>
+<text x="170.5" y="188" class="n">пользователь 1</text>
+<text x="170.5" y="202" class="n">(то же)</text>
+<rect x="277.3" y="159" width="107.8" height="50" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="284.3" y="174" class="g">td.userCell</text>
+<text x="284.3" y="188" class="n">пользователь 2</text>
+<text x="284.3" y="202" class="n">(то же)</text>
+<rect x="391.1" y="159" width="107.8" height="50" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="398.1" y="174" class="g">td.userCell</text>
+<text x="398.1" y="188" class="n">пользователь N</text>
+<text x="398.1" y="202" class="n">(то же)</text>
+<rect x="15" y="243" width="511.9" height="182" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="22" y="258" class="t">div.Interval.row</text>
+<text x="22" y="272" class="n">корзина, priority=1</text>
+<rect x="22" y="276" width="497.9" height="142" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="29" y="291" class="t">div.Period.row.periodN</text>
+<text x="29" y="305" class="n">Средний приоритет</text>
+<rect x="29" y="309" width="483.9" height="102" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="36" y="324" class="t">div.periodContent</text>
+<rect x="36" y="328" width="114.5" height="76" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="43" y="343" class="t">div.PeriodTitle</text>
+<text x="43" y="357" class="n">h3 повёрнут</text>
+<text x="43" y="371" class="n">вертикально</text>
+<rect x="156.5" y="328" width="349.4" height="76" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="163.5" y="343" class="t">div.PeriodData › table.UserCells › tbody › tr</text>
+<rect x="163.5" y="347" width="107.8" height="50" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="170.5" y="362" class="g">td.userCell</text>
+<text x="170.5" y="376" class="n">пользователь 1</text>
+<text x="170.5" y="390" class="n">(то же)</text>
+<rect x="277.3" y="347" width="107.8" height="50" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="284.3" y="362" class="g">td.userCell</text>
+<text x="284.3" y="376" class="n">пользователь 2</text>
+<text x="284.3" y="390" class="n">(то же)</text>
+<rect x="391.1" y="347" width="107.8" height="50" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="398.1" y="362" class="g">td.userCell</text>
+<text x="398.1" y="376" class="n">пользователь N</text>
+<text x="398.1" y="390" class="n">(то же)</text>
+<rect x="15" y="431" width="511.9" height="182" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="22" y="446" class="t">div.Interval.row</text>
+<text x="22" y="460" class="n">корзина, priority=0</text>
+<rect x="22" y="464" width="497.9" height="142" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="29" y="479" class="t">div.Period.row.periodN</text>
+<text x="29" y="493" class="n">Отложено</text>
+<rect x="29" y="497" width="483.9" height="102" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="36" y="512" class="t">div.periodContent</text>
+<rect x="36" y="516" width="114.5" height="76" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="43" y="531" class="t">div.PeriodTitle</text>
+<text x="43" y="545" class="n">h3 повёрнут</text>
+<text x="43" y="559" class="n">вертикально</text>
+<rect x="156.5" y="516" width="349.4" height="76" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="163.5" y="531" class="t">div.PeriodData › table.UserCells › tbody › tr</text>
+<rect x="163.5" y="535" width="107.8" height="50" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="170.5" y="550" class="g">td.userCell</text>
+<text x="170.5" y="564" class="n">пользователь 1</text>
+<text x="170.5" y="578" class="n">(то же)</text>
+<rect x="277.3" y="535" width="107.8" height="50" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="284.3" y="550" class="g">td.userCell</text>
+<text x="284.3" y="564" class="n">пользователь 2</text>
+<text x="284.3" y="578" class="n">(то же)</text>
+<rect x="391.1" y="535" width="107.8" height="50" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="398.1" y="550" class="g">td.userCell</text>
+<text x="398.1" y="564" class="n">пользователь N</text>
+<text x="398.1" y="578" class="n">(то же)</text>
+</svg>

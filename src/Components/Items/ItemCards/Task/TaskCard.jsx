@@ -34,6 +34,24 @@ const DeadlineCountdown = observer(({ task }) => {
 	);
 });
 
+/**
+ * Нейтральный отсчёт до плановой даты. Показывается только в канбане: там нет оси времени,
+ * а в календаре плановую дату и так показывает положение карточки.
+ * Если у задачи есть крайний срок — показываем только его (красный DeadlineCountdown).
+ */
+const PlanCountdown = observer(({ task, layout }) => {
+	if (!layout.kanbanActive) return null;
+	if (task.deadline) return null;
+	const remaining = task.planRemainingMs;
+	if (remaining === null) return null;
+
+	return (
+		<span className="planCountdown" aria-hidden="true">
+			{TimeHelper.strRemainingCoarse(remaining)}
+		</span>
+	);
+});
+
 const TaskStatusUpdates = observer((props) => {
 	//trace();
 	const context = useContext(StoreContext);
@@ -105,6 +123,8 @@ const TaskDeadline = observer((props) => {
 		);
 		date = task.deadlineStr;
 	}
+	if (!task.isClosed && task.startDatePlan)
+		tips.push("Запланировано: " + TimeHelper.strDateHumanLong(task.startDatePlan));
 
 	let priorityClass = "";
 
@@ -236,10 +256,11 @@ const TaskCard = observer((props) => {
 		return (
 			<Dropdown
 				menu={{
-					items: [...items.contextMenu(task), ...users.contextMenu(task)],
+					items: [...items.contextMenu(task, cell), ...users.contextMenu(task)],
 					onClick: cell ? items.contextMenuHandler(task, cell) : undefined,
 				}}
 				trigger={["contextMenu"]}
+				onOpenChange={items.contextMenuOpen(cell)}
 			>
 				<li
 					className={classNames(
@@ -266,6 +287,7 @@ const TaskCard = observer((props) => {
 					id={task.uid}
 				>
 					<DeadlineCountdown task={task} />
+					<PlanCountdown task={task} layout={layout} />
 					<div className="content" name={task.uid}>
 						{task.isNew ? (
 							<EditItem item={task} items={context.items.tasks} />

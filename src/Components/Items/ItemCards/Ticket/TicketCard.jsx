@@ -1,7 +1,7 @@
 import React, { useRef, useContext, useCallback, Fragment } from "react";
 import { observer } from "mobx-react";
 import { get } from "mobx";
-import { Tooltip } from "antd";
+import { Dropdown, Tooltip } from "antd";
 
 import "./TicketCard.css";
 import classNames from "classnames";
@@ -29,6 +29,7 @@ const TicketCard = observer((props) => {
 	const ref = useRef(null);
 	const context = useContext(StoreContext);
 	const item = get(context.items["ticket"].items, props.item.id);
+	const cell = props.cell;
 
 	// Мемоизированные обработчики событий для предотвращения лишних ре-рендеров
 	const handleMouseEnter = useCallback(() => item.mouseIn(), [item]);
@@ -79,7 +80,10 @@ const TicketCard = observer((props) => {
 
 	const overdue = item.isSlaOverdue;
 
-	return (
+	// Заявку дашборд не правит, поэтому контекстное меню у неё одно: «В столбец» канбан-доски.
+	const menuItems = cell ? context.items.stageMenu(item, cell) : [];
+
+	const card = (
 		<li
 			className={classNames(
 				"userItem", //это понятно
@@ -110,6 +114,18 @@ const TicketCard = observer((props) => {
 				<TicketDeadline item={item} />
 			</div>
 		</li>
+	);
+
+	if (!menuItems.length) return card;
+
+	return (
+		<Dropdown
+			menu={{ items: menuItems, onClick: context.items.contextMenuHandler(item, cell) }}
+			trigger={["contextMenu"]}
+			onOpenChange={context.items.contextMenuOpen(cell)}
+		>
+			{card}
+		</Dropdown>
 	);
 });
 

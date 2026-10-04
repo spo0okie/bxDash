@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 601 530" width="601" height="530">
+<style>text{font:11px Consolas,Menlo,'DejaVu Sans Mono',monospace;fill:#1c2030}.t{font-weight:bold}.n{fill:#5b6275}.g{fill:#8a90a2;font-style:italic}</style>
+<rect width="601" height="530" fill="#ffffff"/>
+<rect x="8" y="8" width="584.9" height="514" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="15" y="23" class="t">td.userCell</text>
+<text x="15" y="37" class="n">+ класс .draggedOver, пока над ячейкой тащат карточку</text>
+<rect x="15" y="41" width="570.9" height="474" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="22" y="56" class="t">div.userCellContent</text>
+<text x="22" y="70" class="n">flex column; фон — градиент отсутствий пользователя</text>
+<rect x="22" y="74" width="556.9" height="76" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="29" y="89" class="t">div.userCellHeader</text>
+<rect x="29" y="93" width="83.3" height="50" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="36" y="108" class="t">span</text>
+<text x="36" y="122" class="n">закрыто</text>
+<text x="36" y="136" class="n">тикетов</text>
+<rect x="118.3" y="93" width="96.7" height="50" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="125.3" y="108" class="t">span</text>
+<text x="125.3" y="122" class="n">выполнено</text>
+<text x="125.3" y="136" class="n">работ</text>
+<rect x="220.9" y="93" width="83.3" height="50" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="227.9" y="108" class="t">span</text>
+<text x="227.9" y="122" class="n">закрыто</text>
+<text x="227.9" y="136" class="n">задач</text>
+<rect x="310.2" y="93" width="83.3" height="50" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="317.2" y="108" class="t">span</text>
+<text x="317.2" y="122" class="n">открыто</text>
+<text x="317.2" y="136" class="n">тикетов</text>
+<rect x="399.4" y="93" width="83.3" height="50" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="406.4" y="108" class="t">span</text>
+<text x="406.4" y="122" class="n">заплан.</text>
+<text x="406.4" y="136" class="n">работ</text>
+<rect x="488.7" y="93" width="83.3" height="50" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="495.7" y="108" class="t">span</text>
+<text x="495.7" y="122" class="n">открыто</text>
+<text x="495.7" y="136" class="n">задач</text>
+<rect x="22" y="156" width="556.9" height="146" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="29" y="171" class="t">ul</text>
+<text x="29" y="185" class="n">CardsBlock dnd=false — закрытые элементы и планы</text>
+<rect x="29" y="189" width="542.9" height="22" rx="3" fill="#fef3c7" stroke="#7d8799"/>
+<text x="36" y="204" class="t">planItem</text>
+<rect x="29" y="217" width="542.9" height="22" rx="3" fill="#dcfce7" stroke="#7d8799"/>
+<text x="36" y="232" class="t">jobItem</text>
+<rect x="29" y="245" width="542.9" height="22" rx="3" fill="#dbeafe" stroke="#7d8799"/>
+<text x="36" y="260" class="t">taskItem</text>
+<rect x="29" y="273" width="542.9" height="22" rx="3" fill="#fee2e2" stroke="#7d8799"/>
+<text x="36" y="288" class="t">ticketItem</text>
+<rect x="22" y="308" width="556.9" height="76" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="29" y="323" class="t">span.CreateItemButton</text>
+<text x="29" y="337" class="n">набор кнопок зависит от period.isOpen / isClosed / isToday</text>
+<rect x="29" y="341" width="101.1" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="36" y="356" class="t">closedJob</text>
+<text x="36" y="370" class="n">период закрыт</text>
+<rect x="136.1" y="341" width="101.1" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="143.1" y="356" class="t">job</text>
+<text x="143.1" y="370" class="n">период открыт</text>
+<rect x="243.2" y="341" width="107.8" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="250.2" y="356" class="t">ticket</text>
+<text x="250.2" y="370" class="n">только сегодня</text>
+<rect x="357" y="341" width="101.1" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="364" y="356" class="t">task</text>
+<text x="364" y="370" class="n">период открыт</text>
+<rect x="464.1" y="341" width="107.8" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="471.1" y="356" class="t">plan</text>
+<text x="471.1" y="370" class="n">если wDays ∋ 6</text>
+<rect x="22" y="390" width="556.9" height="118" rx="3" fill="#f5f6fa" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="29" y="405" class="t">ul.droppableBlock</text>
+<text x="29" y="419" class="n">CardsBlock dnd=true — открытые элементы, drop-target; только если period.isOpen</text>
+<rect x="29" y="423" width="542.9" height="22" rx="3" fill="#dbeafe" stroke="#7d8799"/>
+<text x="36" y="438" class="t">taskItem</text>
+<rect x="29" y="451" width="542.9" height="22" rx="3" fill="#dcfce7" stroke="#7d8799"/>
+<text x="36" y="466" class="t">jobItem</text>
+<rect x="29" y="479" width="542.9" height="22" rx="3" fill="#fee2e2" stroke="#7d8799"/>
+<text x="36" y="494" class="t">ticketItem</text>
+</svg>

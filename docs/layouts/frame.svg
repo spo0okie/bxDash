@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1039 838" width="1039" height="838">
+<style>text{font:11px Consolas,Menlo,'DejaVu Sans Mono',monospace;fill:#1c2030}.t{font-weight:bold}.n{fill:#5b6275}.g{fill:#8a90a2;font-style:italic}</style>
+<rect width="1039" height="838" fill="#ffffff"/>
+<rect x="8" y="8" width="1022.9" height="822" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="15" y="23" class="t">body</text>
+<rect x="15" y="27" width="1008.9" height="796" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="22" y="42" class="t">div#root</text>
+<rect x="22" y="46" width="994.9" height="22" rx="3" fill="#f5f6fa" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="29" y="61" class="t">ControlPanel — панель авторизации / отладки  (при проблемах auth/WS или layout.debugVisible)</text>
+<rect x="22" y="74" width="994.9" height="22" rx="3" fill="#f5f6fa" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="29" y="89" class="t">ModalWindow — antd Modal.bxModal с iframe  (layout.modalVisible)</text>
+<rect x="22" y="102" width="994.9" height="22" rx="3" fill="#f5f6fa" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="29" y="117" class="t">CreateTicketModal  (layout.ticketModalVisible)</text>
+<rect x="22" y="130" width="994.9" height="22" rx="3" fill="#f5f6fa" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="29" y="145" class="t">div.IncomingCallsStack › IncomingCallCard × N  (есть активные звонки)</text>
+<rect x="22" y="158" width="994.9" height="180" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="29" y="173" class="t">div.AppHeader</text>
+<text x="29" y="187" class="n">position: fixed, поверх доски</text>
+<rect x="29" y="191" width="980.9" height="140" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="36" y="206" class="t">div.layout</text>
+<rect x="36" y="210" width="127.9" height="114" rx="3" fill="#f5f6fa" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="43" y="225" class="t">div.memo</text>
+<text x="43" y="239" class="n">«Заметки»</text>
+<text x="43" y="253" class="n">если memosVisible</text>
+<rect x="169.9" y="210" width="833" height="114" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="176.9" y="225" class="t">div.dashBoard</text>
+<rect x="176.9" y="229" width="819" height="88" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="183.9" y="244" class="t">div.AppUserList</text>
+<rect x="183.9" y="248" width="114.5" height="62" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="190.9" y="263" class="t">div.PeriodTitle</text>
+<text x="190.9" y="277" class="n">пустой отступ</text>
+<rect x="304.4" y="248" width="543.9" height="62" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="311.4" y="263" class="t">div.PeriodData.Row › table.UserCells › tbody › tr</text>
+<rect x="311.4" y="267" width="172.6" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="318.4" y="282" class="t">td › UserItem</text>
+<text x="318.4" y="296" class="n">пользователь 1</text>
+<rect x="490" y="267" width="172.6" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="497" y="282" class="t">td › UserItem</text>
+<text x="497" y="296" class="n">пользователь 2</text>
+<rect x="668.7" y="267" width="172.6" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="675.7" y="282" class="t">td › UserItem</text>
+<text x="675.7" y="296" class="n">пользователь N</text>
+<rect x="854.3" y="248" width="134.6" height="62" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="861.3" y="263" class="t">div.dummyScrollBar</text>
+<rect x="22" y="344" width="994.9" height="22" rx="3" fill="#f5f6fa" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="29" y="359" class="t">div.task-search-modal — TaskSearch  (Ctrl+K)</text>
+<rect x="22" y="372" width="994.9" height="22" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="29" y="387" class="t">HomeButton — плавающая кнопка «домой»</text>
+<rect x="22" y="400" width="994.9" height="22" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="29" y="415" class="t">MenuButton .memoButton 📝   → layout.memosVisible</text>
+<rect x="22" y="428" width="994.9" height="22" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="29" y="443" class="t">MenuButton .optionsButton ⚙️ → layout.debugVisible</text>
+<rect x="22" y="456" width="994.9" height="22" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="29" y="471" class="t">MenuButton .calendarButton 📅/📆 → layout.expand</text>
+<rect x="22" y="484" width="994.9" height="332" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="29" y="499" class="t">div.layout</text>
+<text x="29" y="513" class="n">flex row</text>
+<rect x="29" y="517" width="303.2" height="292" rx="3" fill="#e9ecf5" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="36" y="532" class="t">div.App-Sidebar</text>
+<text x="36" y="546" class="n">если memosVisible</text>
+<rect x="36" y="550" width="215.6" height="252" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="43" y="565" class="t">div.App-Sidebar-content</text>
+<rect x="43" y="569" width="201.6" height="226" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="50" y="584" class="t">div.userCellContent.memoCell</text>
+<rect x="50" y="588" width="187.6" height="62" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="57" y="603" class="t">ul</text>
+<text x="57" y="617" class="n">закрытые</text>
+<rect x="57" y="621" width="173.6" height="22" rx="3" fill="#f3e8ff" stroke="#7d8799"/>
+<text x="64" y="636" class="t">memoItem</text>
+<rect x="50" y="656" width="187.6" height="36" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="57" y="671" class="t">span.CreateItemButton</text>
+<text x="57" y="685" class="n">«добавить»</text>
+<rect x="50" y="698" width="187.6" height="90" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="57" y="713" class="t">ul.droppableBlock</text>
+<text x="57" y="727" class="n">открытые, DnD</text>
+<rect x="57" y="731" width="173.6" height="22" rx="3" fill="#f3e8ff" stroke="#7d8799"/>
+<text x="64" y="746" class="t">memoItem</text>
+<rect x="57" y="759" width="173.6" height="22" rx="3" fill="#f3e8ff" stroke="#7d8799"/>
+<text x="64" y="774" class="t">memoItem</text>
+<rect x="257.6" y="550" width="67.6" height="252" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="264.6" y="565" class="t">div.App-</text>
+<text x="264.6" y="579" class="n">Sidebar-</text>
+<text x="264.6" y="593" class="n">resizer</text>
+<rect x="338.2" y="517" width="464.1" height="292" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="345.2" y="532" class="t">div.dashBoard</text>
+<rect x="345.2" y="536" width="450.1" height="266" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="352.2" y="551" class="t">div#calendarGrid.Calendar</text>
+<text x="352.2" y="565" class="n">ScrollSection — прокручиваемая область</text>
+<rect x="352.2" y="569" width="436.1" height="198" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="359.2" y="584" class="g">Interval × N  →  содержимое зависит от раскладки, см. схемы A–D</text>
+<rect x="352.2" y="773" width="436.1" height="22" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="359.2" y="788" class="g">BucketIntervals (корзина)  →  здесь только на общей доске</text>
+<rect x="808.3" y="517" width="201.6" height="292" rx="3" fill="#e9ecf5" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="815.3" y="532" class="t">div.rightPane</text>
+<text x="815.3" y="546" class="n">только на персональной доске</text>
+<rect x="815.3" y="550" width="187.6" height="252" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="822.3" y="565" class="g">BucketIntervals</text>
+<text x="822.3" y="579" class="n">(корзина)</text>
+</svg>

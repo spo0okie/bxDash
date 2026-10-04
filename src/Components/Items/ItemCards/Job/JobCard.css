@@ -1,4 +1,5 @@
-td.userCell ul li.userJob.closed {
+/* div.userCellContent есть и в ячейке календаря, и в столбце канбана (td.userCell — только в календаре) */
+div.userCellContent ul li.userJob.closed {
     color: var(--job-text-closed);
     border-color: var(--job-border-closed);
     box-shadow: var(--job-shadow-closed);
@@ -6,7 +7,7 @@ td.userCell ul li.userJob.closed {
     background: var(--job-bg-closed);
 }
 
-td.userCell ul li.userJob.open {
+div.userCellContent ul li.userJob.open {
     color: var(--job-text-open);
     border-color: var(--job-border-open);
     box-shadow: var(--job-shadow-open);

@@ -130,6 +130,7 @@ class ItemsStore {
 	 * @returns 
 	 */
 	getContext(){
+		const master = this.master;
 		return {
 			time: this.time,
 			main: this.main,
@@ -137,6 +138,9 @@ class ItemsStore {
 			users: this.users,
 			periods: this.periods,
 			schedule: this.schedule,
+			// StagesStore создаётся позже элементов и сам прописывается в master.stages —
+			// поэтому геттер, а не значение на момент создания контекста
+			get stages() { return master?.stages ?? null; },
 		};
 	}
 

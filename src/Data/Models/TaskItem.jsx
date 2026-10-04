@@ -175,6 +175,21 @@ class TaskItem extends DashItem {
 		return this.deadline - Date.now();
 	}
 
+	/**
+	 * Остаток до плановой даты в мс — для нейтрального отсчёта на карточке в канбане,
+	 * где оси времени нет. null — если показывать нечего: задача закрыта, уже в работе,
+	 * плановой даты нет или она прошла.
+	 * Плановая дата известна с точностью до дня, поэтому подписываемся на минуты,
+	 * а не на секунды: доска не перерисовывается каждую секунду.
+	 */
+	get planRemainingMs() {
+		if (this.isClosed || this.isNow) return null;
+		if (!this.startDatePlan) return null;
+		void this.context?.time?.minutes;
+		const remaining = this.startDatePlan - Date.now();
+		return remaining > 0 ? remaining : null;
+	}
+
 	/** Просрочен ли дедлайн (для css-классов карточки). */
 	get isDeadlineOverdue() {
 		const r = this.deadlineRemainingMs;
@@ -191,6 +206,7 @@ class TaskItem extends DashItem {
 			updatesCount: observable,
 			startDatePlan: observable,
 			deadlineRemainingMs: computed,
+			planRemainingMs: computed,
 			isDeadlineOverdue: computed,
 			setStatus: action,
 			setUpdates: action,

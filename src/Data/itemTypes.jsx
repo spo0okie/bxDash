@@ -14,21 +14,26 @@ import DashItem from 'Data/Models/DashItem';
  *   reloadMs   — период авто-перезагрузки с бэка (0 — не перезагружать по таймеру)
  *   wsEvent    — имя WebSocket-события на обновление (null — этот тип не приходит по WS)
  *   wsIdField  — имя поля с id внутри WS-сообщения (у task — taskId, у plan — id и т.д.)
+ *   stages     — элементы этого типа раскладываются по столбцам канбан-доски
+ *                (бэкенд отдаёт им поле STAGES и принимает stage/stageUser)
  *
  * Все циклы по типам в проекте должны строиться от этого объекта,
  * а не от литеральных списков [task, ticket, job, ...].
  */
 export const ITEM_TYPES = {
-	task:   { class: TaskItem,   reloadMs: 5 * 60 * 1000, wsEvent: 'taskUpdate',   wsIdField: 'taskId'   },
-	ticket: { class: TicketItem, reloadMs: 2 * 60 * 1000, wsEvent: 'ticketUpdate', wsIdField: 'ticketId' },
-	job:    { class: JobItem,    reloadMs: 0,             wsEvent: 'jobUpdate',    wsIdField: 'jobId'    },
-	plan:   { class: PlanItem,   reloadMs: 0,             wsEvent: 'planUpdate',   wsIdField: 'id'       },
-	memo:   { class: MemoItem,   reloadMs: 0,             wsEvent: null,           wsIdField: null       },
-	absent: { class: AbsentItem, reloadMs: 0,             wsEvent: null,           wsIdField: null       },
+	task:   { class: TaskItem,   reloadMs: 5 * 60 * 1000, wsEvent: 'taskUpdate',   wsIdField: 'taskId',   stages: true  },
+	ticket: { class: TicketItem, reloadMs: 2 * 60 * 1000, wsEvent: 'ticketUpdate', wsIdField: 'ticketId', stages: true  },
+	job:    { class: JobItem,    reloadMs: 0,             wsEvent: 'jobUpdate',    wsIdField: 'jobId',    stages: true  },
+	plan:   { class: PlanItem,   reloadMs: 0,             wsEvent: 'planUpdate',   wsIdField: 'id',       stages: false },
+	memo:   { class: MemoItem,   reloadMs: 0,             wsEvent: null,           wsIdField: null,       stages: false },
+	absent: { class: AbsentItem, reloadMs: 0,             wsEvent: null,           wsIdField: null,       stages: false },
 };
 
 /** Имена всех зарегистрированных типов в порядке объявления. */
 export const ITEM_TYPE_NAMES = Object.keys(ITEM_TYPES);
+
+/** Типы, элементы которых раскладываются по столбцам канбан-доски. */
+export const STAGE_ITEM_TYPES = ITEM_TYPE_NAMES.filter(type => ITEM_TYPES[type].stages);
 
 /** Базовый класс для типа 'dash' — fallback, если конкретный класс не найден. */
 export const DASH_BASE_CLASS = DashItem;

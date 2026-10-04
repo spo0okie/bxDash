@@ -155,12 +155,21 @@ class router
 
 		// любое исключение (в т.ч. TasksException битрикса: нет прав и т.п.) отдаём фронту JSON'ом,
 		// а не HTML-трейсом — фронт покажет текст ошибки во всплывающем уведомлении
+		// ВАЖНО: портал работает на PHP 5 — в back/ нельзя использовать синтаксис PHP 7+ (??, типы и т.п.).
+		// На PHP 5 класса Throwable нет: такой catch там просто никогда не срабатывает,
+		// поэтому Exception ловим отдельной веткой, а Throwable оставляем для Error на PHP 7+.
 		try {
 			$controller->$action_name();
+		} catch (\Exception $e) {
+			static::haltException($e, $controller_name, $action_name);
 		} catch (\Throwable $e) {
-			error_log('bxDash '.$controller_name.'::'.$action_name.': '.get_class($e).': '.$e->getMessage());
-			router::haltJson(static::exceptionMessage($e), 500, ['class' => get_class($e)]);
+			static::haltException($e, $controller_name, $action_name);
 		}
+	}
+
+	static function haltException($e, $controller_name, $action_name) {
+		error_log('bxDash '.$controller_name.'::'.$action_name.': '.get_class($e).': '.$e->getMessage());
+		router::haltJson(static::exceptionMessage($e), 500, ['class' => get_class($e)]);
 	}
 
 	/**
@@ -169,24 +178,35 @@ class router
 	 */
 	static function exceptionMessage($e) {
 		$msg = $e->getMessage();
-		$errors = @unserialize($msg, ['allowed_classes' => false]);
+		$errors = null;
+		// разбираем только то, что похоже на сериализованный массив
+		if (is_string($msg) && preg_match('/^a:\d+:\{/', $msg)) {
+			// второй аргумент unserialize (запрет объектов) появился в PHP 7
+			$errors = (PHP_VERSION_ID >= 70000)
+				? @unserialize($msg, ['allowed_classes' => false])
+				: @unserialize($msg);
+		}
 		if (is_array($errors)) {
 			$texts = [];
-			foreach ($errors as $err)
-				$texts[] = is_array($err) ? ($err['text'] ?? $err['TEXT'] ?? json_encode($err, JSON_UNESCAPED_UNICODE)) : (string)$err;
+			foreach ($errors as $err) {
+				if (!is_array($err)) $texts[] = (string)$err;
+				elseif (isset($err['text'])) $texts[] = $err['text'];
+				elseif (isset($err['TEXT'])) $texts[] = $err['TEXT'];
+				else $texts[] = json_encode($err, JSON_UNESCAPED_UNICODE);
+			}
 			if ($texts) $msg = implode("\n", $texts);
 		}
 		if ($msg === '' || $msg === null) $msg = get_class($e);
 		return $msg;
 	}
 
-	function errorNoClass($ctl)
+	static function errorNoClass($ctl)
 	{
 		echo 'UNKNOWN_CTL_CLASS: '.$ctl;
 		http_response_code(404);
 		exit ();
 	}
-	function errorNoAction($act)
+	static function errorNoAction($act)
 	{
 		echo 'UNKNOWN_METHOD '.$act;
 		http_response_code(404);

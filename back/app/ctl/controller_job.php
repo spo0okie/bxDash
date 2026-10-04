@@ -3,6 +3,9 @@
  * Класс инициации исходящих звонков в астериске
  */
 
+// привязки элементов к столбцам канбан-доски (поле STAGES, параметры stage/stageUser)
+if (!class_exists('stages_provider', false)) router::loadModel('stages_provider');
+
 class controller_job {
 	const MSG_OK='OK';
 	const MSG_NO_FROM='NO_FROM_SET';
@@ -127,7 +130,7 @@ class controller_job {
 		if (is_null($users= router::getRoute(5, 'users')))
 			router::haltJson(static::MSG_NO_USERS);
 
-		echo json_encode(static::loadPeriodUsers($from, $to,explode(',',$users)),JSON_UNESCAPED_UNICODE);
+		echo json_encode(stages_provider::attached('job', static::loadPeriodUsers($from, $to,explode(',',$users))),JSON_UNESCAPED_UNICODE);
 	}
 
 	public function action_get(){
@@ -154,7 +157,7 @@ class controller_job {
 		}
 
 		//return $jobs;
-		echo json_encode($jobs,JSON_UNESCAPED_UNICODE);
+		echo json_encode(stages_provider::attached('job', $jobs),JSON_UNESCAPED_UNICODE);
 	}
 
 	function action_delete() {
@@ -162,6 +165,7 @@ class controller_job {
 			router::haltJson(static::MSG_NO_JOB_ID);
 
 		if (!static::deleteJob($id)) router::haltJson('error updating data');
+		stages_provider::instance()->removeItem('job', $id);
 
 		echo '{"result":"ok"}';
 	}
@@ -213,9 +217,10 @@ class controller_job {
 			$data['SORT']=$sort;
 		}
 
-		if (!count($data)) router::haltJson('no data to commit');
+		// запрос может менять только столбец канбана (stage) — тогда сам элемент не трогаем
+		if (!count($data) && !stages_provider::requested()) router::haltJson('no data to commit');
 
-		if (!static::updateJob($id,$data)) router::haltJson('error updating data',500,$data);
+		if (count($data) && !static::updateJob($id,$data)) router::haltJson('error updating data',500,$data);
 
 		$props = [];
 
@@ -232,6 +237,8 @@ class controller_job {
 		}
 
 		//echo '{"result":"ok","id":'.$id.'}';
+		stages_provider::applyRequest('job', $id);
+
 		echo json_encode($result);
 	}
 
@@ -272,6 +279,8 @@ class controller_job {
 
 
 		if (!$id=static::createJob($data)) router::haltJson('error creating data',500,$data);
+
+		stages_provider::applyRequest('job', $id);
 
 		echo '{"result":"ok","id":'.$id.'}';
 	}

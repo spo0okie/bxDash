@@ -53,6 +53,22 @@ button.calendarButton:hover {
 	background: var(--header-button-hover-bg);
 }
 
+/* переключатель календарь/канбан — слева от calendarButton (только персональная доска) */
+button.kanbanButton {
+	position: fixed;
+	top: 25px;
+	right: 22px;
+	padding: 1px 1px;
+	z-index: 991;
+	border: none;
+	background: inherit;
+	cursor: pointer;
+}
+
+button.kanbanButton:hover {
+	background: var(--header-button-hover-bg);
+}
+
 button.themeButton {
 	position: fixed;
 	top: 0;

@@ -66,6 +66,8 @@
 	--accent-info: deepskyblue;
 
 	--sem-danger: #ff4d4f;
+	/* нейтральный отсчёт до плановой даты поверх карточки задачи: фон карточки светлый — отсчёт темнее фона */
+	--countdown-neutral: rgba(0, 0, 0, 0.16);
 
 	/* ===== Типографика ===== */
 	--font-family-base: "Helvetica Neue", Helvetica, Arial, sans-serif;

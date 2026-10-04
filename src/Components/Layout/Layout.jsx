@@ -14,6 +14,7 @@ import IncomingCallsStack from "./IncomingCall/IncomingCallsStack";
 import NotificationsStack from "./Notifications/NotificationsStack";
 import CalendarGrid from "./CalendarGrid";
 import RightPaneBucket from "./RightPaneBucket";
+import KanbanBoard from "./Kanban/KanbanBoard";
 import { useGlobalShortcuts } from "./useGlobalShortcuts";
 
 import "./Layout.css";
@@ -25,6 +26,7 @@ import "./Header/HomeButton.css";
  *   - Modals — модальные окна (iframe + создание заявки)
  *   - CalendarGrid — основная область с интервалами и корзиной
  *   - RightPaneBucket — правая панель с корзиной (только в personal-режиме)
+ *   - KanbanBoard — канбан-раскладка персональной доски (вместо CalendarGrid и RightPaneBucket)
  *   - useGlobalShortcuts — Ctrl+K / Escape
  */
 const Layout = observer(() => {
@@ -33,6 +35,8 @@ const Layout = observer(() => {
 	useGlobalShortcuts(items);
 
 	const personal = users.selected !== null;
+	// канбан — альтернативная раскладка персональной доски: столбцы вместо оси времени
+	const kanban = layout.kanbanActive;
 
 	// Форма авторизации показывается при проблемах с auth/WS или в режиме отладки
 	const showAuthForm = main.bx.authStatus !== 'OK'
@@ -51,10 +55,11 @@ const Layout = observer(() => {
 
 			<AppHeader />
 			<TaskSearch />
-			<HomeButton />
+			{!kanban && <HomeButton />}
 			<MenuButton property='memosVisible' title='📝' classNames='memoButton' />
 			<MenuButton property='debugVisible' title='⚙️' classNames='optionsButton' />
-			<MenuButton property='expand' title={['📅', '📆']} classNames='calendarButton' />
+			{!kanban && <MenuButton property='expand' title={['📅', '📆']} classNames='calendarButton' />}
+			{personal && <MenuButton property='kanban' title={['🗓️', '🗂️']} classNames='kanbanButton' />}
 
 			<div className="layout">
 				{layout.memosVisible && (
@@ -63,11 +68,13 @@ const Layout = observer(() => {
 					</Sidebar>
 				)}
 
-				<div className="dashBoard">
-					<CalendarGrid />
-				</div>
+				{kanban ? <KanbanBoard /> : (
+					<div className="dashBoard">
+						<CalendarGrid />
+					</div>
+				)}
 
-				{personal && <RightPaneBucket />}
+				{personal && !kanban && <RightPaneBucket />}
 			</div>
 		</>
 	);

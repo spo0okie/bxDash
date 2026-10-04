@@ -1,6 +1,7 @@
 import { observable, action, makeObservable, get } from 'mobx';
 import TimeHelper from "Helpers/TimeHelper";
 import notify from "Helpers/Notify";
+import { bxJson } from "Helpers/BxJson";
 import RelativesMixin from './Mixins/RelativesMixin';
 
 /** Человеческие названия типов — для текстов уведомлений */
@@ -83,6 +84,47 @@ export default class DashItem {
  	setPriority(value) {
  		this.priority = value;
  	}
+
+	/**
+	 * Явные привязки к столбцам канбан-досок: {userId: stageId}.
+	 * У каждого пользователя своя доска, поэтому привязка — на пару элемент+пользователь.
+	 * Нет записи для пользователя — элемент лежит в его столбце по умолчанию.
+	 * Объект заменяется целиком (observable.ref).
+	 */
+	stages = {};
+
+	/** Заменить все привязки (данные бэка: поле STAGES) */
+	setStages(map) {
+		const next = {};
+		Object.entries(map ?? {}).forEach(([userId, stageId]) => {
+			if (Number(userId) && Number(stageId)) next[Number(userId)] = Number(stageId);
+		});
+		this.stages = next;
+	}
+
+	/** Привязать к столбцу на доске пользователя; stageId null — снять привязку (в столбец по умолчанию) */
+	setStage(userId, stageId) {
+		userId = Number(userId);
+		if (!userId) return;
+		const next = { ...this.stages };
+		if (stageId === null || stageId === undefined) delete next[userId];
+		else next[userId] = Number(stageId);
+		this.stages = next;
+	}
+
+	/**
+	 * В каком столбце элемент лежит на доске пользователя.
+	 * Явная привязка, а если её нет или такого столбца у пользователя уже нет — столбец по умолчанию.
+	 * @returns {number|null} id столбца; null — столбцы пользователя ещё не загружены
+	 */
+	stageFor(userId) {
+		userId = Number(userId);
+		const store = this.context?.stages;
+		if (!store) return null;
+		const explicit = this.stages[userId];
+		if (explicit !== undefined && store.hasStage(userId, explicit)) return explicit;
+		return store.defaultStageOf(userId)?.id ?? null;
+	}
 
 
 	isDraggable(cell) {
@@ -197,19 +239,8 @@ export default class DashItem {
 	 * Бросает Error с человекочитаемым текстом, если: HTTP-ошибка, ответ не JSON
 	 * (например HTML PHP fatal), или бэк вернул {result:'error', error:...}.
 	 */
-	async bxJson(endpoint, options = {}) {
-		const response = await this.context.main.bx.fetch(endpoint, options);
-		const raw = await response.text();
-		let data;
-		try {
-			data = JSON.parse(raw);
-		} catch (e) {
-			throw new Error((response.ok ? 'Некорректный ответ сервера: ' : 'HTTP ' + response.status + ': ') + notify.describe(raw));
-		}
-		if (!response.ok || data?.result === 'error' || data?.error) {
-			throw new Error(notify.describe(data));
-		}
-		return data;
+	bxJson(endpoint, options = {}) {
+		return bxJson(this.context.main.bx, endpoint, options);
 	}
 
 	/**
@@ -239,7 +270,15 @@ export default class DashItem {
 	 */
 	update(params, save = false, onSuccess = null, onFail = null) {
 		params.id = this.id;
-		this.list.updateItem(params);
+		//столбец канбана — не поле элемента, а привязка на доске пользователя stageUser:
+		//локально кладём её в stages, в бэк параметры уйдут как есть (см. save)
+		const fields = { ...params };
+		if (fields.stage !== undefined) {
+			this.setStage(fields.stageUser, fields.stage);
+			delete fields.stage;
+		}
+		delete fields.stageUser;
+		this.list.updateItem(fields);
 		this.recalcTime();
 		if (params.title!==undefined) this.parseTitle();
 		if (save) this.save(params, onSuccess, onFail);
@@ -262,6 +301,12 @@ export default class DashItem {
 			if (params.priority === undefined)		params.priority = this.priority;
 			if (this.startDatePlan !== undefined && params.startDatePlan === undefined)
 				params.startDatePlan = this.startDatePlan;
+			//элемент создан в столбце канбана — передаём привязку, чтобы он сохранился в этом столбце
+			const boards = Object.keys(this.stages);
+			if (params.stage === undefined && boards.length) {
+				params.stageUser = Number(boards[0]);
+				params.stage = this.stages[boards[0]];
+			}
 		}
 
 		//смена крайнего срока и даты закрытия
@@ -357,7 +402,7 @@ export default class DashItem {
 		}
 
 		//смена ответственного
-		if (params.user !== this.user) {
+		if (params.user !== undefined && params.user !== this.user) {
 			const user = get(this.context.users.items, params.user);
 			const name = user?.name ?? ('пользователь ' + params.user);
 			confirm.push("Выставляем ответственным " + name);
@@ -465,6 +510,7 @@ export default class DashItem {
 	loadData(data,recalc=true) {
 		if (!Object.keys(data).length) return false;	//нечего грузить
 		if (data.ID) this.id = Number(data.ID);
+		if (data.STAGES !== undefined) this.setStages(data.STAGES);
 		this.isNew = false;	//загруженный не может быть новым, раз он уже есть в бэке
 		if (recalc) this.recalcTime();
 		return true;
@@ -533,6 +579,9 @@ export default class DashItem {
 			isHoveredChild:observable,
   			isExpanded:observable,
   			priority: observable,
+  			stages: observable.ref,
+  			setStages: action,
+  			setStage: action,
                       
   			setUpdating:action,
   			setAlert:action,

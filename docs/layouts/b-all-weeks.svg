@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 797 930" width="797" height="930">
+<style>text{font:11px Consolas,Menlo,'DejaVu Sans Mono',monospace;fill:#1c2030}.t{font-weight:bold}.n{fill:#5b6275}.g{fill:#8a90a2;font-style:italic}</style>
+<rect width="797" height="930" fill="#ffffff"/>
+<rect x="8" y="8" width="780.5" height="914" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="15" y="23" class="t">div#calendarGrid.Calendar</text>
+<text x="15" y="37" class="n">прокрутка по вертикали</text>
+<rect x="15" y="41" width="766.5" height="470" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="22" y="56" class="t">div.Interval.row</text>
+<text x="22" y="70" class="n">текущая неделя</text>
+<rect x="22" y="74" width="752.5" height="430" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="29" y="89" class="t">div.Period.row.periodN</text>
+<text x="29" y="103" class="n">Эта неделя — единственный Period в интервале</text>
+<rect x="29" y="107" width="738.5" height="390" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="36" y="122" class="t">div.periodContent</text>
+<rect x="36" y="126" width="114.5" height="364" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="43" y="141" class="t">div.PeriodTitle</text>
+<text x="43" y="155" class="n">h3 повёрнут</text>
+<text x="43" y="169" class="n">вертикально</text>
+<rect x="156.5" y="126" width="604" height="364" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="163.5" y="141" class="t">div.PeriodData › table.UserCells › tbody › tr</text>
+<rect x="163.5" y="145" width="235.1" height="338" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="170.5" y="160" class="t">td.userCell › div.userCellContent</text>
+<text x="170.5" y="174" class="n">пользователь 1</text>
+<rect x="170.5" y="178" width="221.1" height="36" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="177.5" y="193" class="t">div.userCellHeader</text>
+<text x="177.5" y="207" class="n">счётчики элементов</text>
+<rect x="170.5" y="220" width="221.1" height="90" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="177.5" y="235" class="t">ul</text>
+<text x="177.5" y="249" class="n">CardsBlock: закрытые + планы</text>
+<rect x="177.5" y="253" width="207.1" height="22" rx="3" fill="#fef3c7" stroke="#7d8799"/>
+<text x="184.5" y="268" class="t">planItem</text>
+<rect x="177.5" y="281" width="207.1" height="22" rx="3" fill="#dcfce7" stroke="#7d8799"/>
+<text x="184.5" y="296" class="t">jobItem</text>
+<rect x="170.5" y="316" width="221.1" height="22" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="177.5" y="331" class="t">span.CreateItemButton</text>
+<rect x="170.5" y="344" width="221.1" height="132" rx="3" fill="#f5f6fa" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="177.5" y="359" class="t">ul.droppableBlock</text>
+<text x="177.5" y="373" class="n">CardsBlock: открытые, DnD</text>
+<text x="177.5" y="387" class="n">только если period.isOpen</text>
+<rect x="177.5" y="391" width="207.1" height="22" rx="3" fill="#dbeafe" stroke="#7d8799"/>
+<text x="184.5" y="406" class="t">taskItem</text>
+<rect x="177.5" y="419" width="207.1" height="22" rx="3" fill="#dcfce7" stroke="#7d8799"/>
+<text x="184.5" y="434" class="t">jobItem</text>
+<rect x="177.5" y="447" width="207.1" height="22" rx="3" fill="#fee2e2" stroke="#7d8799"/>
+<text x="184.5" y="462" class="t">ticketItem</text>
+<rect x="404.6" y="145" width="235.1" height="338" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="411.6" y="160" class="t">td.userCell › div.userCellContent</text>
+<text x="411.6" y="174" class="n">пользователь 2</text>
+<rect x="411.6" y="178" width="221.1" height="36" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="418.6" y="193" class="t">div.userCellHeader</text>
+<text x="418.6" y="207" class="n">счётчики элементов</text>
+<rect x="411.6" y="220" width="221.1" height="62" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="418.6" y="235" class="t">ul</text>
+<text x="418.6" y="249" class="n">CardsBlock: закрытые + планы</text>
+<rect x="418.6" y="253" width="207.1" height="22" rx="3" fill="#dcfce7" stroke="#7d8799"/>
+<text x="425.6" y="268" class="t">jobItem</text>
+<rect x="411.6" y="288" width="221.1" height="22" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="418.6" y="303" class="t">span.CreateItemButton</text>
+<rect x="411.6" y="316" width="221.1" height="160" rx="3" fill="#f5f6fa" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="418.6" y="331" class="t">ul.droppableBlock</text>
+<text x="418.6" y="345" class="n">CardsBlock: открытые, DnD</text>
+<text x="418.6" y="359" class="n">только если period.isOpen</text>
+<rect x="418.6" y="363" width="207.1" height="22" rx="3" fill="#dbeafe" stroke="#7d8799"/>
+<text x="425.6" y="378" class="t">taskItem</text>
+<rect x="645.7" y="145" width="107.8" height="338" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="652.7" y="160" class="g">td.userCell</text>
+<text x="652.7" y="174" class="n">пользователь N</text>
+<text x="652.7" y="188" class="n">(то же)</text>
+<rect x="15" y="517" width="766.5" height="182" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="22" y="532" class="t">div.Interval.row</text>
+<text x="22" y="546" class="n">следующая неделя</text>
+<rect x="22" y="550" width="752.5" height="142" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="29" y="565" class="t">div.Period.row.periodN</text>
+<text x="29" y="579" class="n">След. неделя</text>
+<rect x="29" y="583" width="738.5" height="102" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="36" y="598" class="t">div.periodContent</text>
+<rect x="36" y="602" width="114.5" height="76" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="43" y="617" class="t">div.PeriodTitle</text>
+<text x="43" y="631" class="n">h3 повёрнут</text>
+<text x="43" y="645" class="n">вертикально</text>
+<rect x="156.5" y="602" width="604" height="76" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="163.5" y="617" class="t">div.PeriodData › table.UserCells › tbody › tr</text>
+<rect x="163.5" y="621" width="192.7" height="50" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="170.5" y="636" class="g">td.userCell</text>
+<text x="170.5" y="650" class="n">пользователь 1</text>
+<text x="170.5" y="664" class="n">(то же)</text>
+<rect x="362.2" y="621" width="192.7" height="50" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="369.2" y="636" class="g">td.userCell</text>
+<text x="369.2" y="650" class="n">пользователь 2</text>
+<text x="369.2" y="664" class="n">(то же)</text>
+<rect x="560.8" y="621" width="192.7" height="50" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="567.8" y="636" class="g">td.userCell</text>
+<text x="567.8" y="650" class="n">пользователь N</text>
+<text x="567.8" y="664" class="n">(то же)</text>
+<rect x="15" y="705" width="766.5" height="22" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="22" y="720" class="g">div.Interval.row × N — остальные недели (то же)</text>
+<rect x="15" y="733" width="766.5" height="182" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="22" y="748" class="t">div.Interval.row</text>
+<text x="22" y="762" class="n">корзина, id = weekMax + 1</text>
+<rect x="22" y="766" width="752.5" height="142" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="29" y="781" class="t">div.Period.row.periodN</text>
+<text x="29" y="795" class="n">Долгий ящик</text>
+<rect x="29" y="799" width="738.5" height="102" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="36" y="814" class="t">div.periodContent</text>
+<rect x="36" y="818" width="114.5" height="76" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="43" y="833" class="t">div.PeriodTitle</text>
+<text x="43" y="847" class="n">h3 повёрнут</text>
+<text x="43" y="861" class="n">вертикально</text>
+<rect x="156.5" y="818" width="604" height="76" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="163.5" y="833" class="t">div.PeriodData › table.UserCells › tbody › tr</text>
+<rect x="163.5" y="837" width="192.7" height="50" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="170.5" y="852" class="g">td.userCell</text>
+<text x="170.5" y="866" class="n">пользователь 1</text>
+<text x="170.5" y="880" class="n">(то же)</text>
+<rect x="362.2" y="837" width="192.7" height="50" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="369.2" y="852" class="g">td.userCell</text>
+<text x="369.2" y="866" class="n">пользователь 2</text>
+<text x="369.2" y="880" class="n">(то же)</text>
+<rect x="560.8" y="837" width="192.7" height="50" rx="3" fill="#ffffff" stroke="#b6bac8" stroke-dasharray="5 3"/>
+<text x="567.8" y="852" class="g">td.userCell</text>
+<text x="567.8" y="866" class="n">пользователь N</text>
+<text x="567.8" y="880" class="n">(то же)</text>
+</svg>

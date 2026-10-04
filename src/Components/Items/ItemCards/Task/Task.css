@@ -7,7 +7,8 @@ li.userItem.userTask {
 	position: relative;
 }
 
-li.userTask span.deadlineCountdown {
+li.userTask span.deadlineCountdown,
+li.userTask span.planCountdown {
 	position: absolute;
 	top: 50%;
 	left: 50%;
@@ -22,6 +23,12 @@ li.userTask span.deadlineCountdown {
 	user-select: none;
 	white-space: nowrap;
 	z-index: 0;
+}
+
+/* отсчёт до плановой даты (канбан) — нейтральный: не тревога, а справка */
+li.userTask span.planCountdown {
+	color: var(--countdown-neutral);
+	opacity: 1;
 }
 
 span.userTaskLink.overdue,

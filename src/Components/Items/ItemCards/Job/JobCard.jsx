@@ -55,7 +55,7 @@ const JobCard = observer((props)=>{
 	}
 
 	return( 
-	<Dropdown menu={{ items:context.items.contextMenu(item),onClick:context.items.contextMenuHandler(item,cell) }} trigger={['contextMenu']}>
+	<Dropdown menu={{ items:context.items.contextMenu(item,cell),onClick:context.items.contextMenuHandler(item,cell) }} trigger={['contextMenu']} onOpenChange={context.items.contextMenuOpen(cell)}>
 	<li 
 		className={classNames(
 			'userItem',		//это понятно
