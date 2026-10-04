@@ -1,0 +1,17 @@
+{
+	"version": "0.0.1",
+	"configurations": [
+		{
+			"name": "bxdash-dev",
+			"runtimeExecutable": "npm",
+			"runtimeArgs": ["run", "dev", "--", "--port", "3131"],
+			"port": 3131
+		},
+		{
+			"name": "bxdash-http",
+			"runtimeExecutable": "npm",
+			"runtimeArgs": ["run", "dev", "--", "--config", "vite.verify.config.js"],
+			"port": 3132
+		}
+	]
+}
