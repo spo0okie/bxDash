@@ -1,4 +1,4 @@
-import { buildMoveParams } from 'Helpers/DndHelper';
+import { buildMoveParams, computeNewSort } from 'Helpers/DndHelper';
 
 const OWNER = 5;
 const DAY = 24 * 3600 * 1000;
@@ -46,6 +46,17 @@ describe('buildMoveParams: канбан', () => {
 		expect(params).toEqual({ sorting: 620 });
 	});
 
+	test('заявка (недвижимый элемент): меняется только столбец, порядок не сохраняется', () => {
+		const ticket = makeTask(1, { isUnmovable: true });
+		expect(buildMoveParams(ticket, target(kanbanCell(1)), target(kanbanCell(2)), 480))
+			.toEqual({ stage: 2, stageUser: OWNER });
+	});
+
+	test('заявку бросили в её же столбец — менять нечего', () => {
+		const ticket = makeTask(2, { isUnmovable: true });
+		expect(buildMoveParams(ticket, target(kanbanCell(2)), target(kanbanCell(2)), 480)).toEqual({});
+	});
+
 	test('задача соисполнителя не переназначается на владельца доски', () => {
 		const task = makeTask(1, { user: 7 });
 		const params = buildMoveParams(task, target(kanbanCell(1)), target(kanbanCell(3)), 480);
@@ -76,5 +87,24 @@ describe('buildMoveParams: календарь (поведение не изме�
 		const bucket = { id: 'cellB/5/2', t: 99 * DAY, dropT: null, user: OWNER, priority: 2 };
 		expect(buildMoveParams(makeTask(1), target(source), target(bucket), 300))
 			.toEqual({ startDatePlan: null, user: OWNER, sorting: 300, priority: 2 });
+	});
+});
+
+describe('computeNewSort: бросок в пустое место списка', () => {
+	const task = { sorting: 500 };
+
+	test('в конец — на 100 ниже последней обычной карточки', () => {
+		expect(computeNewSort(task, [{ sorting: 900 }, { sorting: 700 }], null)).toBe(600);
+	});
+
+	test('заявки в списке не учитываются: у них нет своего порядка', () => {
+		const ticket = { sorting: 0, isUnmovable: true };
+		expect(computeNewSort(task, [ticket, { sorting: 900 }], null)).toBe(800);
+		// в столбце только заявки — порядок задачи не меняется
+		expect(computeNewSort(task, [ticket], null)).toBe(500);
+	});
+
+	test('пустой список — порядок не меняется', () => {
+		expect(computeNewSort(task, [], null)).toBe(500);
 	});
 });

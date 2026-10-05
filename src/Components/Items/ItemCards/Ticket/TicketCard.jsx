@@ -1,4 +1,4 @@
-import React, { useRef, useContext, useCallback, Fragment } from "react";
+import React, { useRef, useContext, useCallback, useEffect, useState, Fragment } from "react";
 import { observer } from "mobx-react";
 import { get } from "mobx";
 import { Dropdown, Tooltip } from "antd";
@@ -8,6 +8,8 @@ import classNames from "classnames";
 import { StoreContext } from "Data/Stores/StoreProvider";
 import TimeHelper from "Helpers/TimeHelper";
 import ModalLink from "Components/Layout/Modal/ModalLink";
+import { dashItemDragLogic } from "Helpers/DndHelper";
+import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
 
 const SlaCountdown = observer(({ item }) => {
 	// item.slaRemainingMs подписан на time.strTime — observer пересчитает раз в секунду.
@@ -30,6 +32,22 @@ const TicketCard = observer((props) => {
 	const context = useContext(StoreContext);
 	const item = get(context.items["ticket"].items, props.item.id);
 	const cell = props.cell;
+	const index = props.index;
+	const [closestEdge, setClosestEdge] = useState(null);
+
+	// Заявку можно перетаскивать только между столбцами канбана: там меняется лишь её столбец.
+	// В календаре заявка привязана к своему сроку SLA и не двигается, как и раньше.
+	const draggableHere = Boolean(cell?.kanban);
+	useEffect(() => {
+		if (!draggableHere) return undefined;
+		return dashItemDragLogic({
+			type: "item",
+			element: ref.current,
+			item: item,
+			index: index,
+			cell: cell,
+		}, ref, setClosestEdge);
+	}, [draggableHere, item, cell, index]);
 
 	// Мемоизированные обработчики событий для предотвращения лишних ре-рендеров
 	const handleMouseEnter = useCallback(() => item.mouseIn(), [item]);
@@ -88,6 +106,7 @@ const TicketCard = observer((props) => {
 			className={classNames(
 				"userItem", //это понятно
 				"userTicket", //это тоже
+				{ dragging: item.isDragging },
 				{ updating: item.isUpdating },
 				{ alert: item.isAlert },
 				{ flash: item.isFlash },
@@ -113,6 +132,7 @@ const TicketCard = observer((props) => {
 				<ModalLink item={item} />
 				<TicketDeadline item={item} />
 			</div>
+			{closestEdge && <DropIndicator edge={closestEdge} gap="4px" background="lime" />}
 		</li>
 	);
 

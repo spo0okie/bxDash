@@ -73,7 +73,9 @@ export function buildMoveParams(item, sourceCell, targetCell, newSort) {
     // плановая дата и ответственный остаются как были.
     const target = targetCell.data.cell;
     if (target.kanban) {
-        const params = { sorting: newSort };
+        // У недвижимых элементов (заявки) своего порядка нет — они сортируются по id,
+        // и сохранять им sorting некуда: дашборд саму заявку не правит. Для них меняется только столбец.
+        const params = item.isUnmovable ? {} : { sorting: newSort };
         if (item.stageFor(target.user) !== target.stage.id) {
             console.log('changing stage => ' + target.stage.id + ' (board of ' + target.user + ')');
             params.stage = target.stage.id;
@@ -112,13 +114,17 @@ export function buildMoveParams(item, sourceCell, targetCell, newSort) {
  * - если бросили в ячейку — в конец списка (на 100 ниже последнего);
  * - если ячейка пустая — оставляем текущий sorting.
  */
-function computeNewSort(item, targetList, dropOnItem) {
+export function computeNewSort(item, targetList, dropOnItem) {
     if (dropOnItem) {
-        return dashItemNewSort(item, targetList, dropOnItem.index, dropOnItem.edge);
+        // копия: dashItemNewSort выкидывает из списка недвижимые элементы (заявки) в его начале,
+        // а targetList — это список, по которому нарисована ячейка или столбец
+        return dashItemNewSort(item, targetList.slice(), dropOnItem.index, dropOnItem.edge);
     }
-    const last = targetList.length - 1;
+    // недвижимые элементы (заявки) своего порядка не имеют — ориентируемся на обычные карточки
+    const movable = targetList.filter(i => !i.isUnmovable);
+    const last = movable.length - 1;
     if (last < 0) return item.sorting;
-    return targetList[last].sorting - 100;
+    return movable[last].sorting - 100;
 }
 
 /**
@@ -161,6 +167,11 @@ export function dashItemsDrop(item, location) {
 
     const newSort = computeNewSort(item, targetList, dropOnItem);
     const params = buildMoveParams(item, sourceCell, targetCell, newSort);
+    // менять нечего (заявку бросили в её же столбец) — не дёргаем сохранение
+    if (!Object.keys(params).length) {
+        console.log('Nothing to change. nothing to do');
+        return;
+    }
     item.movePosition(params);
 }
 
