@@ -61,6 +61,22 @@ class controller_user {
 		echo json_encode($users, JSON_UNESCAPED_UNICODE);
 	}
 
+	/**
+	 * Возвращает логин и имя пользователя битрикса по его ID: user/info/<id>
+	 * Используется, чтобы по ID из ссылки на профиль найти сотрудника в Inventory
+	 */
+	function action_info() {
+		$id = (int)router::getRoute(3, 'id');
+		if ($id <= 0) router::haltJson('Не указан ID пользователя', 400);
+		$arUser = CUser::GetByID($id)->Fetch();
+		if (!$arUser) router::haltJson('Пользователь '.$id.' не найден', 404);
+		echo json_encode([
+			'id' => (int)$arUser['ID'],
+			'name' => trim($arUser['NAME'] . ' ' . $arUser['LAST_NAME']),
+			'login' => $arUser['LOGIN'],
+		], JSON_UNESCAPED_UNICODE);
+	}
+
 }
 
 

@@ -1,5 +1,6 @@
 import React, { useContext, useCallback } from "react";
 import { StoreContext } from "Data/Stores/StoreProvider";
+import { attachInventoryUserTtips } from "Helpers/InventoryUserTtip";
 
 import "./ModalWindow.css";
 
@@ -25,6 +26,12 @@ const ModalLink = (props) => {
 					width={"100%"}
 					height={layout.windowDimensions.height - 110 + "px"}
 					src={href + "?IFRAME=Y"}
+					// в заявках профиль пользователя показываем из Inventory, а не битриксовый
+					onLoad={
+						item?.type === "ticket"
+							? (e) => attachInventoryUserTtips(e.currentTarget, context.main)
+							: undefined
+					}
 				/>
 			),
 			onClose: () => {
@@ -34,7 +41,7 @@ const ModalLink = (props) => {
 				}
 			},
 		});
-	}, [layout, item, content, title, href]);
+	}, [layout, context.main, item, content, title, href]);
 
 	// Открыть ссылку в новом окне
 	const openInNewWindow = useCallback(() => {
