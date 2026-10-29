@@ -10,7 +10,8 @@ import { DropIndicator } from '@atlaskit/pragmatic-drag-and-drop-react-drop-indi
 import { StoreContext } from "Data/Stores/StoreProvider";
 import EditItem from "../../EditItem/EditItem";
 import ParentLink from "../../ParentLink/ParentLink";
-import { Dropdown } from "antd";
+import { Dropdown,Tooltip } from "antd";
+import TimeHelper from "Helpers/TimeHelper";
 
 
 
@@ -21,6 +22,7 @@ const JobCard = observer((props)=>{
 	const context=useContext(StoreContext);
 	const item = get(context.items['job'].items,props.job.id);
 	//console.log(context);
+	const layout = context.layout;
 	const cell = props.cell;
 	const index = props.index;
 	const [closestEdge, setClosestEdge] = useState(null);
@@ -54,43 +56,66 @@ const JobCard = observer((props)=>{
 		e.preventDefault();
 	}
 
-	return( 
-	<Dropdown menu={{ items:context.items.contextMenu(item,cell),onClick:context.items.contextMenuHandler(item,cell) }} trigger={['contextMenu']} onOpenChange={context.items.contextMenuOpen(cell)}>
-	<li 
-		className={classNames(
-			'userItem',		//это понятно
-			'userJob',		//это тоже
-			{'dragging':item.isDragging},
-			{'updating':item.isUpdating},
-			{'alert':item.isAlert},
-			{'hovered':item.isHovered},
-			{'parentTask':item.isHoveredParent},
-			{'childTask':item.isHoveredChild},
-			{'favorite':item.favorite},		//избранное
-			//{'activeNow':task.status===3},	//в работе
-			{'closed':item.isClosed},		//признак что закрыта
-			{'open':item.isOpen},		//признак что закрыта
-		)}
+	/**
+	 * Нейтральный отсчёт до плановой даты. Показывается только в канбане: там нет оси времени,
+	 * а в календаре плановую дату и так показывает положение карточки.
+	 * Если у задачи есть крайний срок — показываем только его (красный DeadlineCountdown).
+	 */
+	const PlanCountdown = observer(({ item, layout }) => {
+			if (!layout.kanbanActive) return null;
+			const remaining = item.planRemainingMs;
+			if (remaining === null) return null;
 
-		onMouseEnter={handleMouseEnter}
-		onMouseLeave={handleMouseLeave}
-		onClick={handleClick}
-		ref={ref}
-	>
-		<span className="jobToggle" onClick={onToggleClick}></span>
-		<div className="content">
-			{item.isEdit?
-				<EditItem item={item}/>
-			:
-			<>
-				<ParentLink item={item}/> <span className="task-title-link clickable">{item.cleanTitle()}</span>
+			return (
+				<span className="planCountdown" aria-hidden="true">
+					{remaining?TimeHelper.strRemainingCoarse(remaining):"СЕЙЧАС"}
+				</span>
+			);
+	});
 
-			</>						
-			}
-		</div>
-		{closestEdge && <DropIndicator edge={closestEdge} gap="4px" background="lime"/>}
-	</li>
-	</Dropdown>
+	return(
+		<Dropdown menu={{ items:context.items.contextMenu(item,cell),onClick:context.items.contextMenuHandler(item,cell) }} trigger={['contextMenu']} onOpenChange={context.items.contextMenuOpen(cell)}>
+			<li
+				className={classNames(
+					'userItem',		//это понятно
+					'userJob',		//это тоже
+					{'dragging':item.isDragging},
+					{'updating':item.isUpdating},
+					{'alert':item.isAlert},
+					{'hovered':item.isHovered},
+					{'parentTask':item.isHoveredParent},
+					{'childTask':item.isHoveredChild},
+					{'favorite':item.favorite},		//избранное
+					//{'activeNow':task.status===3},	//в работе
+					{'closed':item.isClosed},		//признак что закрыта
+					{'open':item.isOpen},		//признак что закрыта
+				)}
+
+				onMouseEnter={handleMouseEnter}
+				onMouseLeave={handleMouseLeave}
+				onClick={handleClick}
+				ref={ref}
+			>
+				<span className="jobToggle" onClick={onToggleClick}></span>
+				<PlanCountdown item={item} layout={layout} />
+				<div className="content">
+					{item.isEdit?
+						<EditItem item={item}/>
+					:
+					<>
+						<ParentLink item={item} />
+						<span className="task-title-link clickable">{item.cleanTitle()}</span>
+							{item.isOpen && (<span className="userJobFooter">
+								<Tooltip title={"Создано " + TimeHelper.strDateHumanLong(item.createdAt)}>
+									{item.deadlineStr}
+								</Tooltip>
+							</span>)}
+					</>
+					}
+				</div>
+				{closestEdge && <DropIndicator edge={closestEdge} gap="4px" background="lime"/>}
+			</li>
+		</Dropdown>
 	);
 })
 

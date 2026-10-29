@@ -171,6 +171,8 @@ class TaskItem extends DashItem {
 	get deadlineRemainingMs() {
 		if (this.isClosed) return null;
 		if (!this.deadline) return null;
+		// читаем и отбрасываем свойство this.context.time.strTime
+		// чтобы MobX зафиксировал зависимость от него этого computed геттера
 		void this.context?.time?.strTime;
 		return this.deadline - Date.now();
 	}
@@ -185,6 +187,8 @@ class TaskItem extends DashItem {
 	get planRemainingMs() {
 		if (this.isClosed || this.isNow) return null;
 		if (!this.startDatePlan) return null;
+		// читаем и отбрасываем свойство this.context.time.minutes
+		// чтобы MobX зафиксировал зависимость от него этого computed геттера
 		void this.context?.time?.minutes;
 		const remaining = this.startDatePlan - Date.now();
 		return remaining > 0 ? remaining : null;

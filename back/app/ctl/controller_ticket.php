@@ -5,6 +5,7 @@
 
 // привязки элементов к столбцам канбан-доски (поле STAGES, параметры stage/stageUser)
 if (!class_exists('stages_provider', false)) router::loadModel('stages_provider');
+if (!class_exists('ticket_hold_intervals', false)) router::loadModel('ticket_hold_intervals');
 
 class controller_ticket {
 	const MSG_OK='OK';
@@ -22,6 +23,9 @@ class controller_ticket {
 		'RESPONSIBLE_USER_ID',
 		'LAMP',
 		'STATUS_NAME',
+		// Условия автозакрытия не зависят от персональной лампы Bitrix.
+		'STATUS_ID',
+		'AUTO_CLOSE_DAYS',
 		'DEADLINE_SOURCE_DATE',
 		'HOLD_ON',
 		'LAST_MESSAGE_BY_SUPPORT_TEAM',
@@ -67,7 +71,7 @@ class controller_ticket {
 	        }
 	    }
 
-	    return $tickets;
+	    return ticket_hold_intervals::attached($tickets);
 	}
 
 	/**
@@ -138,6 +142,9 @@ class controller_ticket {
 						'LAMP'=>$ticket['LAMP'],
 						'DATE_CREATE'=>$ticket['DATE_CREATE'],
 						'STATUS_NAME'=>$ticket['STATUS_NAME'],
+						// Передаём условия агента автозакрытия при загрузке списка.
+						'STATUS_ID'=>$ticket['STATUS_ID'],
+						'AUTO_CLOSE_DAYS'=>$ticket['AUTO_CLOSE_DAYS'],
 						'LAST_MESSAGE_USER_ID'=>$ticket['LAST_MESSAGE_USER_ID'],
 						'LAST_MESSAGE_DATE'=>$ticket['LAST_MESSAGE_DATE'],
 						'DATE_CLOSE'=>$ticket['DATE_CLOSE'],
@@ -153,7 +160,7 @@ class controller_ticket {
 			}
 		}
 		//var_dump($tickets);
-		return $tickets;
+		return ticket_hold_intervals::attached($tickets);
 
 	}
 	

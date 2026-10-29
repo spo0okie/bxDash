@@ -27,7 +27,8 @@ li.userJob span.jobToggle {
 }
 
 li.userJob:hover span.jobToggle {
-	display: block
+	display: block;
+	z-index: 2;
 }
 
 li.userJob.closed span.jobToggle:before {
@@ -36,4 +37,36 @@ li.userJob.closed span.jobToggle:before {
 
 li.userJob.open span.jobToggle:before {
 	content: '\2611'
+}
+
+li.userJob .userJobFooter {
+	font-size: 8pt;
+	opacity: 70%;
+	white-space: nowrap;
+	padding-left: 3px;
+	float: right;
+	padding-right: 1px;
+}
+
+/* отсчёт до плановой даты (канбан) — нейтральный: не тревога, а справка */
+li.userJob span.planCountdown {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	font-size: 28px;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	letter-spacing: 0.04em;
+	color: var(--countdown-neutral);
+	opacity: 0.8;
+	pointer-events: none;
+	user-select: none;
+	white-space: nowrap;
+	z-index: 0;
+}
+
+li.userJob .content {
+	position: relative;
+	z-index: 1;
 }

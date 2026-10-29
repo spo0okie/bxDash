@@ -26,7 +26,7 @@ import { StoreContext } from "Data/Stores/StoreProvider";
                             <tr>
                                 {usersStore.order.map((i,index) => {
 									const user=get(usersStore.items,i);
-                                    if(usersStore.selected===user.id || usersStore.selected===null) 
+                                    if(usersStore.selected===user.id || usersStore.selected===null)
                                         return (<UserItem key={user.id} id={user.id} index={index}/>);
 									return null;
                                 })}
@@ -35,7 +35,7 @@ import { StoreContext } from "Data/Stores/StoreProvider";
                     </table>
 
                 </div>
-				<div className="dummyScrollBar" style={{width:this.context.layout.scrollbarWidth}}>&nbsp;</div>					
+                <div className="dummyScrollBar" style={{width:this.context.layout.scrollbarWidth}}>&nbsp;</div>
             </div>
         )
     }

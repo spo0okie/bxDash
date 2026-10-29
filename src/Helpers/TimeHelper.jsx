@@ -251,6 +251,7 @@ class TimeHelper {
 		if ($tokens.length === 2) {
 			return Date.parse($newDate + "T" + $tokens[1] + "+03:00");
 		} else {
+			//console.log($newDate + "T00:00:00" + "+03:00");
 			return Date.parse($newDate + "T00:00:00" + "+03:00");
 		}
 	}

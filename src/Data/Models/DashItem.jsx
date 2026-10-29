@@ -17,63 +17,63 @@ export default class DashItem {
     id;						//id внутри класса элементов (id задачи, заявки, работы)
  	list=null;				//ссылка на хранилище всех элементов этого типа
  	context=null;			//остальные хранилища
-     
+
  	type='dash';			//тип элемента (task|job|ticket|plan)
 	uid;					//unique id type+id (чисто по id может совпасть задача1 и работа1, а вместе с типом нет)
- 	
+
  	parentUids = [];		//родительские элементы (uid)
  	childUids = [];			//подчиненные элементы (uid)
  	linksAttr='title';		//откуда берем текст элемента чтобы поискать ссылки на другие объекты
  	titleLinks='childUids';	//кем являются ссылки в тексте (родителями или потомками)
- 	
+
  	parents = [];			//родительские элементы (объект)
  	children = [];			//подчиненные элементы (объекты)
 
 	title='';				//заголовок (что будет писаться на доске)
  	defaultTitle='';		//какой заголовок у элементов по умолчанию
- 
+
  	user=null;				//к какому пользователю относится
- 
+
      createdAt=null;			//отметка когда создан элемент
      deadline=null;			//плановый срок выполнения элемента
      closedDate=null;		//реальный срок закрытия элемента
      t;						//в какую временную отметку нужно поместить элемент (в зависимости от статусов объекта)
-     
+
  	isClosed = false;		//завершено
  	isOpen = true;			//открыто
      isNow=false;			//[прямо сейчас] для съезжающих по дате на сегодня: выполняемые, просроченные
- 	
+
  	isNew = true;			//признак, что это не загруженный элемент, а новый
- 	
+
  	isEdit = false;			//признак что в настоящее время элемент редактируется
  	editField = 'title';	//какой аттрибут редактируется
  	editValue = '';			//временное значение редактируемого поля
  	deleteOnEmpty=true;		//удалять элемент если его содержимое удалили при редактировании
- 
+
      sorting=null;			//сортировочный индекс
  	maxSort = 2147483647;	//максимальное значение для INT в mysql
- 
+
      favorite=false;			//избранное (звездочка)
  	semiFavorite=false;		//потомк избранного
- 
+
      isUpdating=false;		//признак промежуточного состояния: обновляется, загружается, сохраняется...
      isAlert=null;			//нужно ругнуться что с этим элементом ошибка (сохранения или типа того). После того как ругнулись - надо будет снять флажок
  	isFlash=false;			//нужно обратить на себя внимание
- 
+
  	isExpanded=false;		//развернут
- 
+
  	isHovered=false;		//над элементом мышка
  	isHoveredParent = false;//мышка над потомком элемента
  	isHoveredChild = false;	//мышка над предком элемента
- 
+
      isDragging=false;		//признак, что сейчас элемент перетаскивается
      dragCell=null;			//над какой ячейкой элемент тащат
  	isUnmovable=false;
- 
+
  	confirmMove = true;		//подтверждать изменение параметров при передвигании ячейки
  	confirmCancelEditNew = '';		//какой вопрос задавать если нажали ESC при создании (редактировании текста) нового элемента (не задавать вопрос если пусто)
  	confirmCancelEditUpdate = '';	//какой вопрос задавать если нажали ESC при редактировании сузествующего элемента (не задавать вопрос если пусто)
- 	
+
  	/** Приоритет элемента для разделения долгого ящика на три приоритета:
  	  * 1 - низкий приоритет (верхняя часть долгого ящика)
  	  * 2 - средний приоритет (средняя часть долгого ящика) - значение по умолчанию
@@ -172,7 +172,7 @@ export default class DashItem {
         this.isDragging=value;
 		return this;
     }
-	
+
 	setEdit(value) {
 		this.isEdit = value;
 	}
@@ -190,7 +190,7 @@ export default class DashItem {
 		this.children.forEach(child => child.setChildHover(value));
 		this.list.activityUpdate();
 		return this;
-	}	
+	}
 
     setParentHover(value) {
         this.isHoveredParent=value;
@@ -265,7 +265,7 @@ export default class DashItem {
 
 	/**
 	 * Записывает новые значения параметров через action в списке (требование mobx)
-	 * @param {*} params 
+	 * @param {*} params
 	 * @param {boolean} save если true, то сохраняет в бэк
 	 */
 	update(params, save = false, onSuccess = null, onFail = null) {
@@ -286,8 +286,8 @@ export default class DashItem {
 
 	/**
 	 * отправить изменения в бэк и перечитать элемент
-	 * @param {*} params 
-	 * @returns 
+	 * @param {*} params
+	 * @returns
 	 */
 	save(params,onSuccess=null,onFail=null) {
 		if (this.isNew) {	//если элемент новый, то передаем все необходимые для создания параметры тоже
@@ -438,15 +438,15 @@ export default class DashItem {
 	onCancelEdit = () => {
 		const confirmQuestion = this.isNew?this.confirmCancelEditNew:this.confirmCancelEditUpdate;
 		if (this.editValue === this[this.editField] || !confirmQuestion || window.confirm(confirmQuestion)) {
-			if (this.isNew) 
-				this.list.deleteItem(this); 
+			if (this.isNew)
+				this.list.deleteItem(this);
 			else {
 				//this.update({ title: this.defaultTitle });
 				this.setEdit(false);
 			}
 
 		}
-			
+
 	};
 
 	//при окончании редактирования
@@ -483,8 +483,8 @@ export default class DashItem {
 			this.deadlineStr = this.deadlineObj.D + '.' + this.deadlineObj.M;
 			if (this.context.time.year !== this.deadlineObj.Y)
 				this.deadlineStr += this.deadlineObj.Y;
-		} else this.deadlineStr = 'нет срока';
-		
+		} else this.deadlineStr = '∞';
+
 		if (this.closedDate) {
 			this.closedDateObj = TimeHelper.objDate(this.closedDate);
 			this.closedDateStr = this.closedDateObj.D + '.' + this.closedDateObj.M;
@@ -505,7 +505,7 @@ export default class DashItem {
 
 	/**
 	 * Загрузить в элемент JSON данные из битрикс
-	 * @param {*} data 
+	 * @param {*} data
 	 */
 	loadData(data,recalc=true) {
 		if (!Object.keys(data).length) return false;	//нечего грузить
@@ -518,7 +518,7 @@ export default class DashItem {
 
 	/**
 	 * Загрузить параметры из другого элемента (или частичного набора параметров)
-	 * @param {*} params 
+	 * @param {*} params
 	 */
 	init(params,recalc=true) {
 		if (!Object.keys(params).length) return false;	//нечего грузить
@@ -532,11 +532,11 @@ export default class DashItem {
 
 
 	mouseIn(){
-		if (!this.isEdit && !this.isDragging && this && !this.isHovered) this.setHover(true); 
+		if (!this.isEdit && !this.isDragging && this && !this.isHovered) this.setHover(true);
 	};
 
 	mouseOut(){
-		if (!this.isEdit && !this.isDragging && this.isHovered) this.setHover(false); 
+		if (!this.isEdit && !this.isDragging && this.isHovered) this.setHover(false);
 	};
 
 	/**
@@ -566,11 +566,11 @@ export default class DashItem {
 
 			isClosed:observable,
 			isNow:observable,
-          
+
 			sorting:observable,
-          
+
 			favorite:observable,
-          
+
 			isUpdating:observable,
   			isAlert: observable,
   			isFlash: observable,
@@ -582,7 +582,7 @@ export default class DashItem {
   			stages: observable.ref,
   			setStages: action,
   			setStage: action,
-                      
+
   			setUpdating:action,
   			setAlert:action,
   			setFlash:action,

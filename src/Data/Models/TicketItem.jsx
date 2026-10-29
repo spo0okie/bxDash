@@ -1,6 +1,7 @@
 import { action, computed, makeObservable, observable } from "mobx";
 import DashItem from "./DashItem";
 import TimeHelper from "Helpers/TimeHelper";
+import { ticketWorkTime } from 'Helpers/TicketWorkTime';
 import notify from "Helpers/Notify";
 import { ticketSlaWorkDays } from "config.priv";
 
@@ -9,6 +10,8 @@ class TicketItem extends DashItem {
 	message = ""; // сообщение (остальной текст после заголовка)
 
 	initDefaults() {
+		// Базовый конструктор вызывает loadData: поле не должно перезаписываться после super().
+		this.holdIntervals = [];
 		this.type = "ticket"; //тип
 		this.isUnmovable = true;
 		this.editField = "ticketText"; // кастомное поле для редактирования
@@ -49,6 +52,11 @@ class TicketItem extends DashItem {
 			? TimeHelper.bitrixDateTimeToJs(item.DEADLINE_SOURCE_DATE)
 			: null;
 		this.isOnHold = item.HOLD_ON === "Y";
+		// Старый бэкенд без истории сохраняет прежний расчёт до обновления API.
+		this.holdIntervals = (item.HOLD_INTERVALS ?? []).map(interval => ({
+			start: TimeHelper.bitrixDateTimeToJs(interval.START),
+			end: interval.END ? TimeHelper.bitrixDateTimeToJs(interval.END) : null,
+		}));
 		this.lastMessageBySupportTeam = item.LAST_MESSAGE_BY_SUPPORT_TEAM === "Y";
 		this.closedDate = TimeHelper.bitrixDateTimeToJs(item.LAST_MESSAGE_DATE);
 
@@ -57,10 +65,14 @@ class TicketItem extends DashItem {
 			this.title = names.split(" ")[2] + ": " + item.TITLE;
 		} else this.title = item.TITLE;
 
+		// LAMP зависит от просматривающего пользователя, поэтому не определяет автозакрытие.
+		// Старый API без ID статуса и срока поддерживаем до обновления бэкенда.
+		const isResolved = item.STATUS_ID === undefined
+			? this.strStatus === 'Успешно решено' || this.strStatus === 'Не представляется возможным решить'
+			: Number(item.STATUS_ID) === 9 || Number(item.STATUS_ID) === 10;
+		const hasAutoClose = item.AUTO_CLOSE_DAYS === undefined || Number(item.AUTO_CLOSE_DAYS) > 0;
 		if (
-			(this.strStatus === "Успешно решено" ||
-				this.strStatus === "Не представляется возможным решить") &&
-			this.status === "green" &&
+			isResolved && hasAutoClose && !item.DATE_CLOSE &&
 			!this.isOnHold &&
 			this.lastMessageBySupportTeam
 		) {
@@ -168,7 +180,7 @@ class TicketItem extends DashItem {
 	}
 
 	/**
-	 * Рабочее время от создания до закрытия тикета в мс.
+	 * Рабочее время от создания до закрытия тикета в мс, за вычетом отложенности.
 	 * Только для закрытых тикетов; иначе null.
 	 */
 	get workMsToClose() {
@@ -176,7 +188,7 @@ class TicketItem extends DashItem {
 		if (!this.createdAt || !this.closedDate) return null;
 		const schedule = this.context?.schedule;
 		if (!schedule) return null;
-		return schedule.workMsBetween(this.createdAt, this.closedDate);
+		return ticketWorkTime(schedule, this.createdAt, this.closedDate, this.holdIntervals).workMs;
 	}
 
 	/**
@@ -206,6 +218,7 @@ class TicketItem extends DashItem {
 		makeObservable(this, {
 			owner: observable,
 			message: observable,
+			holdIntervals: observable.ref,
 			isSlaActive: computed,
 			slaDeadlineMs: computed,
 			slaRemainingMs: computed,

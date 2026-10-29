@@ -54,7 +54,8 @@ const CreateTaskButton = (props) => {
 	);
 };
 
-const CreateTicketButton = (props) => {
+/** Общая кнопка календаря и канбана: открывает форму новой заявки для пользователя ячейки. */
+export const CreateTicketButton = (props) => {
 	const [label, setLabel] = useState("звк");
 	// Обработчики с useCallback для предотвращения лишних ре-рендеров
 	const onHover = useCallback(() => {

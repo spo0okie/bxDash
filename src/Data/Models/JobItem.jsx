@@ -1,5 +1,6 @@
 import DashItem from "./DashItem";
 import TimeHelper from "Helpers/TimeHelper";
+import { makeObservable, get, computed } from 'mobx';
 
 class JobItem extends DashItem {
 	initDefaults() {
@@ -25,7 +26,7 @@ class JobItem extends DashItem {
 
 	/**
 	 * Инициализация
-	 * @param {*} item 
+	 * @param {*} item
 	 * @param {*} options //сюда нужно передать {
 	 * 	today = отметка "сегодня" (для задач в работе и просроченных)
 	 * }
@@ -37,14 +38,14 @@ class JobItem extends DashItem {
 		this.deadline=item.DATE_ACTIVE_FROM?TimeHelper.bitrixDateTimeToJs(item.DATE_ACTIVE_FROM):null;
 
 		this.closedDate=TimeHelper.bitrixDateTimeToJs(item.DATE_ACTIVE_TO);
-		
-		this.createdAt=TimeHelper.bitrixDateTimeToJs(item.CREATED_DATE);
+
+		this.createdAt = TimeHelper.bitrixDateTimeToJs(item.CREATED_DATE.split(".").reverse().join(".")); //по какой-то причине у нас тут дата не DD.MM.YYYY а YYYY.MM.DD
 
 		this.sorting=Number(item.SORT);
-	
+
 		this.title=item['~PREVIEW_TEXT'];
 
-        this.user=Number(item.PROPERTY_USER_VALUE);
+		this.user=Number(item.PROPERTY_USER_VALUE);
 
 		this.priority=Number(item.PROPERTY_PRIORITY_VALUE ?? 1) % 3;
 		//console.log(this.priority);
@@ -59,6 +60,33 @@ class JobItem extends DashItem {
 		//console.log(this);
 	}
 
+	/**
+	 * Остаток до плановой даты в мс — для нейтрального отсчёта на карточке в канбане,
+	 * где оси времени нет. null — если показывать нечего: задача закрыта, уже в работе,
+	 * плановой даты нет или она прошла.
+	 * Плановая дата известна с точностью до дня, поэтому подписываемся на минуты,
+	 * а не на секунды: доска не перерисовывается каждую секунду.
+	 */
+	get planRemainingMs() {
+		if (this.isClosed) return null;
+		if (!this.deadline) return null;
+		// читаем и отбрасываем свойство this.context.time.minutes
+		// чтобы MobX зафиксировал зависимость от него этого computed геттера
+		void this.context?.time?.minutes;
+		const remaining = this.deadline - Date.now();
+		return remaining > 0 ? remaining : 0;
+	}
+
+
+	constructor(item, data, list) {
+		super(item, data, list);
+
+		makeObservable(this, {
+			planRemainingMs: computed,
+		});
+
+		//console.log(this);
+	}
 
 }
 export default JobItem;

@@ -11,6 +11,7 @@ import {
 } from "config.priv";
 import classNames from "classnames";
 import MenuButton from "../Header/Menu/MenuIButton";
+import { TicketStatisticsButton } from '../TicketStatistics/TicketStatistics';
 
 const ControlPanel = observer(function ControlPanel() {
 	const [login, setLogin] = useState("");
@@ -154,6 +155,8 @@ const ControlPanel = observer(function ControlPanel() {
 						<button onClick={defaultMode} className="small">
 							Сброс
 						</button>
+						<br />
+						<TicketStatisticsButton />
 					</div>
 					<div className="options">
 						Настройки:

@@ -1,0 +1,26 @@
+/* Кнопка рядом с существующими настройками и темой в верхней панели. */
+button.ticketStatisticsButton {
+	position: fixed;
+	top: 0;
+	right: 48px;
+	z-index: 991;
+	padding: 1px 3px;
+	border: none;
+	background: inherit;
+	cursor: pointer;
+}
+button.ticketStatisticsButton:hover { background: var(--header-button-hover-bg); }
+.ticketStatisticsFilters { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.ticketStatisticsFilters label { display: flex; flex-direction: column; gap: 4px; }
+.ticketStatisticsFilters input, .ticketStatisticsFilters select { padding: 4px 8px; min-height: 32px; border: 1px solid var(--border-color, #d9d9d9); border-radius: 6px; color: inherit; background: inherit; }
+.ticketStatisticsNote { margin: 12px 0; opacity: 0.8; }
+.ticketStatisticsSummary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+.ticketStatisticsSummary button { padding: 14px; text-align: left; background: inherit; color: inherit; border: 1px solid var(--border-color, #d9d9d9); border-radius: 8px; cursor: pointer; }
+.ticketStatisticsSummary span { display: block; }
+.ticketStatisticsSummary strong { display: block; font-size: 24px; margin-top: 6px; }
+.ticketStatisticsToolbar { margin-bottom: 12px; }
+.ticketStatisticsDetails { margin-top: 24px; }
+.ticketStatisticsMethod { margin-top: 16px; }
+.ticketStatisticsMethod summary { cursor: pointer; }
+.ticketStatisticsLoading { padding: 40px; }
+@media (max-width: 700px) { .ticketStatisticsSummary { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

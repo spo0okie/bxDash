@@ -213,7 +213,8 @@ class ScheduleStore {
 
 		let cursor = startTsm;
 		let workMin = 0;
-		const safety = 366;
+		// Старые заявки могут жить несколько лет: считаем весь конечный интервал.
+		const safety = Math.ceil((endTsm - startTsm) / MINUTES_IN_DAY) + 1;
 		for (let i = 0; i < safety && cursor < endTsm; i++) {
 			const dayStart = Math.floor(cursor / MINUTES_IN_DAY) * MINUTES_IN_DAY;
 			const dayEnd = dayStart + MINUTES_IN_DAY;
