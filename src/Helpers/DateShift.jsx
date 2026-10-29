@@ -18,6 +18,21 @@ export function shiftInterval(id) {
 	return SHIFT_INTERVALS.find(interval => interval.id === id) ?? null;
 }
 
+/** Интервалы явной установки даты. (сдвиг от сегодняшнего начала дня) */
+export const SET_INTERVALS = [
+	{ id: 'today', label: 'сегодня', ms: 0 },
+	{ id: 'tomorrow', label: 'завтра', ms: 1 * DAY },
+	{ id: 'week1', label: 'через 1 неделю', ms: 7 * DAY },
+	{ id: 'week2', label: 'через 2 недели', ms: 14 * DAY },
+	{ id: 'month1', label: 'через 1 месяц', ms: 30 * DAY },
+	{ id: 'month2', label: 'через 2 месяца', ms: 60 * DAY },
+];
+
+/** Интервал по id пункта меню */
+export function setInterval(id) {
+	return SET_INTERVALS.find(interval => interval.id === id) ?? null;
+}
+
 /**
  * Каким полем элемент позиционируется во времени: у задачи это плановая дата
  * (startDatePlan), у работы — deadline. То же правило, что в DndHelper.

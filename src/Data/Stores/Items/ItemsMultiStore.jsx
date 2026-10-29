@@ -3,7 +3,7 @@ import ItemsStore from './ItemsStore';
 import { get, values, has} from 'mobx';
 import notify from 'Helpers/Notify';
 import { ITEM_TYPES } from 'Data/itemTypes';
-import { SHIFT_INTERVALS, shiftInterval, dateFieldOf, canShiftEarlier, shiftedDate } from 'Helpers/DateShift';
+import { SHIFT_INTERVALS, SET_INTERVALS, setInterval, shiftInterval, dateFieldOf, canShiftEarlier, shiftedDate } from 'Helpers/DateShift';
 
 
 class ItemsMultiStore {
@@ -99,7 +99,7 @@ class ItemsMultiStore {
 			const item=this.getUidItem(uid);
 			if (item!==undefined)
 				result.push(item);
-			//else 
+			//else
 			//	console.log(uid+' not found');
 		})
 		return result;
@@ -225,23 +225,23 @@ class ItemsMultiStore {
 			disabled: task.isClosed,
 		},
 		{
+			//приблизить можно только настолько, чтобы дата не ушла в прошлое;
+			//недоступные пункты приглушены, а не скрыты — меню не «прыгает»
+			label: 'Устанвить срок',
+			disabled: task.isClosed,
+			children: SET_INTERVALS.map(interval=>({
+				label: interval.label,
+				key: 'timeset:'+interval.id,
+				//disabled: !canShiftEarlier(task,interval.ms,this.time.today),
+			})),
+		},
+		{
 			label: 'Отодвинуть срок',
 			disabled: task.isClosed,
 			children: SHIFT_INTERVALS.map(interval=>({
 				label: interval.label,
 				key: 'later:'+interval.id,
 				disabled: task.isClosed,
-			})),
-		},
-		{
-			//приблизить можно только настолько, чтобы дата не ушла в прошлое;
-			//недоступные пункты приглушены, а не скрыты — меню не «прыгает»
-			label: 'Приблизить срок',
-			disabled: !SHIFT_INTERVALS.some(interval=>canShiftEarlier(task,interval.ms,this.time.today)),
-			children: SHIFT_INTERVALS.map(interval=>({
-				label: interval.label,
-				key: 'earlier:'+interval.id,
-				disabled: !canShiftEarlier(task,interval.ms,this.time.today),
 			})),
 		},
 		{
@@ -267,7 +267,7 @@ class ItemsMultiStore {
 			//console.log(e.key);
 			const week=7*24*3600*1000;
 			const month=30*24*3600*1000;
-			if (e.key.startsWith("toUser:")) {				
+			if (e.key.startsWith("toUser:")) {
 				console.log(e.key.split(':'));
 				const userId=Number(e.key.split(':')[1]);
 				console.log(userId);
@@ -287,13 +287,21 @@ class ItemsMultiStore {
 				return;
 			}
 			//сдвиг срока: later:<интервал> / earlier:<интервал>
-			if (e.key.startsWith("later:") || e.key.startsWith("earlier:")) {
+			if (e.key.startsWith("later:")) {
 				const [direction,id]=e.key.split(':');
 				const interval=shiftInterval(id);
 				if (!interval) return;
 				const earlier = direction==='earlier';
 				if (earlier && !canShiftEarlier(task,interval.ms,this.time.today)) return;
 				task.update({ [dateFieldOf(task)]: shiftedDate(task,interval.ms,earlier?-1:1,this.time.today) }, true);
+				return;
+			}
+			//планирование срока на конкретное время
+			if (e.key.startsWith("timeset:")) {
+				const [direction,id]=e.key.split(':');
+				const interval=setInterval(id);
+				if (!interval) return;
+				task.update({ [dateFieldOf(task)]: this.time.today+interval.ms }, true);
 				return;
 			}
 			switch(e.key) {
@@ -312,11 +320,11 @@ class ItemsMultiStore {
 					task.update({ sorting: bucketMinSorting, startDatePlan: null }, true);
 					break;
 				}
-	
+
 				case 'failed': task.update({ status: 0 }, true); break;
 				case 'partial': task.update({ status: 1 }, true); break;
 				case 'complete': task.update({ status: 2 }, true); break;
-	
+
 				default: console.log('unknown menu item: '+e.key);
 			}
 		}
