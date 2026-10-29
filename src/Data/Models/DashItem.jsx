@@ -127,12 +127,14 @@ export default class DashItem {
 	}
 
 
+	/** Разрешить перенос активной карточки с учётом назначения ячейки. */
 	isDraggable(cell) {
 		return !this.isClosed   //закрытые не таскаем
 		&& !this.isUpdating     //обновляемые тоже
 		&& !this.isNew          //и не создание нового элемента
 		&& !this.isEdit          //и не создание нового элемента
-		&& this.user===cell.user;//только те элементы где мы хозяева
+		// В канбане меняется персональный столбец, поэтому доступны и задачи «помогаю».
+		&& (cell.kanban || this.user === cell.user);
 	}
 
 	isPlanItem() {
