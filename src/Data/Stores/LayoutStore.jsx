@@ -5,6 +5,7 @@ import 'reflect-metadata';
 import {observable, makeObservable, action, computed, observe} from 'mobx';
 import { scroller } from 'react-scroll';
 import TimeHelper from 'Helpers/TimeHelper';
+import { KANBAN_SYSTEM_COLUMNS } from 'Data/kanbanSystemColumns';
 
 /**
  * Дефолты для всех персистируемых настроек раскладки.
@@ -24,6 +25,9 @@ const PREF_DEFAULTS = {
 	kanban: false,                 //персональная доска показана канбаном (столбцы), а не календарём
 	kanbanCollapsed: ['closed'],   //свёрнутые столбцы канбана: id стадий и 'closed' (завершённые)
 	kanbanHeights: {},             //доли высоты столбцов канбана в стопках: {id стадии: вес}; нет записи — поровну (вес 1)
+	kanbanSystemColumns: {},       //системные колонки по владельцу доски; без настройки — только завершённые
+	kanbanSystemColors: {},        //цвета системных колонок по владельцу доски
+	kanbanColumnStacks: {},        //общая раскладка обычных и системных колонок по владельцу доски
 	sidebarWidth: 300,             //ширина sidebar (валидируется clamp'ом в setter'е)
 	currentInterval: null,         //timestamp верхнего/левого видимого периода — восстанавливается при смене layout
 	incomingCallsVisible: true,    //показывать карточки входящих звонков
@@ -201,6 +205,40 @@ class LayoutStore {
 	get kanban()             { return this.prefs.get('kanban'); }
 	get kanbanCollapsed()    { return this.prefs.get('kanbanCollapsed'); }
 	get kanbanHeights()      { return this.prefs.get('kanbanHeights'); }
+	get kanbanSystemColumns() { return this.prefs.get('kanbanSystemColumns'); }
+	get kanbanSystemColors() { return this.prefs.get('kanbanSystemColors'); }
+	get kanbanColumnStacks() { return this.prefs.get('kanbanColumnStacks'); }
+
+	/** Набор системных колонок персональной доски; старые настройки сохраняют завершённые. */
+	systemColumnsOf(owner) {
+		const keys = this.kanbanSystemColumns[owner] ?? ['closed'];
+		return KANBAN_SYSTEM_COLUMNS.filter(column => keys.includes(column.key)).map(column => ({
+			...column, id: column.key, userId: Number(owner), system: true,
+			color: this.kanbanSystemColors[owner]?.[column.key] ?? null,
+		}));
+	}
+
+	/** Цвет системного столбца хранится отдельно от его наличия на доске. */
+	setKanbanSystemColor(owner, key, color) {
+		if (!KANBAN_SYSTEM_COLUMNS.some(column => column.key === key)) return;
+		this.setPref('kanbanSystemColors', {
+			...this.kanbanSystemColors,
+			[owner]: { ...this.kanbanSystemColors[owner], [key]: color },
+		});
+	}
+
+	/** Сохранить смешанные стопки; null возвращает порядок, заданный обычными стадиями. */
+	setKanbanColumnStacks(owner, stacks) {
+		this.setPref('kanbanColumnStacks', { ...this.kanbanColumnStacks, [owner]: stacks });
+	}
+
+	/** Добавить или убрать системную колонку без дублей и изменения задач на сервере. */
+	setKanbanSystemColumn(owner, key, visible) {
+		if (!KANBAN_SYSTEM_COLUMNS.some(column => column.key === key)) return;
+		const current = this.systemColumnsOf(owner).map(column => column.key);
+		const next = visible ? [...new Set([...current, key])] : current.filter(value => value !== key);
+		this.setPref('kanbanSystemColumns', { ...this.kanbanSystemColumns, [owner]: next });
+	}
 
 	/** Вес высоты столбца в стопке: 1 — границу не двигали (поровну с соседями) */
 	kanbanHeight(stageId)    { return (this.kanbanHeights ?? {})[stageId] ?? 1; }
@@ -283,6 +321,9 @@ class LayoutStore {
 			kanban: computed,
 			kanbanCollapsed: computed,
 			kanbanHeights: computed,
+			kanbanSystemColumns: computed,
+			kanbanSystemColors: computed,
+			kanbanColumnStacks: computed,
 			kanbanActive: computed,
 			sidebarWidth: computed,
 			currentInterval: computed,

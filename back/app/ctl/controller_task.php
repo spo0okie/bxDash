@@ -20,6 +20,8 @@ class controller_task {
 		'TITLE',
 		'RESPONSIBLE_ID',
 		'ACCOMPLICES',
+		'AUDITORS',
+		'CREATED_BY',
 		'REAL_STATUS',
 		'MARK',
 		'UPDATES_COUNT',
@@ -36,9 +38,11 @@ class controller_task {
 		global $globalTzOffset;
 		static::$arViewedDates[$arTask['ID']] = $arTask['VIEWED_DATE'] ? $arTask['VIEWED_DATE'] : $arTask['CREATED_DATE'];
 
-		//перебираем соисполнителей задачи
+		// GetList не возвращает все роли: дополняем соисполнителей и наблюдателей из участников.
+		$arTask['ACCOMPLICES'] = array();
+		$arTask['AUDITORS'] = array();
 		$resMembers = CTaskMembers::GetList(array(), array("TASK_ID" => $arTask['ID']));
-		while ($arMember = $resMembers->Fetch())
+		while ($arMember = $resMembers->Fetch()) {
 			if (
 				($arMember["TYPE"] == "A" ) //упер из метода GetByID. Тот который GetList по умолчанию не вытягивает соисполнителей
 				&&
@@ -46,6 +50,8 @@ class controller_task {
 			) {
 				$arTask["ACCOMPLICES"][] = $arMember["USER_ID"];
 			}
+			if ($arMember['TYPE'] == 'U') $arTask['AUDITORS'][] = $arMember['USER_ID'];
+		}
 		$arTask['tzShift']=$globalTzOffset;
 		return $arTask;
 	}
@@ -154,6 +160,30 @@ class controller_task {
 		while ($arTask = $res->GetNext()) {
 			//кладем задачу пользователю в табличку
 			$tasks[$arTask['ID']]=static::initTaskData($arTask);
+		}
+
+		if (is_null($to)) {
+			// Контроль и «От меня» включают все открытые задачи, независимо от плановой даты.
+			// Скалярные ID в каждой ветке обходят ограничения старого Bitrix на массивы ролей.
+			$roles = array('::LOGIC' => 'OR');
+			$roleIndex = 0;
+			foreach (array_unique(array_map('intval', $users)) as $userId) {
+				if ($userId <= 0) continue;
+				$roles['::SUBFILTER-' . (++$roleIndex)] = array('AUDITOR' => $userId);
+				$roles['::SUBFILTER-' . (++$roleIndex)] = array('CREATED_BY' => $userId);
+			}
+			if ($roleIndex) {
+				$roleFilter = array(
+					'CHECK_PERMISSIONS' => 'Y',
+					'!REAL_STATUS' => array(5, 7),
+					'::SUBFILTER-1' => $roles,
+				);
+				$res = CTasks::GetList(array('ID' => 'ASC'), $roleFilter);
+				while ($arTask = $res->GetNext()) {
+					// Одна задача может прийти по нескольким ролям; участников читаем только один раз.
+					if (!isset($tasks[$arTask['ID']])) $tasks[$arTask['ID']] = static::initTaskData($arTask);
+				}
+			}
 		}
 
 		static::initTaskUpdates($tasks);

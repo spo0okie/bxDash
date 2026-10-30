@@ -22,6 +22,22 @@ test.each(['isClosed', 'isUpdating', 'isNew', 'isEdit'])('%s запрещает 
 	expect(helpingTask({ [field]: true }).isDraggable({ user: 5, kanban: true })).toBe(false);
 });
 
+test('из системного списка нельзя начать перенос даже ответственной или соисполнительской задачи', () => {
+	expect(helpingTask().isDraggable({ user: 5, kanban: true, readOnly: true })).toBe(false);
+	expect(helpingTask().isDraggable({ user: 7, kanban: true, readOnly: true })).toBe(false);
+});
+
+test.each(['source', 'target'])('drop с системной колонкой (%s) не сохраняет привязку', side => {
+	const task = helpingTask();
+	const source = { id: 'kanban/1', kanban: true, user: 5, stage: { id: 1 }, readOnly: side === 'source' };
+	const target = { ...source, id: 'kanban/2', stage: { id: 2 }, readOnly: side === 'target' };
+	dashItemsDrop(task, {
+		initial: { dropTargets: [{ data: { type: 'cell', cell: source, items: [task] } }] },
+		current: { dropTargets: [{ data: { type: 'cell', cell: target, items: [] } }] },
+	});
+	expect(task.update).not.toHaveBeenCalled();
+});
+
 test('перенос задачи «помогаю» сохраняет столбец доски соисполнителя без смены даты и ответственного', () => {
 	const task = helpingTask({ startDatePlan: 123456, deadline: 234567 });
 	const source = { id: 'kanban/1', kanban: true, user: 5, stage: { id: 1 } };

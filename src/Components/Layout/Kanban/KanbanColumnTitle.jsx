@@ -21,14 +21,15 @@ const COLORS = [
  * на верхнюю / нижнюю половину другого столбца — в стопку с ним (см. KanbanColumn).
  *
  * Название правится на месте (двойной клик или пункт меню): Enter и потеря фокуса сохраняют,
- * Escape отменяет. У системного столбца «Завершённые» (stage === null) управления нет.
+ * Escape отменяет. Системные колонки поддерживают цвет, сворачивание и удаление без изменения задач.
  *
- * @param {Object|null} props.stage    стадия; null — системный столбец
+ * @param {Object}      props.stage    обычная или системная колонка
  * @param {string}      props.title    отображаемое название
  * @param {number}      props.count    число карточек в столбце
  * @param {Function}    props.onToggle свернуть столбец
+ * @param {Function}    props.onRemove убрать системный столбец с доски
  */
-const KanbanColumnTitle = observer(({ stage, title, count, onToggle }) => {
+const KanbanColumnTitle = observer(({ stage, title, count, onToggle, onRemove }) => {
 	const { stages, layout } = useStores();
 	const [editing, setEditing] = useState(false);
 	const [value, setValue] = useState('');
@@ -36,7 +37,7 @@ const KanbanColumnTitle = observer(({ stage, title, count, onToggle }) => {
 	const cancelled = useRef(false);
 
 	const startEdit = useCallback(() => {
-		if (!stage) return;
+		if (!stage || stage.system) return;
 		cancelled.current = false;
 		setValue(stage.title);
 		setEditing(true);
@@ -69,7 +70,7 @@ const KanbanColumnTitle = observer(({ stage, title, count, onToggle }) => {
 		}
 	}, []);
 
-	const others = stage ? stages.stagesOf(stage.userId).filter(s => s.id !== stage.id) : [];
+	const others = stage && !stage.system ? stages.stagesOf(stage.userId).filter(s => s.id !== stage.id) : [];
 
 	const remove = useCallback((moveTo) => {
 		const target = moveTo ? stages.stageById(moveTo) : null;
@@ -83,9 +84,8 @@ const KanbanColumnTitle = observer(({ stage, title, count, onToggle }) => {
 	}, [stages, layout, stage, count]);
 
 	const menuItems = useMemo(() => {
-		if (!stage) return [];
 		return [
-			{ key: 'rename', label: 'Переименовать' },
+			...(stage.system ? [] : [{ key: 'rename', label: 'Переименовать' }]),
 			{
 				key: 'color',
 				label: 'Цвет',
@@ -103,7 +103,9 @@ const KanbanColumnTitle = observer(({ stage, title, count, onToggle }) => {
 				],
 			},
 			{ key: 'collapse', label: 'Свернуть' },
-			stage.isDefault
+			stage.system
+				? { key: 'deleteSystem', label: 'Удалить', danger: true }
+				: stage.isDefault
 				? { key: 'delete', label: 'Удалить', disabled: true, title: 'Столбец по умолчанию удалить нельзя: в нём лежит всё, что никуда не разложено' }
 				: count === 0
 					// пустой столбец: переносить нечего, выбирать не из чего
@@ -122,17 +124,22 @@ const KanbanColumnTitle = observer(({ stage, title, count, onToggle }) => {
 	const onMenuClick = useCallback(({ key }) => {
 		if (key === 'rename') return startEdit();
 		if (key === 'collapse') return onToggle();
+		if (key === 'deleteSystem') return onRemove?.();
 		if (key.startsWith('color:')) {
 			const color = key.slice('color:'.length) || null;
-			if (color !== stage.color) stages.update(stage.id, { color });
+			if (color !== stage.color) {
+				// Цвет системных колонок — настройка доски, обычных — поле серверной стадии.
+				if (stage.system) layout.setKanbanSystemColor(stage.userId, stage.key, color);
+				else stages.update(stage.id, { color });
+			}
 			return;
 		}
 		if (key.startsWith('delete:')) return remove(Number(key.slice('delete:'.length)) || null);
-	}, [stage, stages, startEdit, onToggle, remove]);
+	}, [stage, stages, layout, startEdit, onToggle, onRemove, remove]);
 
 	return (
 		<div className="kanbanColumnTitle">
-			{stage && (
+			{(stage || onRemove) && (
 				<Dropdown menu={{ items: menuItems, onClick: onMenuClick }} trigger={['click']}>
 					<button className="kanbanMenu" title="Управление столбцом">⋯</button>
 				</Dropdown>
@@ -150,7 +157,7 @@ const KanbanColumnTitle = observer(({ stage, title, count, onToggle }) => {
 				/>
 			) : (
 				<h3
-					title={stage ? title + (stage.isDefault ? ' — столбец по умолчанию' : '') + '\nДвойной клик — переименовать, перетаскивание — переставить' : title}
+					title={title + (stage.isDefault ? ' — столбец по умолчанию' : '') + (stage.system ? '\nПеретаскивание — переставить' : '\nДвойной клик — переименовать, перетаскивание — переставить')}
 					onDoubleClick={startEdit}
 				>
 					{stage?.isDefault && <span className="kanbanDefaultMark">⌂ </span>}

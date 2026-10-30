@@ -211,7 +211,8 @@ const TaskCard = observer((props) => {
 	const handleMouseLeave = useCallback(() => task.mouseOut(), [task]);
 
 	// Для режима поиска cell может быть null - в таком случае показываем задачу всегда
-	const visible = !cell || layout.accomplicesVisible || task.user === cell.user;
+	// Состав канбана уже отобран StagesStore, включая колонки наблюдателя и постановщика.
+	const visible = !cell || cell.kanban || layout.accomplicesVisible || task.user === cell.user;
 	//console.log(ref.current);
 	useEffect(() => {
 		//описание для DND

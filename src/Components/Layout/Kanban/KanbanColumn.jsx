@@ -24,24 +24,26 @@ import { contrastText } from "./kanbanColor";
  * Куда встанет столбец, решает край цели (dropEdge): слева / справа — отдельной стопкой,
  * сверху / снизу — в ту же стопку.
  *
- * @param {Object}  props.stage    стадия (нет у системного столбца «Завершённые»)
+ * @param {Object}  props.stage    обычная или системная колонка
  * @param {number}  props.owner    владелец доски
  * @param {Array}   props.items    элементы столбца, уже отсортированные
- * @param {boolean} props.closed   системный столбец завершённых: без создания и перетаскивания
  * @param {boolean} props.inStack  столбец делит стопку с другими (свёрнутый рисуется строкой)
  * @param {number}  props.weight   доля высоты в стопке (flex-grow)
  */
-const KanbanColumn = observer(({ stage = null, owner, items, closed = false, inStack = false, weight = 1 }) => {
+const KanbanColumn = observer(({ stage, owner, items, inStack = false, weight = 1 }) => {
 	const { layout, stages } = useStores();
 	const ref = useRef(null);
 	const [dragOver, setDragOver] = useState(false);	// над столбцом тащат карточку
 	const [dragging, setDragging] = useState(false);	// тащат сам столбец
 	const [edge, setEdge] = useState(null);				// к какому краю встанет другой столбец
 
-	const key = closed ? 'closed' : stage.id;
+	const key = stage.id;
+	const readOnly = Boolean(stage.system);
+	const closed = stage.system && stage.key === 'closed';
 	const collapsed = layout.isKanbanCollapsed(key);
-	const title = closed ? 'Завершённые' : stage.title;
+	const title = stage.title;
 	const toggle = useCallback(() => layout.toggleKanbanCollapsed(key), [layout, key]);
+	const removeSystem = useCallback(() => layout.setKanbanSystemColumn(owner, key, false), [layout, owner, key]);
 
 	const maxSorting = items.length ? items[0].sorting : null;
 	const minSorting = items.length ? items[items.length - 1].sorting : null;
@@ -49,20 +51,21 @@ const KanbanColumn = observer(({ stage = null, owner, items, closed = false, inS
 	const cell = useMemo(() => ({
 		id: 'kanban/' + key,
 		kanban: true,
+		readOnly, //системные списки нельзя менять переносом или пересортировкой
 		user: owner,
-		stage: stage,
+		stage: readOnly ? null : stage,
 		t: null,
 		dropT: null,
 		maxSorting: maxSorting,
 		minSorting: minSorting,
 		dragOver: setDragOver,
-	}), [key, owner, stage, maxSorting, minSorting]);
+	}), [key, owner, stage, readOnly, maxSorting, minSorting]);
 
 	const stageId = stage?.id ?? null;
 
 	useEffect(() => {
 		const element = ref.current;
-		if (closed || !element || stageId === null) return undefined;
+		if (!element || stageId === null) return undefined;
 		// развёрнутый столбец берут за название, свёрнутый — за всю полоску
 		const handle = collapsed ? element : element.querySelector('.kanbanTitleGrip');
 		if (!handle) return undefined;
@@ -79,7 +82,7 @@ const KanbanColumn = observer(({ stage = null, owner, items, closed = false, inS
 					setDragging(false);
 					try {
 						const target = location.current.dropTargets.find(t => t.data.type === 'stageColumn');
-						if (target && target.data.edge) stages.dropStage(stageId, target.data.stageId, target.data.edge);
+						if (target && target.data.edge) stages.dropColumn(owner, stageId, target.data.stageId, target.data.edge);
 					} catch (error) {
 						// исключения из onDrop библиотека глотает молча — выводим явно
 						console.error(error);
@@ -100,7 +103,7 @@ const KanbanColumn = observer(({ stage = null, owner, items, closed = false, inS
 				onDrop: () => setEdge(null),
 			}),
 		);
-	}, [closed, collapsed, stageId, stages]);
+	}, [owner, collapsed, stageId, stages]);
 
 	const style = useMemo(() => {
 		// цвет столбца красит заголовок и рамку; без цвета CSS берёт цвета текущей недели календаря
@@ -140,10 +143,10 @@ const KanbanColumn = observer(({ stage = null, owner, items, closed = false, inS
 			style={style}
 			data-stage-id={stageId}
 		>
-			<KanbanColumnTitle stage={stage} title={title} count={items.length} onToggle={toggle} />
+			<KanbanColumnTitle stage={stage} title={title} count={items.length} onToggle={toggle} onRemove={readOnly ? removeSystem : undefined} />
 			<div className="kanbanColumnBody userCellContent">
-				{!closed && <KanbanCreateButton cell={cell} />}
-				<CardsBlock items={items} cell={cell} dnd={!closed} />
+				{!readOnly && <KanbanCreateButton cell={cell} />}
+				<CardsBlock items={items} cell={cell} dnd={!readOnly} />
 			</div>
 			{indicator}
 		</div>

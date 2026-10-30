@@ -1,6 +1,7 @@
 import { observable, autorun, runInAction } from 'mobx';
 import StagesStore, { stageFromRow } from 'Data/Stores/StagesStore';
 import DashItem from 'Data/Models/DashItem';
+import LayoutStore from 'Data/Stores/LayoutStore';
 import notify from 'Helpers/Notify';
 
 const OWNER = 5;
@@ -183,6 +184,26 @@ describe('DashItem: привязки к столбцам', () => {
 });
 
 describe('StagesStore: доска', () => {
+	test('ролевые колонки исключают ответственного и переключают соисполнителя вместе с «помогаю»', async () => {
+		const { stages, add, layout } = setup({ 'stage/list/5': () => OWNER_ROWS });
+		await stages.load(OWNER);
+		const control = add('task', 20, { user: OTHER, auditors: [OWNER], sorting: 200 });
+		const created = add('task', 21, { user: OTHER, creatorId: OWNER });
+		const both = add('task', 22, { user: OTHER, creatorId: OWNER, auditors: [OWNER], accomplices: [OWNER], sorting: 300 });
+		add('task', 23, { auditors: [OWNER], creatorId: OWNER }); // ответственный — только обычный столбец
+		add('task', 24, { user: OTHER, auditors: [OWNER], creatorId: OWNER, closedDate: 800 });
+		add('job', 25, { user: OTHER, auditors: [OWNER], creatorId: OWNER }); // роли только у задач
+
+		expect(stages.board.control).toEqual([both, control]);
+		expect(stages.board.created).toEqual([both, created]);
+		expect(stages.board.byStage.get(1)).not.toContain(both);
+		runInAction(() => { layout.accomplicesVisible = true; });
+		expect(stages.board.control).toEqual([control]);
+		expect(stages.board.created).toEqual([created]);
+		expect(stages.board.byStage.get(1)).toContain(both);
+		expect(stages.board.closed).toEqual([]);
+	});
+
 	test('раскладывает открытые элементы владельца по столбцам одним проходом', async () => {
 		const { stages, add } = setup({ 'stage/list/5': () => OWNER_ROWS });
 		await stages.load(OWNER);
@@ -424,6 +445,75 @@ describe('StagesStore: изменение', () => {
 		await stages.remove(2);
 		// без поправки столбец 3 «прилип» бы к стопке столбца 1
 		expect(stages.stacksOf(OWNER).map(stack => stack.map(s => s.id))).toEqual([[1], [3]]);
+	});
+});
+
+describe('StagesStore: смешанные стопки', () => {
+	/** Настоящие локальные настройки поверх тестового серверного API стадий. */
+	async function mixed(fail = false) {
+		const context = setup({
+			'stage/list/5': () => OWNER_ROWS,
+			'stage/reorder': body => fail
+				? { status: 409, body: { error: 'нельзя' } }
+				: { stages: body.ids.map((id, index) => row(id, 'С' + id, (index + 1) * 100, id === 1, OWNER, null, body.stacked.includes(id))) },
+		});
+		const saved = new Map();
+		const main = { loadOption: key => saved.get(key), saveOption: (key, value) => saved.set(key, value) };
+		const layout = new LayoutStore(main, {}, context.users);
+		context.stages.layout = layout;
+		await context.stages.load(OWNER);
+		return { ...context, layout, main };
+	}
+	const shape = stages => stages.columnStacksOf(OWNER).map(stack => stack.map(column => column.id));
+
+	test('системную колонку можно поставить слева и в общую стопку, без запроса к серверу', async () => {
+		const { stages, layout, calls, main } = await mixed();
+		expect(await stages.dropColumn(OWNER, 'closed', 1, 'left')).toBe(true);
+		expect(shape(stages)).toEqual([['closed'], [1], [2], [3]]);
+		expect(await stages.dropColumn(OWNER, 'closed', 2, 'bottom')).toBe(true);
+		expect(shape(stages)).toEqual([[1], [2, 'closed'], [3]]);
+		expect(calls).toHaveLength(1);
+		layout.setKanbanSystemColumn(OWNER, 'control', true);
+		await stages.dropColumn(OWNER, 'control', 3, 'right');
+		await stages.dropColumn(OWNER, 'closed', 'control', 'right');
+		expect(shape(stages)).toEqual([[1], [2], [3], ['control'], ['closed']]);
+		await stages.dropColumn(OWNER, 'closed', 2, 'bottom');
+		layout.setKanbanSystemColor(OWNER, 'closed', '#e53935');
+		stages.layout = new LayoutStore(main, {}, {});
+		expect(shape(stages)).toEqual([[1], [2, 'closed'], [3], ['control']]);
+		expect(stages.layout.systemColumnsOf(OWNER)[0].color).toBe('#e53935');
+		expect(stages.layout.systemColumnsOf(OTHER)[0].color).toBeNull();
+	});
+
+	test('обычные колонки сохраняются на сервере без строковых id, новая колонка не теряется', async () => {
+		const { stages, calls, layout } = await mixed();
+		await stages.dropColumn(OWNER, 'closed', 2, 'bottom');
+		await stages.dropColumn(OWNER, 3, 'closed', 'bottom');
+		expect(shape(stages)).toEqual([[1], [2, 'closed', 3]]);
+		expect(calls.at(-1)).toEqual({ endpoint: 'stage/reorder', body: { user: OWNER, ids: [1, 2, 3], stacked: [3] } });
+		layout.setKanbanSystemColumn(OWNER, 'closed', false);
+		expect(shape(stages)).toEqual([[1], [2, 3]]);
+		stages.setStages(OWNER, [...stages.stagesOf(OWNER), { id: 4, userId: OWNER, sort: 400 }]);
+		layout.setKanbanSystemColumn(OWNER, 'control', true);
+		expect(shape(stages)).toEqual([[1], [2, 3], [4], ['control']]);
+	});
+
+	test('ошибка серверного сохранения откатывает общую раскладку', async () => {
+		const { stages, layout } = await mixed(true);
+		expect(await stages.dropColumn(OWNER, 3, 1, 'left')).toBe(false);
+		expect(layout.kanbanColumnStacks[OWNER]).toBeNull();
+		expect(await stages.dropColumn(OWNER, 'closed', 'closed', 'top')).toBe(false);
+	});
+
+	test('обновление обычных стадий с сервера не перекрывается локальным порядком', async () => {
+		const { stages } = await mixed();
+		await stages.dropColumn(OWNER, 'closed', 2, 'bottom');
+		stages.setStages(OWNER, [
+			{ id: 3, userId: OWNER, sort: 100 },
+			{ id: 2, userId: OWNER, sort: 200 },
+			{ id: 1, userId: OWNER, sort: 300 },
+		]);
+		expect(shape(stages)).toEqual([[3], [2, 'closed'], [1]]);
 	});
 });
 

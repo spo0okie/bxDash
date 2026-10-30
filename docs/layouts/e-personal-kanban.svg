@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1535 688" width="1535" height="688">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1984 688" width="1984" height="688">
 <style>text{font:11px Consolas,Menlo,'DejaVu Sans Mono',monospace;fill:#1c2030}.t{font-weight:bold}.n{fill:#5b6275}.g{fill:#8a90a2;font-style:italic}</style>
-<rect width="1535" height="688" fill="#ffffff"/>
-<rect x="8" y="8" width="1518.2" height="672" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<rect width="1984" height="688" fill="#ffffff"/>
+<rect x="8" y="8" width="1967.6" height="672" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
 <text x="15" y="23" class="t">div.layout</text>
-<rect x="15" y="27" width="1504.2" height="646" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<rect x="15" y="27" width="1953.6" height="646" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
 <text x="22" y="42" class="t">div#kanbanBoard.kanbanBoard</text>
 <text x="22" y="56" class="n">прокрутка по горизонтали; вместо div.dashBoard и div.rightPane</text>
 <rect x="22" y="60" width="424.2" height="606" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
@@ -115,22 +115,37 @@
 <text x="1069.3" y="131" class="n">одиночный</text>
 <text x="1069.3" y="145" class="n">свёрнутый:</text>
 <text x="1069.3" y="159" class="n">вертикально</text>
-<rect x="1189.5" y="60" width="195.5" height="606" rx="3" fill="#f5f6fa" stroke="#6b7285" stroke-dasharray="5 3"/>
+<rect x="1189.5" y="60" width="262.5" height="606" rx="3" fill="#f5f6fa" stroke="#6b7285" stroke-dasharray="5 3"/>
 <text x="1196.5" y="75" class="t">div.kanbanColumn.closed</text>
-<text x="1196.5" y="89" class="n">«Завершённые», системный</text>
+<text x="1196.5" y="89" class="n">«Завершенные», можно удалить</text>
 <text x="1196.5" y="103" class="n">по умолчанию свёрнут</text>
-<rect x="1196.5" y="107" width="181.5" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<rect x="1196.5" y="107" width="248.5" height="36" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
 <text x="1203.5" y="122" class="t">div.kanbanColumnTitle</text>
-<text x="1203.5" y="136" class="n">без меню</text>
-<rect x="1196.5" y="149" width="181.5" height="510" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="1203.5" y="136" class="n">перенос / цвет / свернуть / удалить</text>
+<rect x="1196.5" y="149" width="248.5" height="510" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
 <text x="1203.5" y="164" class="t">div.kanbanColumnBody › ul</text>
 <text x="1203.5" y="178" class="n">CardsBlock dnd=false</text>
-<rect x="1203.5" y="182" width="167.5" height="22" rx="3" fill="#dbeafe" stroke="#7d8799"/>
+<rect x="1203.5" y="182" width="234.5" height="22" rx="3" fill="#dbeafe" stroke="#7d8799"/>
 <text x="1210.5" y="197" class="t">taskItem</text>
-<rect x="1203.5" y="210" width="167.5" height="22" rx="3" fill="#dcfce7" stroke="#7d8799"/>
+<rect x="1203.5" y="210" width="234.5" height="22" rx="3" fill="#dcfce7" stroke="#7d8799"/>
 <text x="1210.5" y="225" class="t">jobItem</text>
-<rect x="1391" y="60" width="121.2" height="606" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
-<text x="1398" y="75" class="t">button</text>
-<text x="1398" y="89" class="n">.kanbanAddColumn</text>
-<text x="1398" y="103" class="n">«+ столбец»</text>
+<rect x="1458" y="60" width="269.2" height="606" rx="3" fill="#f5f6fa" stroke="#6b7285" stroke-dasharray="5 3"/>
+<text x="1465" y="75" class="t">div.kanbanColumn</text>
+<text x="1465" y="89" class="n">«Контроль» / «От меня»</text>
+<text x="1465" y="103" class="n">системные списки по ролям</text>
+<rect x="1465" y="107" width="255.2" height="50" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="1472" y="122" class="t">div.kanbanColumnTitle</text>
+<text x="1472" y="136" class="n">перенос / цвет / свернуть / удалить</text>
+<text x="1472" y="150" class="n">можно объединять с обычными в стопку</text>
+<rect x="1465" y="163" width="255.2" height="496" rx="3" fill="#e9ecf5" stroke="#6b7285"/>
+<text x="1472" y="178" class="t">div.kanbanColumnBody › ul</text>
+<text x="1472" y="192" class="n">CardsBlock dnd=false</text>
+<text x="1472" y="206" class="n">cell.readOnly=true</text>
+<rect x="1472" y="210" width="241.2" height="22" rx="3" fill="#dbeafe" stroke="#7d8799"/>
+<text x="1479" y="225" class="t">taskItem</text>
+<rect x="1733.2" y="60" width="228.4" height="606" rx="3" fill="#f5f6fa" stroke="#6b7285"/>
+<text x="1740.2" y="75" class="t">button</text>
+<text x="1740.2" y="89" class="n">.kanbanAddColumn</text>
+<text x="1740.2" y="103" class="n">меню: настраиваемая /</text>
+<text x="1740.2" y="117" class="n">завершенные / контроль / от меня</text>
 </svg>

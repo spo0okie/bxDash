@@ -1,16 +1,18 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { observer } from "mobx-react";
+import { Dropdown } from 'antd';
 import { useStores } from "Data/Stores/StoreProvider";
+import { KANBAN_SYSTEM_COLUMNS } from 'Data/kanbanSystemColumns';
 
 /**
- * Добавление столбца: кнопка «+ столбец» превращается в поле ввода названия.
+ * Меню добавления системного столбца или ввода названия настраиваемой колонки.
  * Столбец создаётся на бэке только после Enter с непустым названием —
  * безымянных заготовок не остаётся. Escape и потеря фокуса с пустым полем отменяют.
  *
  * @param {number} props.owner владелец доски
  */
 const KanbanAddColumn = observer(({ owner }) => {
-	const { stages } = useStores();
+	const { stages, layout } = useStores();
 	const [editing, setEditing] = useState(false);
 	const [value, setValue] = useState('');
 	const [saving, setSaving] = useState(false);
@@ -58,7 +60,23 @@ const KanbanAddColumn = observer(({ owner }) => {
 	}, [value, saving]);
 
 	if (!editing) {
-		return <button className="kanbanAddColumn" onClick={start} title="Добавить столбец">+ столбец</button>;
+		const enabled = layout.systemColumnsOf(owner).map(column => column.key);
+		return (
+			<Dropdown
+				trigger={['click']}
+				menu={{
+					items: [
+						{ key: 'custom', label: 'Настраиваемая колонка' },
+						...KANBAN_SYSTEM_COLUMNS.map(column => ({
+							key: column.key, label: column.title, disabled: enabled.includes(column.key),
+						})),
+					],
+					onClick: ({ key }) => key === 'custom' ? start() : layout.setKanbanSystemColumn(owner, key, true),
+				}}
+			>
+				<button className="kanbanAddColumn" title="Добавить столбец">+ столбец ▾</button>
+			</Dropdown>
+		);
 	}
 
 	return (

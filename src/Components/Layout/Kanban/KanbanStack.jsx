@@ -17,9 +17,9 @@ const NO_ITEMS = Object.freeze([]);
  *
  * @param {Array}  props.columns стадии стопки сверху вниз
  * @param {number} props.owner   владелец доски
- * @param {Map}    props.byStage раскладка элементов по стадиям (stages.board.byStage)
+ * @param {Object} props.board раскладка элементов по обычным и системным колонкам
  */
-const KanbanStack = observer(({ columns, owner, byStage }) => {
+const KanbanStack = observer(({ columns, owner, board }) => {
 	const { layout } = useStores();
 	const ref = useRef(null);
 	// веса во время перетаскивания границы; в настройки пишем один раз — когда отпустили
@@ -35,7 +35,8 @@ const KanbanStack = observer(({ columns, owner, byStage }) => {
 		if (!root) return;
 		// текущие высоты развёрнутых столбцов стопки — от них считаем новые веса
 		const measured = Array.from(root.querySelectorAll(':scope > .kanbanColumn:not(.collapsed)')).map(element => ({
-			id: Number(element.getAttribute('data-stage-id')),
+			// Системные колонки имеют строковые ключи; resizeWeights поддерживает оба типа id.
+			id: columns.find(column => String(column.id) === element.getAttribute('data-stage-id')).id,
 			height: element.getBoundingClientRect().height,
 		}));
 		const startY = event.clientY;
@@ -56,7 +57,7 @@ const KanbanStack = observer(({ columns, owner, byStage }) => {
 		window.addEventListener('mouseup', onUp);
 		// на время перетаскивания — курсор изменения размера и без выделения текста по всей странице
 		document.body.classList.add('kanbanResizing');
-	}, [layout]);
+	}, [layout, columns]);
 
 	// одиночный свёрнутый столбец — узкая вертикальная полоска на всю высоту
 	const narrow = !inStack && isCollapsed(columns[0]);
@@ -72,7 +73,7 @@ const KanbanStack = observer(({ columns, owner, byStage }) => {
 						<KanbanColumn
 							stage={stage}
 							owner={owner}
-							items={byStage.get(stage.id) ?? NO_ITEMS}
+							items={(stage.system ? board[stage.key] : board.byStage.get(stage.id)) ?? NO_ITEMS}
 							inStack={inStack}
 							weight={weightOf(stage)}
 						/>

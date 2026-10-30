@@ -139,6 +139,9 @@ export function dashItemsDrop(item, location) {
     const targetCell = location.current.dropTargets.find(t => t.data.type === 'cell');
     if (!targetCell) { console.log('Cant find target cell. Halt DND!'); return; }
 
+    // Защита общего обработчика: системные списки не хранят положение карточек.
+    if (sourceCell.data.cell.readOnly || targetCell.data.cell.readOnly) return;
+
     const targetItem = location.current.dropTargets.find(t => t.data.type === 'item');
     let dropOnItem = null;
     if (targetItem) {

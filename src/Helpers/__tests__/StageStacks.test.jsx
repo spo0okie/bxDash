@@ -3,6 +3,11 @@ import { toStacks, fromStacks, moveInStacks, dropEdge, resizeWeights, MIN_STACKE
 const st = (id, stacked = false) => ({ id, stacked });
 const ids = stacks => stacks.map(stack => stack.map(s => s.id));
 
+test('размеры в смешанной стопке сохраняют строковые id системных колонок', () => {
+	expect(resizeWeights([{ id: 1, height: 100 }, { id: 'control', height: 100 }], 1, 'control', 20))
+		.toEqual({ 1: 1.2, control: 0.8 });
+});
+
 describe('toStacks / fromStacks', () => {
 	test('столбец с признаком встаёт под предыдущий', () => {
 		expect(ids(toStacks([st(1), st(2, true), st(3), st(4, true), st(5, true)]))).toEqual([[1, 2], [3, 4, 5]]);

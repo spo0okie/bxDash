@@ -114,6 +114,58 @@ class StagesStore {
 		return toStacks(this.stagesOf(userId));
 	}
 
+	/** Общие стопки: серверные стадии и локальные системные колонки с сохранёнными позициями. */
+	columnStacksOf(userId) {
+		const native = this.stacksOf(userId);
+		const systems = this.layout.systemColumnsOf(userId);
+		const saved = this.layout.kanbanColumnStacks[userId];
+		if (!saved) return [...native, ...systems.map(column => [column])];
+		const available = new Map([...native.flat(), ...systems].map(column => [column.id, column]));
+		let ids = [...native, ...systems.map(column => [column])].map(stack => stack.map(column => column.id));
+		const placed = new Set();
+		// Сервер остаётся источником порядка обычных стадий, в том числе после WS-обновлений.
+		// Восстанавливаем только позиции системных колонок относительно сохранившихся соседей.
+		saved.forEach((stack, stackIndex) => stack.forEach((id, index) => {
+			if (!available.get(id)?.system || placed.has(id)) return;
+			const before = stack.slice(0, index).reverse().find(key => available.has(key));
+			const after = stack.slice(index + 1).find(key => available.has(key) && !available.get(key).system);
+			let target = before ?? after;
+			let edge = before !== undefined ? 'bottom' : 'top';
+			if (target === undefined) {
+				// Отдельная стопка системных колонок — слева от следующей известной стопки.
+				target = saved.slice(stackIndex + 1).flat().find(key => available.has(key) && !available.get(key).system);
+				edge = 'left';
+				if (target === undefined) {
+					target = saved.slice(0, stackIndex).flat().reverse().find(key => available.has(key));
+					edge = 'right';
+				}
+			}
+			if (target !== undefined) ids = moveInStacks(ids, id, target, edge) ?? ids;
+			placed.add(id);
+		}));
+		return ids.map(stack => stack.map(id => available.get(id)));
+	}
+
+	/** Переместить любую колонку; на сервер отправляется только порядок обычных стадий. */
+	dropColumn(userId, columnId, targetId, edge) {
+		const current = this.columnStacksOf(userId).map(stack => stack.map(column => column.id));
+		const next = moveInStacks(current, columnId, targetId, edge);
+		if (!next) return Promise.resolve(false);
+		const previous = this.layout.kanbanColumnStacks[userId] ?? null;
+		this.layout.setKanbanColumnStacks(userId, next);
+		this.layout.resetKanbanHeights([
+			...(current.find(stack => stack.includes(columnId)) ?? []),
+			...(next.find(stack => stack.includes(columnId)) ?? []),
+		]);
+		const native = stacks => stacks.map(stack => stack.filter(id => typeof id === 'number')).filter(stack => stack.length);
+		// Чисто визуальный перенос системной колонки не затрагивает сервер.
+		if (JSON.stringify(native(current)) === JSON.stringify(native(next))) return Promise.resolve(true);
+		return this.arrange(userId, native(next)).then(ok => {
+			if (!ok) this.layout.setKanbanColumnStacks(userId, previous);
+			return ok;
+		});
+	}
+
 	/** Столбец по id среди всех загруженных */
 	stageById(stageId) {
 		stageId = Number(stageId);
@@ -168,14 +220,17 @@ class StagesStore {
 	 *
 	 *   byStage: Map(stageId → открытые элементы, отсортированные как в ячейке календаря)
 	 *   closed:  закрытые элементы в пределах загруженной истории
+	 *   control / created: открытые задачи наблюдателя / постановщика вне обычных столбцов
 	 *
 	 * Видимость типов (tasksVisible и т.п.) здесь не учитывается — её применяют карточки.
 	 */
 	get board() {
 		const byStage = new Map();
 		const closed = [];
+		const control = [];
+		const created = [];
 		const owner = this.owner;
-		if (owner === null) return { byStage, closed };
+		if (owner === null) return { byStage, closed, control, created };
 
 		this.stagesOf(owner).forEach(stage => byStage.set(stage.id, []));
 		const accomplicesVisible = this.layout?.accomplicesVisible;
@@ -188,7 +243,14 @@ class StagesStore {
 				const own = item.user === owner;
 				// чужие задачи, где владелец доски — соисполнитель (как в календаре)
 				const helps = !own && accomplicesVisible && (item.accomplices ?? []).includes(owner);
-				if (!own && !helps) return;
+				if (!own && !helps) {
+					// Роли независимы: постановщик-наблюдатель видит задачу в обеих системных колонках.
+					if (type === 'task' && !item.isClosed) {
+						if ((item.auditors ?? []).includes(owner)) control.push(item);
+						if (item.creatorId === owner) created.push(item);
+					}
+					return;
+				}
 				void item.sorting;	// явная зависимость для пересортировки
 
 				if (item.isClosed) {
@@ -202,7 +264,9 @@ class StagesStore {
 
 		byStage.forEach(list => list.sort((a, b) => dashItemsSort(b, a)));
 		closed.sort((a, b) => dashClosedItemsSort(b, a));
-		return { byStage, closed };
+		control.sort((a, b) => dashItemsSort(b, a));
+		created.sort((a, b) => dashItemsSort(b, a));
+		return { byStage, closed, control, created };
 	}
 
 	// ==================== Изменение ====================

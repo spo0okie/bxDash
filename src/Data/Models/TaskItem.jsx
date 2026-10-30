@@ -11,6 +11,8 @@ class TaskItem extends DashItem {
 		this.dropTimeField = "startDatePlan"; //атрибут, которым задача позиционируется в календаре
 		this.updatesCount = 0; //количество обновлений в задаче
 		this.accomplices = []; //соисполнители
+		this.auditors = []; //наблюдатели
+		this.creatorId = null; //постановщик
 		this.title = "Заголовок задачи\nОписание задачи";
 		this.defaultTitle = "Заголовок задачи\nОписание задачи";
 		this.status = 1; //новая
@@ -74,6 +76,8 @@ class TaskItem extends DashItem {
 		this.title = item["~TITLE"];
 
 		this.user = Number(item.RESPONSIBLE_ID);
+		this.creatorId = Number(item.CREATED_BY) || null;
+		this.auditors = (item.AUDITORS ?? []).map(Number);
 		this.accomplices = item.ACCOMPLICES
 			? item.ACCOMPLICES.map((i) => Number(i))
 			: [];
@@ -204,6 +208,9 @@ class TaskItem extends DashItem {
 		super(item, data, list);
 
 		makeObservable(this, {
+			accomplices: observable.ref,
+			auditors: observable.ref,
+			creatorId: observable,
 			status: observable,
 			mark: observable,
 			strStatus: observable,

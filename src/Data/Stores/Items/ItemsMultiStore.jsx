@@ -190,7 +190,7 @@ class ItemsMultiStore {
 	 * а загрузку запускает contextMenuOpen() при открытии меню.
 	 */
 	stageMenu=(task,cell)=>{
-		if (!cell || !this.stages || !ITEM_TYPES[task.type]?.stages) return [];
+		if (!cell || cell.readOnly || !this.stages || !ITEM_TYPES[task.type]?.stages) return [];
 		const owner=cell.user;
 		const columns=this.stages.peek(owner);
 		const current=columns?task.stageFor(owner):null;
@@ -217,12 +217,12 @@ class ItemsMultiStore {
 		{
 			label: 'В начало списка',
 			key: 'toTop',
-			disabled: task.isClosed,
+			disabled: task.isClosed || cell?.readOnly,
 		},
 		{
 			label: 'В конец списка',
 			key: 'toBottom',
-			disabled: task.isClosed,
+			disabled: task.isClosed || cell?.readOnly,
 		},
 		{
 			//приблизить можно только настолько, чтобы дата не ушла в прошлое;
@@ -278,6 +278,7 @@ class ItemsMultiStore {
 			}
 			//перенос в столбец канбан-доски владельца ячейки
 			if (e.key.startsWith("stage:")) {
+				if (cell.readOnly) return;
 				const stage=this.stages?.stageById(Number(e.key.split(':')[1]));
 				if (!stage) return;
 				const label = task.label;
