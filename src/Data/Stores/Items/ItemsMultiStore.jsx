@@ -214,6 +214,7 @@ class ItemsMultiStore {
 	}
 
 		contextMenu=(task,cell=null)=>[
+		// Самонаблюдение относится к вошедшему пользователю, а не к владельцу ячейки.
 		{
 			label: 'В начало списка',
 			key: 'toTop',
@@ -261,9 +262,23 @@ class ItemsMultiStore {
 			]
 		},
 		...this.stageMenu(task,cell),
+		...(task.type === 'task' && task.canChangeWatching ? [{
+			key: 'watch',
+			label: task.isWatching ? 'Прекратить наблюдать' : 'Стать наблюдателем',
+			disabled: task.isUpdating,
+		}] : []),
 	];
 
 	contextMenuHandler=(task,cell)=>(e)=>{
+			if (e.key === 'watch') {
+				if (!task.canChangeWatching || task.isUpdating) return;
+				const watching = !task.isWatching;
+				task.update({ watching }, true, () => notify.success(
+					watching ? 'Вы стали наблюдателем' : 'Наблюдение прекращено', { title: task.label },
+				));
+				return;
+			}
+			if (!cell) return; //в поиске доступно самонаблюдение, операции с ячейкой требуют её наличия
 			//console.log(e.key);
 			const week=7*24*3600*1000;
 			const month=30*24*3600*1000;

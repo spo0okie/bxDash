@@ -258,7 +258,7 @@ const TaskCard = observer((props) => {
 			<Dropdown
 				menu={{
 					items: [...items.contextMenu(task, cell), ...users.contextMenu(task)],
-					onClick: cell ? items.contextMenuHandler(task, cell) : undefined,
+					onClick: items.contextMenuHandler(task, cell),
 				}}
 				trigger={["contextMenu"]}
 				onOpenChange={items.contextMenuOpen(cell)}

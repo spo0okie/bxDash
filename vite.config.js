@@ -61,5 +61,5 @@ export default defineConfig({
 		minify: "esbuild",
 	},
 	publicDir: "public",
-	base: "/reviakin/z2/",
+	base: "/reviakin/z1/",
 });

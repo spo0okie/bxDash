@@ -334,6 +334,27 @@ class controller_task {
 		$oTaskItem=new CTaskItem($id,$userID);
 		$arTask=$oTaskItem->GetData();
 
+		// Самонаблюдение — параметр общего update; пользователь берётся только из сессии.
+		$watching = router::getRoute(null, 'watching', '##UNSET');
+		if ($watching !== '##UNSET') {
+			if (!is_bool($watching)) router::haltJson('Параметр watching должен быть логическим', 409);
+			if ((int)$arTask['RESPONSIBLE_ID'] === (int)$userID || (int)$arTask['CREATED_BY'] === (int)$userID) {
+				router::haltJson('Ответственный и постановщик не могут менять собственное наблюдение', 409);
+			}
+			// Штатные методы сохраняют остальных наблюдателей и проверяют права Bitrix.
+			if (!method_exists($oTaskItem, $watching ? 'startWatch' : 'stopWatch')) {
+				router::haltJson('Версия Bitrix не поддерживает переключение наблюдения', 409);
+			}
+			try {
+				if ($watching) $oTaskItem->startWatch();
+				else $oTaskItem->stopWatch();
+			} catch (\Exception $e) {
+				router::haltJson($e->getMessage(), 409);
+			} catch (\Throwable $e) {
+				router::haltJson($e->getMessage(), 409);
+			}
+		}
+
 
 		if ($responsible=router::getRoute(null,'user')) {
 			$oTaskItem->Update(['RESPONSIBLE_ID'=>$responsible]);

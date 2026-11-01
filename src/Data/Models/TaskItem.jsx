@@ -167,6 +167,17 @@ class TaskItem extends DashItem {
 		this.update({ status: newStatus }, true);
 	}
 
+	/** Самонаблюдение доступно авторизованному пользователю вне ролей ответственного и постановщика. */
+	get canChangeWatching() {
+		const userId = Number(this.context.main?.bx?.userId);
+		return Boolean(userId && this.creatorId && !this.isNew && userId !== this.user && userId !== this.creatorId);
+	}
+
+	/** Наблюдает ли текущий пользователь, независимо от владельца открытой доски. */
+	get isWatching() {
+		return this.auditors.includes(Number(this.context.main?.bx?.userId));
+	}
+
 	/**
 	 * Остаток до дедлайна в мс (отрицательный — просрочено).
 	 * Подписан на time.strTime, чтобы пересчитываться раз в секунду через mobx.
@@ -211,6 +222,8 @@ class TaskItem extends DashItem {
 			accomplices: observable.ref,
 			auditors: observable.ref,
 			creatorId: observable,
+			canChangeWatching: computed,
+			isWatching: computed,
 			status: observable,
 			mark: observable,
 			strStatus: observable,

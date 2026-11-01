@@ -281,6 +281,7 @@ export default class DashItem {
 			delete fields.stage;
 		}
 		delete fields.stageUser;
+		delete fields.watching; //команда самонаблюдения; актуальные AUDITORS придут при штатном reload
 		this.list.updateItem(fields);
 		this.recalcTime();
 		if (params.title!==undefined) this.parseTitle();
