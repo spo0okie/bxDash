@@ -20,6 +20,7 @@ class controller_user {
 
 	public $error=[];
 
+	/** Возвращает состояние входа на старом и новом API пользователя Bitrix. */
 	function action_get() {
 		global $USER;
 		$status = new stdClass();
@@ -27,7 +28,9 @@ class controller_user {
 		$status->id=$USER->GetID();
 		$status->login=$USER->GetLogin();
 		$status->error=$this->error;
-		$status->hash=$USER->GetSessionHash();
+		// Старый хеш сохраняем для совместимости; запросы bxDash используют Basic Auth.
+		// В новых версиях CUser этого метода нет, и хеш не является условием входа.
+		$status->hash=method_exists($USER, 'GetSessionHash') ? $USER->GetSessionHash() : null;
 		echo json_encode($status,JSON_UNESCAPED_UNICODE);
 	}
 

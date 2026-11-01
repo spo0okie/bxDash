@@ -125,16 +125,28 @@ class router
 	}
 
 	
+	/** Проверяет сессию до загрузки моделей и вызова контроллеров API. */
+	static public function checkAuth($controller, $action)
+	{
+		global $USER;
+		// Вход и проверка его состояния доступны до появления авторизованной сессии.
+		if ($controller === 'user' && ($action === 'login' || $action === 'get')) return;
+		if (!is_object($USER) || !$USER->IsAuthorized()) {
+			static::haltJson('Требуется авторизация', 401);
+		}
+	}
+
+	/** Разбирает маршрут, проверяет авторизацию и выполняет действие контроллера. */
 	static public function init()
 	{
 		if ($_SERVER['REQUEST_METHOD']==='OPTIONS') {
-			error_log('>_<');
 			return static::actionPreflight();
 		}
 		header('Content-Type: text/html; charset=utf-8');
 		// получаем имя контроллера
 		$controller_name = router::getRoute(1,'ctl','main');
 		$action_name = router::getRoute(2,'req','help');
+		static::checkAuth($controller_name, $action_name);
 
 		// добавляем префиксы
 		$model_name = 'model_'.$controller_name;
@@ -221,6 +233,7 @@ class router
 		];
 		if ($info) $output['info']=$info;
 		// код ответа — до вывода тела, иначе заголовки уже могут быть отправлены
+		header('Content-Type: application/json; charset=utf-8');
 		http_response_code($code);
 		echo json_encode($output, JSON_UNESCAPED_UNICODE);
 		exit();

@@ -1,5 +1,9 @@
 <?php
 
+// API сам возвращает JSON-отказ; файловые права портала не должны показывать форму входа.
+// Авторизация по cookies/HTTP остаётся штатной: NOT_CHECK_PERMISSIONS здесь не используем.
+define('NOT_CHECK_FILE_PERMISSIONS', true);
+
 require_once $_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/main/bx_root.php";
 
 // MySQL-уровень исторически настроен в TZ +6 (см. UNIX_TIMESTAMP диагностику),

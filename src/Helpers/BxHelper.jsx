@@ -1,4 +1,5 @@
 
+/** Авторизация Bitrix; дальнейшие запросы используют логин и пароль через Basic. */
 export const bxAuthScheme={
 	authorize: async (be)=>{
 		try {
@@ -14,12 +15,10 @@ export const bxAuthScheme={
 			}
 			
 			const data = await response.json();
-			if (!data?.auth) return false;
-			if (data.hash) {
-				be.token = data.hash;
-				return true;
-			}
-			return false;
+			if (!data?.auth || !(Number(data.id) > 0)) return false;
+			// Старый портал возвращает hash, новый может обходиться без него.
+			be.token = data.hash || '';
+			return true;
 		} catch (error) {
 			console.error('Bx authorization error:', error);
 			return false;
