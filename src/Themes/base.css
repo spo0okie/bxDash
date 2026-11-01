@@ -24,7 +24,6 @@
 	--surface-overlay-stripe: rgba(120, 0, 0, 0.7);
 	--surface-dropzone-active: rgb(103, 176, 248);
 	--surface-droppable-active: skyblue;
-	--surface-ticket-bg: url("/public/alum0.jpg");
 	--surface-favorite-icon: url("/public/fav48.png");
 
 	/* ===== Карточки входящих вызовов / callback (IncomingCall.css) ===== */
