@@ -10,6 +10,9 @@
 // Получаем конфигурацию из глобальной переменной
 const config = window.__CONFIG__ || {};
 
+// Ресурсы статического режима; PHP-точка входа подключает их средствами портала.
+export const bitrixResources = config.bitrixResources || {};
+
 // === URL сервисов ===
 export const inventoryUrl = config.inventoryUrl || "";
 export const apiUrl = config.apiUrl || "";
