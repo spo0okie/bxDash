@@ -31,12 +31,13 @@ const ConnectionStates = observer(function ConnectionStates() {
 
 			</thead>
 			<tbody>
-				<tr>
+				{/* Отключённые интеграции не отображаем как неисправные подключения. */}
+				{context.ws && <tr>
 					<td>Подключение WS channel</td>
 					<td className='status'>{statusItem(wsConnectionStatus)}</td>
 					<td className='status'>{statusItem(wsConnectionStatus)}</td>
 					<td className='id'>{context.ws?.id || '-'}</td>
-				</tr>
+				</tr>}
 				<tr>
 					<td>Подключение Bitrix</td>
 					<td className='status'>{statusItem(context.main.bx.availability)}</td>
@@ -55,12 +56,12 @@ const ConnectionStates = observer(function ConnectionStates() {
 					<td className='status'>{statusItem(context.main.inventory.authStatus)}</td>
 					<td className='id'>{context.main.inventory.userId}</td>
 				</tr>
-				<tr>
+				{context.main.ast22 && <tr>
 					<td>Подключение Asterisk</td>
 					<td className='status'>{statusItem(context.main.ast22.availability)}</td>
 					<td className='status'>{statusItem(context.main.ast22.authStatus)}</td>
 					<td className='id'>{context.main.ast22.userId}</td>
-				</tr>
+				</tr>}
 
 			</tbody>
 		</table>

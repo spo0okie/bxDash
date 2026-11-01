@@ -28,12 +28,13 @@ class MainStore {
 	/** Список пользователей битрикса для выбора автора заявки */
 	bxUsersList = [];
 
-	constructor() {
+	/** Создаёт обязательные системы и телефонию, если она разрешена конфигурацией. */
+	constructor({ asteriskEnabled = true } = {}) {
 		// Инициализация бэкенд-систем
 		this.bx = new BackendSystem('Bitrix', bxAuthScheme);
 		this.zabbix = new BackendSystem('Zabbix', zabbixAuthScheme);
 		this.inventory = new BackendSystem('Inventory', inventoryAuthScheme);
-		this.ast22 = new BackendSystem('Ast22', ast22AuthScheme);
+		this.ast22 = asteriskEnabled ? new BackendSystem('Ast22', ast22AuthScheme) : null;
 
 		// Явное объявление реактивных свойств (стандарт MobX проекта)
 		makeObservable(this, {
@@ -63,7 +64,7 @@ class MainStore {
     }
 
     setAsteriskUrl(url) {
-        this.ast22.setUrl(url);
+        this.ast22?.setUrl(url);
     }
 
 	setZabbixUrl(url) {
@@ -85,7 +86,8 @@ class MainStore {
 		this.bx.setLoginCredentials(user,password);
 		this.zabbix.setLoginCredentials(user,password);
 		this.inventory.setLoginCredentials(user,password);
-		this.ast22.setLoginCredentials(user,password);
+		// Отключённая телефония не участвует в авторизации и не запускает запросов.
+		this.ast22?.setLoginCredentials(user,password);
 		when (()=>this.bx.authStatus!=='Pending' && this.zabbix.authStatus!=='Pending' && this.inventory.authStatus!=='Pending',()=>{
 			if (this.bx.authStatus==='OK' && this.zabbix.authStatus==='OK' && this.inventory.authStatus==='OK') {
 				if (onSuccess) onSuccess();

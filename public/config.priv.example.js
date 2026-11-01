@@ -16,8 +16,8 @@ window.__CONFIG__ = {
 	// === URL сервисов ===
 	inventoryUrl: '',      // URL Inventory API
 	apiUrl: '',            // URL Bitrix API
-	wsUrl: '',             // URL WebSocket (wss://...)
-	asteriskUrl: '',       // URL ast22-phones (REST API телефонии, /api/v1/...)
+	wsUrl: '',             // URL WebSocket (wss://...); false — отключить
+	asteriskUrl: '',       // URL ast22-phones; false — отключить телефонию и её опросы
 	zabbixUrl: '',         // URL Zabbix API
 
 	// === Панель входящих вызовов ===

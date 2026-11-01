@@ -16,8 +16,9 @@ export const bitrixResources = config.bitrixResources || {};
 // === URL сервисов ===
 export const inventoryUrl = config.inventoryUrl || "";
 export const apiUrl = config.apiUrl || "";
-export const wsUrl = config.wsUrl || "";
-export const asteriskUrl = config.asteriskUrl || "";
+// false явно отключает интеграцию; отсутствие настройки сохраняет прежний дефолт.
+export const wsUrl = config.wsUrl ?? "";
+export const asteriskUrl = config.asteriskUrl ?? "";
 export const zabbixUrl = config.zabbixUrl || "";
 
 // === Панель входящих вызовов ===

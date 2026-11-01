@@ -42,7 +42,8 @@ const Layout = observer(() => {
 	const showAuthForm = main.bx.authStatus !== 'OK'
 		|| main.zabbix.authStatus !== 'OK'
 		|| main.inventory.authStatus !== 'OK'
-		|| !ws.connectionStatus
+		// Отключённый WS не требует подключения и не блокирует интерфейс.
+		|| (ws && !ws.connectionStatus)
 		|| layout.debugVisible;
 
 	return (

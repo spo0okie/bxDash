@@ -166,11 +166,13 @@ const ControlPanel = observer(function ControlPanel() {
 							title={["1 корзина", "3 корзины"]}
 						/>
 						<br />
+						{context.main.ast22 && <>
 						Звонки:
 						<br />
 						<MenuButton property="incomingCallsVisible" title="входящие" />
 						<MenuButton property="outgoingCallsVisible" title="исходящие" />
 						<br />
+						</>}
 						Часовой пояс:
 						<br />
 						<button

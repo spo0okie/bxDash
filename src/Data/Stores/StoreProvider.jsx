@@ -40,7 +40,7 @@ export function createStores() {
 	notify.setStore(notifications);
 
 	// настройки инициализируем первыми, т.к. они ни от чего не зависят
-	const main = new MainStore();
+	const main = new MainStore({ asteriskEnabled: asteriskUrl !== false });
 	main.setInventoryUrl(inventoryUrl);
 	main.setBxUrl(apiUrl);
 	main.setAsteriskUrl(asteriskUrl);
@@ -58,7 +58,7 @@ export function createStores() {
 	users.init(userList);
 
 	// дежурный техподдержки — опрашивается из телефонии ast22, кладётся в users.dutyPhone
-	const duty = new DutyStore(main, users, dutyScheduleId, dutyPollIntervalMs);
+	const duty = main.ast22 ? new DutyStore(main, users, dutyScheduleId, dutyPollIntervalMs) : null;
 
 	// раскладка зависит от настроек, времени и пользователей
 	const layout = new LayoutStore(main, time, users);
@@ -82,7 +82,8 @@ export function createStores() {
 	const theme = new ThemeStore(main);
 
 	// входящие вызовы — слушают phoneStatus у current user
-	const incomingCalls = new IncomingCallsStore(main, users, layout, incomingCallConfig);
+	// При отключённой телефонии не создаём реакции и опросы связанных хранилищ.
+	const incomingCalls = main.ast22 ? new IncomingCallsStore(main, users, layout, incomingCallConfig) : null;
 
 	return { main, time, users, layout, periods, items, ws, alerts, theme, schedule, duty, incomingCalls, notifications, stages };
 }
