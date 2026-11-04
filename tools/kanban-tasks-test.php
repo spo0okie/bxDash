@@ -65,4 +65,24 @@ CTasks::$queries = array();
 CTasks::$answers = array(array());
 $method->invoke(null, time() - 172800, time() - 86400, array('5'));
 checkKanban(count(CTasks::$queries) === 1, 'Подгрузка истории не должна повторять загрузку ролевых задач');
+
+// Регрессия нового портала: старая открытая задача ответственного без срока.
+CTasks::$queries = array();
+$withoutDeadline = array_merge($task, array(
+	'ID' => '120577', 'RESPONSIBLE_ID' => '1229', 'CREATED_BY' => '916',
+	'CREATED_DATE' => '21.08.2023 19:27:47', 'DEADLINE' => null, 'REAL_STATUS' => '2',
+));
+CTasks::$answers = array(array($withoutDeadline), array());
+$rows = $method->invoke(null, time() - 86400, null, array('1229'));
+checkKanban(count($rows) === 1 && $rows[0]['ID'] === '120577', 'Потеряна задача ответственного без срока');
+$filter = CTasks::$queries[0];
+checkKanban($filter['CHECK_PERMISSIONS'] === 'Y', 'Нельзя обходить права для задач ответственного');
+checkKanban($filter['::SUBFILTER-1'] === array(
+	'::LOGIC' => 'OR',
+	'::SUBFILTER-1' => array('ACCOMPLICE' => array('1229')),
+	'::SUBFILTER-2' => array('RESPONSIBLE_ID' => array('1229')),
+), 'Ответственный и соисполнитель должны быть независимыми ветками OR');
+checkKanban($filter['::SUBFILTER-2']['::SUBFILTER-1'] === array('!REAL_STATUS' => array(5, 7)),
+	'Открытые задачи долгого ящика не должны ограничиваться сроком или датой создания');
+
 echo "OK: загрузка наблюдателей, постановщиков и фильтров канбана\n";

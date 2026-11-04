@@ -81,7 +81,7 @@ class controller_task {
 	}
 
 	/**
-	 * загружает работы переданных пользователей за указанный период
+	 * Загружает задачи ответственных и соисполнителей за указанный период.
 	 */
 	static public function loadPeriodUsers($from,$to,$users){
 		//смещаем на часовой пояс
@@ -95,18 +95,18 @@ class controller_task {
 		if (is_null($to)) {
 			//открытый конец периода (ведро/долгий ящик с задачами "далеко и без срока")
 			$closedTasks=[
-				'STATUS'=>[5,7],
+				'REAL_STATUS'=>[5,7],
 				'>=CLOSED_DATE' => ConvertTimeStamp($from, "FULL"),
 			];
 
 			if($from<time()) {
 				//если отметка ОТ не позже чем сейчас, то все просроченные тоже попадают
 				$openTasks=[
-					'!STATUS'=>[5,7],
+					'!REAL_STATUS'=>[5,7],
 				];
 			} else {
 				$openTasks=[
-					'!STATUS'=>[5,7],
+					'!REAL_STATUS'=>[5,7],
 					'::SUBFILTER-1' => [
 						'::LOGIC' => 'OR',
 						'>=DEADLINE' => ConvertTimeStamp($from, "FULL"),
@@ -116,13 +116,13 @@ class controller_task {
 			}
 		}else {
 			$closedTasks=[
-				'STATUS'=>[5],
+				'REAL_STATUS'=>[5],
 				'>=CLOSED_DATE' => ConvertTimeStamp($from, "FULL"),
 				'<CLOSED_DATE' => ConvertTimeStamp($to, "FULL"),
 			];
 
 			$openTasks=[
-				'!STATUS'=>[5,7],
+				'!REAL_STATUS'=>[5,7],
 				'<DEADLINE' => ConvertTimeStamp($to, "FULL"),
 				'>=DEADLINE' => ConvertTimeStamp($from, "FULL"),
 			];
@@ -138,8 +138,10 @@ class controller_task {
 			'CHECK_PERMISSIONS' => 'Y',
 			'::SUBFILTER-1' => [
 				'::LOGIC' => 'OR',
-				'ACCOMPLICE' => $users,
-				'RESPONSIBLE_ID' => $users
+				// Разделяем роли на независимые ветки по контракту CTasks::GetList.
+				// У ответственного задача должна находиться и без соисполнителей.
+				'::SUBFILTER-1' => ['ACCOMPLICE' => $users],
+				'::SUBFILTER-2' => ['RESPONSIBLE_ID' => $users],
 			],
 		];
 
