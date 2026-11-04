@@ -391,6 +391,19 @@ npx tsc --noEmit
 
 ## Troubleshooting
 
+### Инфоблоки jobs, plans и memo
+
+```sh
+php tools/iblocks-test.php
+php tools/iblocks-test.php custom
+php tools/iblocks-test.php invalid
+```
+
+Без подключения к порталу проверяются обязательные ID без fallback,
+чтение/создание в нужном инфоблоке, запрет изменения чужих элементов.
+Для memo дополнительно проверяются стандартные поля текста и автора,
+фильтр `CREATED_BY`, сохранение/удаление своей заметки и отказ для чужой.
+
 ### Провайдер штатного канбана Bitrix
 
 Проверки без портала и базы данных:

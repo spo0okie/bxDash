@@ -1,6 +1,6 @@
 <?php
 /*
- * Класс инициации исходящих звонков в астериске
+ * Работа с личными заметками пользователя в настроенном инфоблоке.
  */
 
 class controller_memo {
@@ -11,6 +11,33 @@ class controller_memo {
 	const MSG_NO_USERS='NO_USER_LIST_SET';
 	const MSG_NO_ITEM_ID='NO_ITEM_ID_SET';
 
+	/** Возвращает ID инфоблока текущего развёртывания из серверного conf.php. */
+	static public function iblockId() {
+		// Без явной настройки нельзя выбирать инфоблок за администратора.
+		if (!defined('BXDASH_MEMO_IBLOCK_ID')) {
+			router::haltJson('Не задан BXDASH_MEMO_IBLOCK_ID в conf.php', 500);
+		}
+		$id = constant('BXDASH_MEMO_IBLOCK_ID');
+		if ((!is_int($id) && !is_string($id)) || !preg_match('/^[1-9][0-9]*$/D', (string)$id) || (int)$id <= 0) {
+			router::haltJson('Некорректный BXDASH_MEMO_IBLOCK_ID в conf.php', 500);
+		}
+		return (int)$id;
+	}
+
+	/** Проверяет инфоблок и автора личной заметки до изменения или удаления. */
+	static public function requireItem($id) {
+		global $USER;
+		$iblockId = static::iblockId();
+		// Не допускаем массивы и фильтры вместо одиночного ID элемента.
+		if ((!is_int($id) && !is_string($id)) || !preg_match('/^[1-9][0-9]*$/D', (string)$id)) {
+			router::haltJson('Некорректный ID элемента', 409);
+		}
+		$rows = CIBlockElement::GetList(array(), array('IBLOCK_ID' => $iblockId, 'ID' => $id, 'CREATED_BY' => $USER->GetID()), false, false, array('ID'));
+		if (!$rows->Fetch()) {
+			router::haltJson('Заметка отсутствует в настроенном инфоблоке или принадлежит другому пользователю', 409);
+		}
+	}
+
 	static public $fieldsMap = [
 		'ID',
 		'DATE_ACTIVE_FROM',
@@ -20,11 +47,15 @@ class controller_memo {
 		'~DETAIL_TEXT',
 	];
 
+	/** Удаляет только собственную заметку из настроенного инфоблока. */
 	static public function deleteItem($id) {
+		static::requireItem($id);
 		return CIBlockElement::Delete($id);
 	}
 
+	/** Сохраняет изменения только после проверки инфоблока и автора. */
 	static public function updateItem($id,$data) {
+		static::requireItem($id);
 		global $USER;
 		if (!isset($data['MODIFIED_BY']))
 			$data['MODIFIED_BY']=$USER->GetID();
@@ -34,6 +65,7 @@ class controller_memo {
 		return $el->Update($id, $data);
 	}
 
+	/** Создаёт заметку текущего пользователя в явно настроенном инфоблоке. */
 	static public function createItem($data) {
 		global $USER;
 		if (!isset($data['CREATED_BY']))
@@ -45,7 +77,7 @@ class controller_memo {
 	}
 
 	/**
-	 * загружает работы переданных пользователей за указанный период
+	 * Загружает личные заметки текущей сессии за указанный период.
 	 */
 	static public function loadPeriodUsers($from,$to,$users){
 		global $USER;
@@ -95,7 +127,7 @@ class controller_memo {
 			$filter=[['LOGIC' => 'OR',$open,$closed]];
 
 
-		$filter['IBLOCK_ID'] = 92;
+		$filter['IBLOCK_ID'] = static::iblockId();
 		$filter['CREATED_BY'] = $USER->GetID();
 
 		//var_dump($filter);
@@ -132,10 +164,13 @@ class controller_memo {
 	}
 
 
+	/** Читает заметку по ID только в пределах инфоблока и автора текущей сессии. */
 	function loadItem($id){
+		global $USER;
 		$filter=[
-			'IBLOCK_ID' => 92,
-			'ID' => $id
+			'IBLOCK_ID' => static::iblockId(),
+			'ID' => $id,
+			'CREATED_BY' => $USER->GetID()
 		];
 
 		//var_dump($filter);
@@ -165,7 +200,7 @@ class controller_memo {
 
 	public function action_get(){
 		if (is_null($id=router::getRoute(3, 'id')))
-			router::haltJson(static::MSG_NO_TASK_ID);
+			router::haltJson(static::MSG_NO_ITEM_ID);
 
 		$items=$this->loadItem($id);
 		//return $jobs;
@@ -174,7 +209,7 @@ class controller_memo {
 
 	function action_delete() {
 		if (is_null($id=router::getRoute(3, 'id')))
-			router::haltJson(static::MSG_NO_JOB_ID);
+			router::haltJson(static::MSG_NO_ITEM_ID);
 
 		if (!static::deleteItem($id)) router::haltJson('error updating data');
 
@@ -184,7 +219,7 @@ class controller_memo {
 	function action_update() {
 		global $USER;
 		if (is_null($id=router::getRoute(3, 'id')))
-			router::haltJson(static::MSG_NO_JOB_ID);
+			router::haltJson(static::MSG_NO_ITEM_ID);
 		$result=['result'=>'ok'];
 
 		$data=[];
@@ -255,7 +290,7 @@ class controller_memo {
 		if (!$start && !$end) router::haltJson('no date');
 
 		$data=[
-			'IBLOCK_ID' => 92,
+			'IBLOCK_ID' => static::iblockId(),
 			'DETAIL_TEXT_TYPE'=>'text',
 			'DETAIL_TEXT'=>$text,
 //			'PROPERTY_VALUES'=> ['USER'=>$user],
