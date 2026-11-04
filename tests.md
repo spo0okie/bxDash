@@ -391,6 +391,22 @@ npx tsc --noEmit
 
 ## Troubleshooting
 
+### Провайдер штатного канбана Bitrix
+
+Проверки без портала и базы данных:
+
+```sh
+php tools/stages-test/test_bitrix_provider.php
+php tools/stages-test/test_provider_selection.php legacy
+php tools/stages-test/test_provider_selection.php modern
+php tools/stages-test/test_provider_selection.php explicit-table
+php tools/stages-test/test_provider_selection.php missing-native
+```
+
+Покрыты личные стадии `U`, изоляция проектов и временной шкалы, привязки задач,
+права, CRUD, стопки, jobs/tickets, откат ошибок и выбор провайдера.
+Проверка на целевом портале описана в [docs/bitrix-kanban.md](docs/bitrix-kanban.md).
+
 ### Проблемы с Babel
 Если возникают ошибки 'loose' mode:
 - Проверьте `.babelrc` на consistent loose: true

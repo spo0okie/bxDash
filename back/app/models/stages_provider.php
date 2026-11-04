@@ -3,11 +3,11 @@
  * Провайдер стадий (столбцов персональной канбан-доски).
  *
  * Это единственное место, которое знает, ГДЕ хранятся столбцы и привязки элементов к ним.
- * Контроллеры работают только через этот интерфейс, поэтому при переезде на актуальный
- * Битрикс достаточно написать вторую реализацию (поверх b_tasks_stages / b_tasks_task_stage)
- * и переключить её в conf.php:
+ * Контроллеры работают только через этот интерфейс. Режим задаётся в conf.php:
  *
- *     $stagesProvider = 'bitrix';   // по умолчанию 'table' — свои таблицы bxdash_*
+ *     $stagesProvider = 'auto';   // штатный API при наличии, иначе старое хранилище table
+ *     $stagesProvider = 'bitrix'; // явно штатные личные стадии U и TaskStageTable
+ *     $stagesProvider = 'table';  // явно прежние таблицы bxdash_*
  *
  * Модель повторяет «Мой план» Битрикс24: стадии принадлежат пользователю, элемент лежит
  * в стадии в плане конкретного пользователя. Отсутствие привязки = стадия по умолчанию.
@@ -40,13 +40,18 @@ abstract class stages_provider {
 	private static $instance = null;
 
 	/**
-	 * Провайдер, выбранный в conf.php ($stagesProvider), по умолчанию — свои таблицы.
+	 * Провайдер из conf.php ($stagesProvider): auto выбирает штатный API при его наличии.
 	 * @return stages_provider
 	 */
 	static public function instance() {
 		if (self::$instance !== null) return self::$instance;
 
-		$name = isset($GLOBALS['stagesProvider']) ? (string)$GLOBALS['stagesProvider'] : 'table';
+		$name = isset($GLOBALS['stagesProvider']) ? (string)$GLOBALS['stagesProvider'] : 'auto';
+		if ($name === 'auto') {
+			// Проверяем API, а не номер версии портала. Ошибка штатного API не включает fallback.
+			$name = class_exists('Bitrix\\Tasks\\Kanban\\StagesTable')
+				&& class_exists('Bitrix\\Tasks\\Kanban\\TaskStageTable') ? 'bitrix' : 'table';
+		}
 		if (!preg_match('/^[a-z0-9_]+$/', $name))
 			throw new Exception('Некорректное имя провайдера стадий: ' . $name);
 
@@ -60,7 +65,7 @@ abstract class stages_provider {
 
 	// ==================== Интерфейс ====================
 
-	/** Подготовить хранилище (создать таблицы). Идемпотентно. */
+	/** Подготовить хранилище: table создаёт свои таблицы, bitrix только проверяет API. */
 	abstract public function install();
 
 	/**

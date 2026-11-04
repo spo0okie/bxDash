@@ -189,6 +189,9 @@ A: Наверно самое простое при старте дашборда
 
 ## Интеграция с Bitrix
 
+Два режима канбан-колонок (свои таблицы старого портала и штатный личный план
+нового Bitrix), настройка `$stagesProvider`: [docs/bitrix-kanban.md](docs/bitrix-kanban.md).
+
 Создание инфоблоков **jobs** и **plans**, их свойства и настройка ID для нового
 портала: [docs/bitrix-iblocks.md](docs/bitrix-iblocks.md).
 
