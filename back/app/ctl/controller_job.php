@@ -1,6 +1,6 @@
 <?php
 /*
- * Класс инициации исходящих звонков в астериске
+ * Работа с элементами инфоблока работ.
  */
 
 // привязки элементов к столбцам канбан-доски (поле STAGES, параметры stage/stageUser)
@@ -12,6 +12,32 @@ class controller_job {
 	const MSG_NO_TO='NO_TO_SET';
 	const MSG_NO_USERS='NO_USER_LIST_SET';
 	const MSG_NO_JOB_ID='NO_JOB_ID_SET';
+
+	/** Возвращает ID инфоблока текущего развёртывания из серверного conf.php. */
+	static public function iblockId() {
+		// Без явной настройки нельзя выбирать инфоблок за администратора.
+		if (!defined('BXDASH_JOB_IBLOCK_ID')) {
+			router::haltJson('Не задан BXDASH_JOB_IBLOCK_ID в conf.php', 500);
+		}
+		$id = constant('BXDASH_JOB_IBLOCK_ID');
+		if ((!is_int($id) && !is_string($id)) || !preg_match('/^[1-9][0-9]*$/D', (string)$id) || (int)$id <= 0) {
+			router::haltJson('Некорректный BXDASH_JOB_IBLOCK_ID в conf.php', 500);
+		}
+		return (int)$id;
+	}
+
+	/** Запрещает изменение и удаление элементов за пределами настроенного инфоблока. */
+	static public function requireItem($id) {
+		$iblockId = static::iblockId();
+		// Не допускаем массивы и фильтры вместо одиночного ID элемента.
+		if ((!is_int($id) && !is_string($id)) || !preg_match('/^[1-9][0-9]*$/D', (string)$id)) {
+			router::haltJson('Некорректный ID элемента', 409);
+		}
+		$rows = CIBlockElement::GetList(array(), array('IBLOCK_ID' => $iblockId, 'ID' => $id), false, false, array('ID'));
+		if (!$rows->Fetch()) {
+			router::haltJson('Элемент отсутствует в настроенном инфоблоке', 409);
+		}
+	}
 
 	static public $fieldsMap = [
 		'ID',
@@ -25,7 +51,9 @@ class controller_job {
 		'PROPERTY_PRIORITY_VALUE',
 	];
 
+	/** Удаляет элемент только после проверки его инфоблока. */
 	static public function deleteJob($id) {
+		static::requireItem($id);
 		return CIBlockElement::Delete($id);
 	}
 
@@ -97,7 +125,7 @@ class controller_job {
 		} else
 			$filter=[['LOGIC' => 'OR',$open,$closed]];
 
-		$filter['IBLOCK_ID'] = 90;
+		$filter['IBLOCK_ID'] = static::iblockId();
 		$filter['PROPERTY_USER'] = $users;
 
 		//var_dump($filter);
@@ -137,7 +165,7 @@ class controller_job {
 		if (is_null($id=router::getRoute(3, 'id')))
 			router::haltJson(static::MSG_NO_TASK_ID);
 
-		$filter['IBLOCK_ID'] = 90;
+		$filter['IBLOCK_ID'] = static::iblockId();
 		$filter['ID'] = $id;
 
 		//var_dump($filter);
@@ -185,6 +213,7 @@ class controller_job {
 	function action_update() {
 		if (is_null($id=router::getRoute(3, 'id')))
 			router::haltJson(static::MSG_NO_JOB_ID);
+		static::requireItem($id);
 		$result=['result'=>'ok','id'=>$id,'changes'=>[]];
 
 		$data=[];
@@ -233,7 +262,8 @@ class controller_job {
 		}
 
 		if (!empty($props)) {
-			CIBlockElement::SetPropertyValuesEx($id, $data['IBLOCK_ID'], $props);
+			// Для записи свойств нужен тот же инфоблок, что и для чтения/создания.
+			CIBlockElement::SetPropertyValuesEx($id, static::iblockId(), $props);
 		}
 
 		//echo '{"result":"ok","id":'.$id.'}';
@@ -252,7 +282,7 @@ class controller_job {
 		if (-1===$start && -1===$end) router::haltJson('no date');
 
 		$data=[
-			'IBLOCK_ID' => 90,
+			'IBLOCK_ID' => static::iblockId(),
 			'PREVIEW_TEXT_TYPE'=>'text',
 			'DETAIL_TEXT_TYPE'=>'text',
 			'PROPERTY_VALUES'=> [

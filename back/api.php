@@ -15,6 +15,8 @@ $_COOKIE['BITRIX_SM_TIME_ZONE'] = '-180';
 
 require $_SERVER["DOCUMENT_ROOT"] .
 	"/bitrix/modules/main/include/prolog_before.php";
+// Инфоблоки работ и планов не зависят от автозагрузки другими модулями.
+CModule::IncludeModule("iblock");
 CModule::IncludeModule("tasks");
 CModule::IncludeModule("support");
 CModule::IncludeModule("search");

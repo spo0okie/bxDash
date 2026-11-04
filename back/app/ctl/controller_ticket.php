@@ -17,6 +17,26 @@ class controller_ticket {
 	const MSG_NO_TITLE='NO_TITLE_SET';
 	const MSG_NO_OWNER='NO_OWNER_SET';
 	const MSG_NO_RESPONSIBLE='NO_RESPONSIBLE_SET';
+
+	/** Читает справочник категорий сайта; список для формы задаётся конфигом фронтенда. */
+	static public function categories() {
+		$by = 's_id';
+		$order = 'asc';
+		$isFiltered = false;
+		$rs = CTicketDictionary::GetList($by, $order, array(
+			'TYPE' => 'C',
+			'LID' => defined('TICKET_SITE_ID') ? TICKET_SITE_ID : 's1'
+		), $isFiltered);
+		$result = array();
+		// Fetch возвращает исходный текст названий без HTML-экранирования для JSON.
+		while ($row = $rs->Fetch()) $result[] = array('id' => (int)$row['ID'], 'name' => $row['NAME']);
+		return $result;
+	}
+
+	/** Справочник для формы создания; доступ защищён общей авторизацией API. */
+	public function action_categories() {
+		echo json_encode(static::categories(), JSON_UNESCAPED_UNICODE);
+	}
 	
 	static public $fieldsMap = [
 		'ID',
@@ -219,6 +239,7 @@ class controller_ticket {
 	 * - text: текст (первая строка - заголовок, остальные - сообщение)
 	 * - owner: ID автора заявки (OWNER_USER_ID)
 	 * - responsible: ID ответственного (RESPONSIBLE_USER_ID)
+	 * - category: ID категории из формы; без параметра сохраняется прежний серверный дефолт
 	 */
 	function action_create() {
 		// Получаем параметры
@@ -230,6 +251,19 @@ class controller_ticket {
 		
 		$responsible = router::getRoute(null, 'responsible');
 		if (!$responsible) router::haltJson(static::MSG_NO_RESPONSIBLE);
+
+		$category = router::getRoute(null, 'category');
+		// Старые клиенты не передают категорию — сохраняем серверное значение по умолчанию.
+		if ($category === null) $category = defined('TICKET_CATEGORY_ID') ? TICKET_CATEGORY_ID : 43;
+		if (!is_scalar($category) || !ctype_digit((string)$category) || (int)$category <= 0)
+			router::haltJson('Выбранная категория заявки недоступна', 409);
+		$category = (int)$category;
+		// Удалённые категории и категории другого сайта также нельзя отправлять в CTicket::Set.
+		$categoryFound = false;
+		foreach (static::categories() as $row) {
+			if ($row['id'] === $category) $categoryFound = true;
+		}
+		if (!$categoryFound) router::haltJson('Категория заявки не найдена для сайта', 409);
 		
 		// Разбираем текст на заголовок и сообщение
 		$lines = explode("\n", $text);
@@ -237,11 +271,10 @@ class controller_ticket {
 		$message = count($lines) > 1 ? implode("\n", array_slice($lines, 1)) : '';
 		
 		// Данные тикета
-		// SITE_ID, CATEGORY_ID, SLA_ID задаются константами в начале файла
-		// или можно получать их из параметров
+		// Сайт и SLA задаются конфигом; категория выбрана формой и проверена по справочнику.
 		$arFields = [
 			'SITE_ID' => defined('TICKET_SITE_ID') ? TICKET_SITE_ID : 's1',
-			'CATEGORY_ID' => defined('TICKET_CATEGORY_ID') ? TICKET_CATEGORY_ID : 43,
+			'CATEGORY_ID' => $category,
 			'SLA_ID' => defined('TICKET_SLA_ID') ? TICKET_SLA_ID : 1,
 			'OWNER_USER_ID' => $owner,
 			'TITLE' => $title,
