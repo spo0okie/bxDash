@@ -327,10 +327,12 @@ class controller_task {
 	}
 
 	function action_update() {
+		global $USER;
 		if (is_null($id=router::getRoute(3, 'id')))
 			router::haltJson(static::MSG_NO_TASK_ID);
 
-		$userID=CUser::GetID();
+		// GetID — метод объекта текущей сессии; статический вызов запрещён на PHP 8.
+		$userID=$USER->GetID();
 
 		$oTaskItem=new CTaskItem($id,$userID);
 		$arTask=$oTaskItem->GetData();

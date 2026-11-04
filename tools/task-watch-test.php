@@ -11,7 +11,8 @@ class router {
 }
 
 /** Вошедший пользователь задаётся серверной сессией. */
-class CUser { static function GetID() { return 5; } }
+class CUser { function GetID() { return 5; } }
+$USER = new CUser();
 
 /** Подставной TaskItem контролирует пользователя и вызовы штатных методов наблюдения. */
 class CTaskItem {
@@ -19,10 +20,13 @@ class CTaskItem {
 	static $creator = 8;
 	static $auditors = array(9);
 	static $calls = array();
+	static $updates = array();
 	function __construct($id, $userId) { if ($id !== 1 || $userId !== 5) throw new Exception('Неверный контекст задачи'); }
 	function GetData() { return array('ID' => 1, 'RESPONSIBLE_ID' => self::$responsible, 'CREATED_BY' => self::$creator, 'VIEWED_DATE' => '', 'CREATED_DATE' => '01.10.2026'); }
 	function startWatch() { self::$calls[] = 'start'; self::$auditors = array_values(array_unique(array_merge(self::$auditors, array(5)))); }
 	function stopWatch() { self::$calls[] = 'stop'; self::$auditors = array_values(array_diff(self::$auditors, array(5))); }
+	/** Запоминает изменения дат для проверки общего action_update на PHP 8. */
+	function Update($fields) { self::$updates[] = $fields; }
 }
 
 /** Участники перечитываются после изменения наблюдения. */
@@ -64,4 +68,16 @@ foreach (array('responsible', 'creator') as $role) {
 try { callWatch('false'); throw new Exception('Неверный параметр принят'); }
 catch (WatchTestHalt $e) { checkWatch($e->getCode() === 409, 'Ожидался HTTP 409'); }
 checkWatch(CTaskItem::$calls === array('start', 'stop'), 'Запрещённые запросы не должны менять роли');
+
+// Смена срока использует тот же объект сессии и не должна вызывать GetID статически.
+router::$params = array('id' => 1, 'deadline' => 1793800800, 'startDatePlan' => 1793800800);
+ob_start();
+try { $controller = new controller_task(); $controller->action_update(); }
+catch (Exception $e) { ob_end_clean(); throw $e; }
+catch (Throwable $e) { ob_end_clean(); throw $e; }
+ob_end_clean();
+checkWatch(CTaskItem::$updates === array(
+	array('DEADLINE' => date('d.m.Y', 1793800800).' 17:00:00'),
+	array('START_DATE_PLAN' => date('d.m.Y', 1793800800).' 09:00:00'),
+), 'Срок и плановая дата должны сохраняться в контексте текущего пользователя');
 echo "OK: самонаблюдение, роли, контекст сессии и сохранение чужих наблюдателей\n";
