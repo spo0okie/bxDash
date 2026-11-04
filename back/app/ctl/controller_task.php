@@ -136,13 +136,6 @@ class controller_task {
 		$filter=[
 			'::LOGIC' => 'AND',
 			'CHECK_PERMISSIONS' => 'Y',
-			'::SUBFILTER-1' => [
-				'::LOGIC' => 'OR',
-				// Разделяем роли на независимые ветки по контракту CTasks::GetList.
-				// У ответственного задача должна находиться и без соисполнителей.
-				'::SUBFILTER-1' => ['ACCOMPLICE' => $users],
-				'::SUBFILTER-2' => ['RESPONSIBLE_ID' => $users],
-			],
 		];
 
 		if (!is_null($to) && $to<time()) {
@@ -158,10 +151,16 @@ class controller_task {
 		}
 		//var_dump($filter);
 
-		$res=CTasks::GetList(["DEADLINE" => "ASC"],$filter);
-		while ($arTask = $res->GetNext()) {
-			//кладем задачу пользователю в табличку
-			$tasks[$arTask['ID']]=static::initTaskData($arTask);
+		// На Bitrix 24 OR с ACCOMPLICE исключает задачу ответственного без
+		// соисполнителей. Независимые запросы не смешивают фильтры участников.
+		foreach (array('RESPONSIBLE_ID', 'ACCOMPLICE') as $role) {
+			$roleFilter = $filter;
+			$roleFilter[$role] = $users;
+			$res = CTasks::GetList(array('DEADLINE' => 'ASC'), $roleFilter);
+			while ($arTask = $res->GetNext()) {
+				// Задача может прийти по обеим ролям; участников читаем один раз.
+				if (!isset($tasks[$arTask['ID']])) $tasks[$arTask['ID']] = static::initTaskData($arTask);
+			}
 		}
 
 		if (is_null($to)) {
