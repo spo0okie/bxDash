@@ -48,7 +48,8 @@ class AlertsStore {
     loadItems() {
 		console.log('loading ' + this.type + 's');
 		const request={
-			output: ['eventid','objectid','name','severity'],
+			// clock — время возникновения проблемы в Unix-секундах.
+			output: ['eventid','objectid','name','severity','clock'],
       		//value: 1,
 			source: 0,
 			"tags": [

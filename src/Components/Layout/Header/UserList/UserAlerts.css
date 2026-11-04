@@ -127,6 +127,16 @@ ul.user-alerts li.alert-item a:hover {
 	background-color: var(--alert-link-bg-hover);
 }
 
+/* Дата возникновения остаётся частью ссылки и переносится на отдельную строку. */
+ul.user-alerts .alert-started-at {
+	display: block;
+	font-size: smaller;
+	white-space: nowrap;
+	padding-left: 3px;
+	float: right;
+	padding-right: 1px;
+}
+
 /* Кнопка создания заявки из алерта */
 .create-ticket-from-alert {
 	background: none;
