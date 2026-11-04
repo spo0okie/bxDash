@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect, useCallback } from "react";
 import { observer } from "mobx-react";
 import { StoreContext } from "Data/Stores/StoreProvider";
-import { Modal, Input, Select, message } from 'antd';
+import { Modal, Input, Select, Alert, Button, message } from 'antd';
 
 // Текстовое поле для ввода
 const { TextArea } = Input;
@@ -14,14 +14,16 @@ const { TextArea } = Input;
 const CreateTicketModal = observer((props) => {
     const context = useContext(StoreContext);
     const visible = context.layout.ticketModalVisible;
-    
+
     // Состояние формы
     const [text, setText] = useState('');
     const [owner, setOwner] = useState(null);           // Автор заявки (из bxUsersList)
     const [responsible, setResponsible] = useState(null); // Исполнитель (из users дашборда)
     const [loading, setLoading] = useState(false);
     const [usersLoading, setUsersLoading] = useState(false);
-    
+	const [category, setCategory] = useState(null); // ID из серверного справочника
+	const { ticketCategories, ticketCategoriesLoading, ticketCategoriesError } = context.main;
+
     // Найти текущий редактируемый тикет (isNew + isEdit)
     const ticketItem = Array.from(context.items['ticket'].items.values())
         .find(item => item.isNew && item.isEdit);
@@ -32,35 +34,41 @@ const CreateTicketModal = observer((props) => {
 		context.layout.setTicketModalVisible(false);
 		ticketItem?.delete();
 	}, [context.layout, ticketItem]);
-    
+
     // При открытии модального окна загружаем список пользователей и инициализируем значения
     useEffect(() => {
         if (visible) {
+			context.main.fetchTicketCategories();
             setUsersLoading(true);
             context.main.fetchBxUsersList()
                 .finally(() => {
                     setUsersLoading(false);
                 });
-            
+
             // Устанавливаем текущего пользователя как автора по умолчанию
             if (context.main.bx.userId && !owner) {
                 setOwner(context.main.bx.userId);
             }
-            
+
             // Инициализируем исполнителя из ticketItem.user (пользователь секции)
             if (ticketItem && ticketItem.user && !responsible) {
                 setResponsible(ticketItem.user);
             }
-            
+
             // Инициализируем текст если тикет только что создан
             if (ticketItem && !text) {
-                ticketItem.editValue = ticketItem.title + 
+                ticketItem.editValue = ticketItem.title +
                     (ticketItem.message ? '\n' + ticketItem.message : '');
                 setText(ticketItem.editValue);
             }
         }
     }, [visible]);
-    
+
+	// Справочник может прийти уже после открытия формы; первый ID — значение по умолчанию.
+	useEffect(() => {
+		if (visible && category === null && ticketCategories.length) setCategory(ticketCategories[0].id);
+	}, [visible, category, ticketCategories]);
+
     // При изменении ticketItem обновляем owner и responsible
     useEffect(() => {
         if (ticketItem) {
@@ -74,16 +82,17 @@ const CreateTicketModal = observer((props) => {
             }
         }
     }, [ticketItem]);
-    
+
     // Очистка формы при закрытии
     useEffect(() => {
         if (!visible) {
             setText('');
             setOwner(null);
             setResponsible(null);
+			setCategory(null);
         }
     }, [visible]);
-    
+
     /**
      * Обработка создания заявки через стандартный save()
      */
@@ -101,28 +110,33 @@ const CreateTicketModal = observer((props) => {
             message.error('Выберите исполнителя заявки');
             return;
         }
+		if (!ticketCategories.some(item => item.id === category) || ticketCategoriesLoading || ticketCategoriesError) {
+			message.error('Выберите доступную категорию заявки');
+			return;
+		}
         if (!ticketItem) {
             message.error('Тикет не найден');
             return;
         }
-        
+
         const lines = text.split('\n');
         if (lines.length === 0 || !lines[0].trim()) {
             message.error('Первая строка должна содержать заголовок заявки');
             return;
         }
-        
+
         setLoading(true);
-        
+
         try {
             // Обновляем данные тикета
             ticketItem.title = lines[0];
             ticketItem.message = lines.length > 1 ? lines.slice(1).join('\n') : '';
             ticketItem.owner = owner;
+			ticketItem.category = category;
             ticketItem.user = responsible;  // Устанавливаем выбранного исполнителя
-            
+
             // Вызываем стандартный save() из DashItem
-            ticketItem.save({}, 
+            ticketItem.save({},
                 () => {
                     message.success('Заявка создана успешно');
                 	handleClose();
@@ -138,17 +152,17 @@ const CreateTicketModal = observer((props) => {
             setLoading(false);
         }
     };
-    
+
     // Получаем имя выбранного исполнителя для отображения в заголовке
-    const responsibleUserName = responsible 
+    const responsibleUserName = responsible
         ? (context.users.items.get(responsible)?.name || `Пользователь ${responsible}`)
         : '';
-    
+
     // Формируем заголовок с именем ответственного
-    const modalTitle = responsibleUserName 
+    const modalTitle = responsibleUserName
         ? `Новая заявка для ${responsibleUserName}`
         : 'Новая заявка';
-    
+
     return (
         <Modal
             title={modalTitle}
@@ -156,6 +170,7 @@ const CreateTicketModal = observer((props) => {
             onCancel={handleClose}
             onOk={handleSubmit}
             confirmLoading={loading}
+			okButtonProps={{ disabled: ticketCategoriesLoading || Boolean(ticketCategoriesError) || !category }}
             okText="Создать"
             cancelText="Отмена"
             width={600}
@@ -180,8 +195,8 @@ const CreateTicketModal = observer((props) => {
                     notFoundContent={usersLoading ? 'Загрузка...' : 'Пользователи не найдены'}
                 >
                     {context.main.bxUsersList.map(user => (
-                        <Select.Option 
-                            key={user.id} 
+                        <Select.Option
+                            key={user.id}
                             value={user.id}
                             label={`${user.name} (${user.login})`}
                         >
@@ -190,9 +205,11 @@ const CreateTicketModal = observer((props) => {
                     ))}
                 </Select>
             </div>
-            
-            {/* Выбор исполнителя (ответственного) - из сотрудников дашборда */}
-            <div style={{ marginBottom: 16 }}>
+
+				{/* Выбор исполнителя (ответственного) - из сотрудников дашборда */}
+				{/* В React имена CSS-свойств в объекте style записываются в camelCase. */}
+				<div style={{ display: "flex"}}>
+            <div style={{ marginBottom: 16, flex: 1, minWidth: 0 }}>
                 <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>
                     Исполнитель (ответственный) *
                 </label>
@@ -211,8 +228,8 @@ const CreateTicketModal = observer((props) => {
                     {context.users.order.map(userId => {
                         const user = context.users.items.get(userId);
                         return (
-                            <Select.Option 
-                                key={userId} 
+                            <Select.Option
+                                key={userId}
                                 value={userId}
                                 label={user?.name || `Пользователь ${userId}`}
                             >
@@ -222,7 +239,31 @@ const CreateTicketModal = observer((props) => {
                     })}
                 </Select>
             </div>
-            
+            {/* Названия приходят из Bitrix, конфиг определяет только разрешённые ID и порядок. */}
+						<div style={{ marginBottom: 16, flex: 1, minWidth: 0 }}>
+							<label htmlFor="ticket-category" style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>
+								Категория *
+							</label>
+							<Select
+								id="ticket-category"
+								value={category}
+								onChange={setCategory}
+								loading={ticketCategoriesLoading}
+								disabled={ticketCategoriesLoading || Boolean(ticketCategoriesError)}
+								options={ticketCategories.map(item => ({ value: item.id, label: item.name }))}
+								showSearch
+								optionFilterProp="label"
+								placeholder="Выберите категорию"
+								style={{ width: '100%' }}
+							/>
+							{ticketCategoriesError && <Alert
+								type="error"
+								message={ticketCategoriesError}
+								action={<Button onClick={() => context.main.fetchTicketCategories()}>Повторить</Button>}
+							/>}
+						</div>
+				</div>
+
             {/* Текстовое поле для ввода */}
             <div>
                 <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>
@@ -238,7 +279,7 @@ const CreateTicketModal = observer((props) => {
                     rows={8}
                     autoFocus
                 />
-            </div>
+					</div>
         </Modal>
     );
 });

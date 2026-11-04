@@ -59,7 +59,9 @@ export const incomingCallConfig = {
 
 // === Конфигурация тикетов Bitrix ===
 export const ticketSiteId = config.ticketSiteId || "s1";
-export const ticketCategoryId = config.ticketCategoryId || 43;
+export const ticketCategoryId = config.ticketCategoryId ?? 64;
+// Прежнее число и новый массив используют один ключ; порядок массива задаёт порядок выбора.
+export const ticketCategoryIds = [64,70];
 export const ticketSlaId = config.ticketSlaId || 1;
 
 // === SLA / расписание ===

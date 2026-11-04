@@ -129,6 +129,7 @@ yarn-error.log*
 #private data
 public/config.priv.js
 public/portal.config.php
+back/conf.php
 samples
 dev
 env.cmd

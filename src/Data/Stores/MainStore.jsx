@@ -6,6 +6,9 @@ import { zabbixAuthScheme } from 'Helpers/ZabbixHelper';
 import { inventoryAuthScheme } from 'Helpers/InventoryHelper';
 import { ast22AuthScheme } from 'Helpers/Ast22Helper';
 import { ITEM_TYPE_NAMES } from 'Data/itemTypes';
+import { bxJson } from 'Helpers/BxJson';
+import notify from 'Helpers/Notify';
+import { ticketCategoryIds } from 'config.priv';
 
 /**
  * MainStore - главное хранилище приложения bxDash
@@ -27,6 +30,13 @@ class MainStore {
 	itemsTypes = ITEM_TYPE_NAMES;
 	/** Список пользователей битрикса для выбора автора заявки */
 	bxUsersList = [];
+	/** Категории создания заявки в порядке конфигурации фронтенда. */
+	ticketCategories = [];
+	ticketCategoriesLoading = false;
+	ticketCategoriesError = null;
+	// Общий запрос для инициализации и открытой формы, без дублирования загрузок.
+	_ticketCategoriesRequest = null;
+	ticketCategoriesLoaded = false;
 
 	/** Создаёт обязательные системы и телефонию, если она разрешена конфигурацией. */
 	constructor({ asteriskEnabled = true } = {}) {
@@ -41,9 +51,51 @@ class MainStore {
 			// Observable свойства
 			itemsTypes: observable,
 			bxUsersList: observable,
+			ticketCategories: observable.ref,
+			ticketCategoriesLoading: observable,
+			ticketCategoriesError: observable,
 			// Computed свойства
 			hasErrors: computed,
 		});
+		// Справочник нужен только после успешной авторизации Bitrix.
+		when(() => this.bx.authStatus === 'OK', () => { this.fetchTicketCategories(); });
+	}
+
+	/** Загружает справочник один раз; неудачную попытку можно повторить из формы. */
+	fetchTicketCategories() {
+		if (this.ticketCategoriesLoaded) return Promise.resolve(this.ticketCategories);
+		if (this._ticketCategoriesRequest) return this._ticketCategoriesRequest;
+		runInAction(() => {
+			this.ticketCategoriesLoading = true;
+			this.ticketCategoriesError = null;
+		});
+		this._ticketCategoriesRequest = bxJson(this.bx, 'ticket/categories')
+			.then(categories => {
+				if (!Array.isArray(categories) || !categories.length || categories.some(category =>
+					!category || !Number.isInteger(category.id) || category.id <= 0 || typeof category.name !== 'string'
+				)) throw new Error('Сервер вернул некорректный список категорий заявок');
+				if (!ticketCategoryIds.length || ticketCategoryIds.some(id => !Number.isInteger(id) || id <= 0))
+					throw new Error('В config.priv.js задайте ticketCategoryId числом или непустым массивом ID категорий');
+				// Бэкенд отдаёт справочник; выбор доступных ID и их порядок принадлежат конфигу фронта.
+				const selected = [...new Set(ticketCategoryIds)].map(id => {
+					const category = categories.find(category => category.id === id);
+					if (!category) throw new Error(`Категория ${id} из config.priv.js не найдена в Bitrix`);
+					return category;
+				});
+				runInAction(() => { this.ticketCategories = selected; });
+				this.ticketCategoriesLoaded = true;
+				return selected;
+			})
+			.catch(error => {
+				runInAction(() => { this.ticketCategoriesError = notify.describe(error); });
+				notify.error(error, { title: 'Не удалось загрузить категории заявок' });
+				return [];
+			})
+			.finally(() => {
+				runInAction(() => { this.ticketCategoriesLoading = false; });
+				this._ticketCategoriesRequest = null;
+			});
+		return this._ticketCategoriesRequest;
 	}
 
     loadOption(name) {

@@ -8,6 +8,7 @@ import { ticketSlaWorkDays } from "config.priv";
 class TicketItem extends DashItem {
 	owner = null; // автор заявки (OWNER_USER_ID)
 	message = ""; // сообщение (остальной текст после заголовка)
+	category = null; // категория при создании; существующие заявки здесь не редактируются
 
 	initDefaults() {
 		// Базовый конструктор вызывает loadData: поле не должно перезаписываться после super().
@@ -114,6 +115,8 @@ class TicketItem extends DashItem {
 			owner: this.owner,
 			responsible: this.user,
 		};
+		// Отсутствие выбора у старых вызовов сохраняет серверное значение по умолчанию.
+		if (this.category !== null) ticketParams.category = this.category;
 
 		this.setUpdating(true);
 
@@ -218,6 +221,7 @@ class TicketItem extends DashItem {
 		makeObservable(this, {
 			owner: observable,
 			message: observable,
+			category: observable,
 			holdIntervals: observable.ref,
 			isSlaActive: computed,
 			slaDeadlineMs: computed,

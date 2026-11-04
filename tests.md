@@ -65,6 +65,16 @@ npm run test:mock
 
 ## Текущие тесты
 
+### Категории создания заявки
+
+- `src/Data/Stores/__tests__/MainStore.test.jsx` — загрузка после авторизации, общий запрос,
+  отбор и порядок ID из конфига фронтенда, кеширование, ошибки и повторная попытка.
+- `src/Components/Items/CreateTicketModal/CreateTicketModal.test.jsx` — выбор в настоящем
+  Ant Design Select, передача категории в сохранение и блокировка формы при ошибке.
+- `src/Data/Models/__tests__/TicketItem.test.jsx` — категория в JSON запроса создания.
+- `php tools/ticket-categories-test.php` — справочник с названиями из Bitrix, прежний серверный
+  дефолт для старых клиентов и отказ HTTP 409 для несуществующего ID; портал не требуется.
+
 ### App.test.js
 **Расположение:** `src/App.test.js`
 **Описание:** Тест рендеринга главного компонента App

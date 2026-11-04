@@ -4,6 +4,16 @@ import ScheduleStore from '../../Stores/ScheduleStore';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+test('создание передаёт выбранную категорию в JSON запроса', async () => {
+	const item = ticket();
+	item.isNew = true;
+	item.category = 45;
+	// Оставляем запрос незавершённым: здесь проверяем именно контракт создания.
+	item.bxJson = jest.fn(() => new Promise(() => {}));
+	item.save({});
+	expect(JSON.parse(item.bxJson.mock.calls[0][1].body).category).toBe(45);
+});
+
 /** Данные решённой заявки №54078: ответ ТП автору, автозакрытие через сутки. */
 const WAITING_TICKET = {
 	ID: '54078', OWNER_USER_ID: '2698', RESPONSIBLE_USER_ID: '4444',

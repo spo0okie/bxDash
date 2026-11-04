@@ -35,6 +35,9 @@ window.__CONFIG__ = {
 		voiceBaseUrl: '',      // База URL сервиса отдачи записей (голосовое = <base>/<call_uuid>-voicemail.wav); пусто — Play отключён
 	},
 
+	// === Категории заявок ===
+	ticketCategoryId: [43], // ID из Bitrix; можно оставить число. Первая категория — по умолчанию.
+
 	// === SLA / расписание ===
 	workScheduleId: 0,     // ID рабочего расписания в Inventory (0 = отключено)
 	ticketSlaWorkDays: 2,  // SLA для тикетов в рабочих днях
