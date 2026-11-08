@@ -156,6 +156,8 @@ class TaskItem extends DashItem {
 			"/";
 
 		if (recalc) this.recalcTime();
+		// Строим связи из ID Bitrix без разбора заголовка, в том числе после создания связи.
+		this.directLinksRebuild();
 		this.setUpdating(false);
 		return true;
 	}

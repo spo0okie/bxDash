@@ -3,6 +3,7 @@ import { draggable,	dropTargetForElements} from '@atlaskit/pragmatic-drag-and-dr
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import ArrayHelper from './ArrayHelper';
 import notify from './Notify';
+import { chooseTaskRelation } from './TaskRelations';
 
 
 /**
@@ -23,7 +24,7 @@ function dashItemNewSort(item, list, index, edge) {
     const last=len-1;
     if (!len) return item.sorting;  //если списка нет - не меняем
 
-    if (index<0 || (index===0 && edge==='top')) {//если кинули над списком 
+    if (index<0 || (index===0 && edge==='top')) {//если кинули над списком
          return Math.min(
 			list[0].sorting + 20,
 			Math.round(list[0].sorting + (item.maxSort - list[0].sorting)/2)	//ограничиваем значение сверху
@@ -143,6 +144,11 @@ export function dashItemsDrop(item, location) {
     if (sourceCell.data.cell.readOnly || targetCell.data.cell.readOnly) return;
 
     const targetItem = location.current.dropTargets.find(t => t.data.type === 'item');
+    // Только центр карточки создаёт связь; края сохраняют обычную сортировку.
+    if (item.type === 'task' && targetItem?.data.item?.type === 'task' && targetItem.data.linkTasks) {
+        if (item.uid !== targetItem.data.item.uid) chooseTaskRelation(item, targetItem.data.item, targetItem.data.stores);
+        return;
+    }
     let dropOnItem = null;
     if (targetItem) {
         const edge = extractClosestEdge(targetItem.data);
@@ -192,6 +198,13 @@ export function dashItemsDrop(item, location) {
         dragOver:setDragOver        //зажигатель флага "надо мной тащят карточку"
     }
 };*/
+/** Центр карточки связывает задачи, верхняя и нижняя четверти служат для перестановки. */
+export function isTaskRelationZone(source, target, rect, clientY) {
+	return source?.type === 'task' && target.type === 'task' && source.uid !== target.uid
+		&& rect.height > 0 && clientY > rect.top + rect.height / 4
+		&& clientY < rect.top + rect.height * 3 / 4;
+}
+
 export function dashItemDragLogic(dropData,ref,setClosestEdge) {
 	//console.log(dropData.item.isEdit);
 	if (dropData.item.isNew || dropData.item.isEdit) return;    //т.к. иначе глючит работа textarea внутри этого элемента и нельзя выделять текст мышью
@@ -214,15 +227,15 @@ export function dashItemDragLogic(dropData,ref,setClosestEdge) {
         //если у нас нет ячейки или поменялась ячейка
 		if (cellId(cell)!==cellId(dropData.item.dragCell)) {
 			if (dropData.item.dragCell!==null) dropData.item.dragCell.dragOver(false);  //гасим старую ячейку (если она не пуста)
-			dropData.item.dragCell=cell;                                    //запоминаем новую			
+			dropData.item.dragCell=cell;                                    //запоминаем новую
 			if (dropData.item.dragCell!==null) dropData.item.dragCell.dragOver(true);   //зажигаем новую
 		}
         //console.log(dropData.item.uid+': '+cellId(cell)+' saved');
     }
     //console.log(dropData.item);
-    
-	
-	
+
+
+
 	return combine(
 		//для того чтобы элемент можно было таскать
 		draggable({
@@ -230,6 +243,9 @@ export function dashItemDragLogic(dropData,ref,setClosestEdge) {
 			getInitialData: () => {return{
 				setCell: setCell,
 				type: dropData.type,
+				item: dropData.item,
+				cell: dropData.cell,
+				index: dropData.index,
 			}},
 			canDrag: () => dropData.item.isDraggable(dropData.cell),   //не все можно переносить
 			onDragStart: () => {
@@ -255,7 +271,7 @@ export function dashItemDragLogic(dropData,ref,setClosestEdge) {
 				}
 			},
 		}),
-			
+
 		//для того чтобы на элемент можно было бросать другой элемент (вставка в список)
 		dropTargetForElements({
 			element: element,
@@ -264,9 +280,11 @@ export function dashItemDragLogic(dropData,ref,setClosestEdge) {
 				//console.log(source.data.type);
 				return (source.data.type==='item') && dropData.item.isDraggable(dropData.cell); // && source.element !== dropData.element;
 			},
-			getData({ input }) {//когда над нами тащят элемент
+			getData({ input, source }) {//когда над нами тащят элемент
 				//на основании координат мыши (input) и отрендеренного элемента (element) оно добавит к dropData поле Edge - ближайшую к точке сброса грань из вариантов [top,bottom]
-				return attachClosestEdge(dropData, {
+				return attachClosestEdge({ ...dropData,
+					linkTasks: isTaskRelationZone(source.data.item, dropData.item, element.getBoundingClientRect(), input.clientY),
+				}, {
 					element:dropData.element,
 					input,
 					allowedEdges: ['top', 'bottom'],
@@ -277,7 +295,14 @@ export function dashItemDragLogic(dropData,ref,setClosestEdge) {
 				//if (source.data.setCell!==undefined) source.data.setCell(dropData.cell);
 
 				//если мы тащим себя над собой, то выставляем ближйшую грань как null и больше ничего не делаем
+				element.classList.remove('taskRelationTarget');
 				if (source.element === dropData.element) {setClosestEdge(null); return;}
+				// Для связи задач показываем принимающую карточку целиком вместо линии сортировки.
+				if (self.data.linkTasks) {
+					element.classList.add('taskRelationTarget');
+					setClosestEdge(null);
+					return;
+				}
 
 				//загружаем ближайшую грань, которую сохранили через getData
 				const closestEdge = extractClosestEdge(self.data);
@@ -289,9 +314,11 @@ export function dashItemDragLogic(dropData,ref,setClosestEdge) {
 				setClosestEdge(closestEdge);
 			},
 			onDragLeave() {
+				element.classList.remove('taskRelationTarget');
 				setClosestEdge(null);   //убираем подсветку грани
 			},
 			onDrop() {
+				element.classList.remove('taskRelationTarget');
 				setClosestEdge(null);   //убираем подсветку грани
 			},
 		}),

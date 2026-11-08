@@ -55,16 +55,12 @@ test.each([
 	expect(other[flag]).toBe(true);
 });
 
-test('перезагрузка удаляет старые зависимости, а разбор заголовка сохраняет предыдущие задачи', () => {
+test('перезагрузка удаляет старые зависимости', () => {
 	const { load } = dependencyBoard();
 	const prev = load(4);
 	const next = load(3);
 	const task = load(1, { NEXT_TASK_IDS: [3], PREV_TASK_IDS: [4] });
-	runInAction(() => {
-		task.title = 'Работа по задаче 5';
-		task.parseTitle();
-	});
-	expect(task.childUids).toEqual(['task:5', 'task:4']);
+	expect(task.childUids).toEqual(['task:4']);
 	load(1);
 	expect(task.parentUids).toEqual([]);
 	expect(task.childUids).toEqual([]);

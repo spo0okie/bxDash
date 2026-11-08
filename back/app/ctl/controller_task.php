@@ -354,6 +354,62 @@ class controller_task {
 		echo json_encode(stages_provider::attached('task', static::attachDependencies(array_values($tasks))),JSON_UNESCAPED_UNICODE);
 	}
 
+	/** Создаёт иерархическую связь или добавляет предыдущую задачу, сохраняя остальные связи. */
+	public function action_link() {
+		global $USER;
+		$id = (int)router::getRoute(3, 'id');
+		$targetId = (int)router::getRoute(null, 'targetId');
+		$relation = router::getRoute(null, 'relation');
+		if ($id <= 0 || $targetId <= 0 || $id === $targetId) router::haltJson('Нужны две разные задачи', 409);
+		if (!in_array($relation, array('subtask', 'next', 'previous'), true)) router::haltJson('Неизвестный тип связи', 409);
+		try {
+			// Не раскрываем и не связываем задачи, недоступные текущему пользователю.
+			$res = CTasks::GetList(array(), array('ID' => array($id, $targetId), 'CHECK_PERMISSIONS' => 'Y'), array('ID'));
+			$visible = array();
+			while ($row = $res->Fetch()) $visible[(int)$row['ID']] = true;
+			if (!isset($visible[$id]) || !isset($visible[$targetId])) throw new Exception('Одна из задач недоступна');
+			$userId = $USER->GetID();
+			if ($relation === 'subtask') {
+				// Проверяем цепочку родителей до записи, чтобы не сделать предка собственным потомком.
+				$parentId = $targetId;
+				$visited = array();
+				while ($parentId > 0) {
+					if ($parentId === $id || isset($visited[$parentId])) throw new Exception('Связь создаёт цикл подзадач');
+					$visited[$parentId] = true;
+					$parent = new CTaskItem($parentId, $userId);
+					$data = $parent->GetData();
+					$parentId = isset($data['PARENT_ID']) ? (int)$data['PARENT_ID'] : 0;
+				}
+				$task = new CTaskItem($id, $userId);
+				$result = $task->Update(array('PARENT_ID' => $targetId));
+			} else {
+				$nextId = $relation === 'next' ? $targetId : $id;
+				$prevId = $relation === 'next' ? $id : $targetId;
+				// Идём по предыдущим задачам: новая связь не должна замыкать цепочку.
+				$pending = array($prevId);
+				$visited = array();
+				while (!empty($pending)) {
+					$current = array_pop($pending);
+					if ($current === $nextId) throw new Exception('Связь создаёт цикл зависимостей');
+					if (isset($visited[$current])) continue;
+					$visited[$current] = true;
+					$links = CTaskDependence::GetList(array(), array('TASK_ID' => $current));
+					while ($link = $links->Fetch()) $pending[] = (int)$link['DEPENDS_ON_ID'];
+				}
+				$task = new CTaskItem($nextId, $userId);
+				$previous = array_map('intval', $task->getDependsOn());
+				$previous[] = $prevId;
+				$result = $task->Update(array('DEPENDS_ON' => array_values(array_unique($previous))));
+			}
+			if ($result === false) throw new Exception('Bitrix отказал в изменении связи задач');
+		} catch (\Exception $e) {
+			router::haltJson($e->getMessage(), 409);
+		} catch (\Throwable $e) {
+			router::haltJson($e->getMessage(), 409);
+		}
+		echo json_encode(array('result' => 'ok', 'id' => $id, 'targetId' => $targetId));
+	}
+
 	function action_update() {
 		global $USER;
 		if (is_null($id=router::getRoute(3, 'id')))

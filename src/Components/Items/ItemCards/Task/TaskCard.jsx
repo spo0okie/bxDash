@@ -222,6 +222,7 @@ const TaskCard = observer((props) => {
 			item: task, //dashItem элемент (task|job|ticket|plan)
 			index: index, //порядок элемента в списке
 			cell: cell, //ячейка в которой и список и элемент
+			stores: context, // Контекст приложения для диалога связей.
 		};
 		if (visible) return dashItemDragLogic(dropData, ref, setClosestEdge);
 	}, [ref, visible, cell, index, task]);

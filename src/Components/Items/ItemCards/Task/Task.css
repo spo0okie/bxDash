@@ -169,3 +169,8 @@ span.taskPriority.mid {
 span.taskPriority.high {
 	background-color: var(--task-priority-high);
 }
+/* При связывании задач выделяется вся принимающая карточка, а не грань сортировки. */
+li.userItem.taskRelationTarget {
+	outline: 2px solid var(--item-parent-bg, orange);
+	outline-offset: -2px;
+}
