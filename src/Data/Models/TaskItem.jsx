@@ -7,6 +7,8 @@ class TaskItem extends DashItem {
 	//strStatus;
 
 	initDefaults() {
+		this.nextTaskIds = []; //следующие задачи, которые блокирует текущая
+		this.prevTaskIds = []; //предыдущие задачи, от которых зависит текущая
 		this.type = "task"; //тип
 		this.dropTimeField = "startDatePlan"; //атрибут, которым задача позиционируется в календаре
 		this.updatesCount = 0; //количество обновлений в задаче
@@ -71,7 +73,12 @@ class TaskItem extends DashItem {
 	loadData(item, recalc) {
 		if (!super.loadData(item, recalc)) return false;
 
-		this.parentUids = item.PARENT_ID ? ["task:" + Number(item.PARENT_ID)] : [];
+		this.nextTaskIds = [...new Set((item.NEXT_TASK_IDS ?? []).map(Number).filter(id => id > 0))];
+		this.prevTaskIds = [...new Set((item.PREV_TASK_IDS ?? []).map(Number).filter(id => id > 0))];
+		// Базовая и следующие задачи зависят от текущей и получают родительскую подсветку.
+		this.parentUids = [...new Set([Number(item.PARENT_ID), ...this.nextTaskIds])]
+			.filter(id => id > 0).map(id => 'task:' + id);
+		this.childUids = this.prevTaskIds.map(id => 'task:' + id);
 
 		this.title = item["~TITLE"];
 

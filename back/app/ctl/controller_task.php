@@ -17,6 +17,8 @@ class controller_task {
 	static public $fieldsMap = [
 		'ID',
 		'PARENT_ID',
+		'NEXT_TASK_IDS',
+		'PREV_TASK_IDS',
 		'TITLE',
 		'RESPONSIBLE_ID',
 		'ACCOMPLICES',
@@ -33,6 +35,32 @@ class controller_task {
 		'FAVORITE',
 	];
 
+
+	/** Дополняет всю выборку зависимостями без ограничений её периода и пользователей. */
+	static public function attachDependencies($tasks) {
+		if (empty($tasks)) return $tasks;
+		$indices = array();
+		foreach ($tasks as $index => $task) {
+			$indices[(int)$task['ID']] = $index;
+			$tasks[$index]['NEXT_TASK_IDS'] = array();
+			$tasks[$index]['PREV_TASK_IDS'] = array();
+		}
+		// Два пакетных запроса: связь может вести к задаче вне исходной выборки.
+		foreach (array('TASK_ID', 'DEPENDS_ON_ID') as $field) {
+			$res = CTaskDependence::GetList(array(), array($field => array_keys($indices)));
+			while ($link = $res->Fetch()) {
+				$nextId = (int)$link['TASK_ID'];
+				$prevId = (int)$link['DEPENDS_ON_ID'];
+				if ($field === 'TASK_ID' && isset($indices[$nextId])) {
+					$tasks[$indices[$nextId]]['PREV_TASK_IDS'][] = $prevId;
+				}
+				if ($field === 'DEPENDS_ON_ID' && isset($indices[$prevId])) {
+					$tasks[$indices[$prevId]]['NEXT_TASK_IDS'][] = $nextId;
+				}
+			}
+		}
+		return $tasks;
+	}
 
 	static public function initTaskData($arTask) {
 		global $globalTzOffset;
@@ -216,13 +244,13 @@ class controller_task {
 			$id=(int)$task['ID'];
 			$result[$task['ID']] = $task;
 		}
-		echo json_encode(stages_provider::attached('task', array_values($result)),JSON_UNESCAPED_UNICODE);
+		echo json_encode(stages_provider::attached('task', static::attachDependencies(array_values($result))),JSON_UNESCAPED_UNICODE);
 	}
 
 	public function action_linked(){
 		// Возвращаем только объекты из ids, без фильтра по периодам/пользователям
 		$tasks = static::loadTasksByIds(router::getIds());
-		echo json_encode(stages_provider::attached('task', array_values($tasks)),JSON_UNESCAPED_UNICODE);
+		echo json_encode(stages_provider::attached('task', static::attachDependencies(array_values($tasks))),JSON_UNESCAPED_UNICODE);
 	}
 
 	/**
@@ -311,7 +339,7 @@ class controller_task {
 		$tasks = static::loadTasksByIds(array_values($tasks));
 		
 		// Возвращаем в том же формате, что и action_load
-		echo json_encode(stages_provider::attached('task', array_values($tasks)),JSON_UNESCAPED_UNICODE);
+		echo json_encode(stages_provider::attached('task', static::attachDependencies(array_values($tasks))),JSON_UNESCAPED_UNICODE);
 	}
 
 	public function action_get(){
@@ -323,7 +351,7 @@ class controller_task {
 		$tasks = static::loadTasksByIds($ids);
 		if (!isset($tasks[$id]))
 			router::haltJson("Error loading Task");
-		echo json_encode(stages_provider::attached('task', array_values($tasks)),JSON_UNESCAPED_UNICODE);
+		echo json_encode(stages_provider::attached('task', static::attachDependencies(array_values($tasks))),JSON_UNESCAPED_UNICODE);
 	}
 
 	function action_update() {
