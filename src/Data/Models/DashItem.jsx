@@ -30,6 +30,7 @@ export default class DashItem {
  	children = [];			//подчиненные элементы (объекты)
 
 	title='';				//заголовок (что будет писаться на доске)
+	parsedTitle='';		//текст после выделения ссылок на задачи и заявки
  	defaultTitle='';		//какой заголовок у элементов по умолчанию
 
  	user=null;				//к какому пользователю относится
@@ -561,7 +562,12 @@ export default class DashItem {
 		this.recalcTime();
 
   		makeObservable(this,{
+			// Отслеживаем дозагрузку и удаление связей без глубокой обёртки соседей.
+			parents: observable.shallow,
+			children: observable.shallow,
+			detachLinks: action,
   			title:observable,
+			parsedTitle:observable,
   			user:observable,
 
 			deadline:observable,

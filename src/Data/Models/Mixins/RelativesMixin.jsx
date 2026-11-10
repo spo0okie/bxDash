@@ -100,16 +100,14 @@ const RelativesMixin = {
 	},
 
 	/**
-	 * Убирает также текст описания родителей из текста элемента
+	 * Убирает повтор заголовка связанного элемента, а для одной ссылки подставляет его текст.
 	 * @returns 
 	 */
 	cleanTitle() {
 		let title=this.parsedTitle
 
-		let links=[];
-
-		if (this.titleLinks==='parentUids') links=this.parents;
-		if (this.titleLinks==='childUids') links=this.children;
+		// Ссылки из текста сохраняются при обновлении задачи, даже если её обратные связи перестроены.
+		const links=this.list.master.getUidsItems(this[this.titleLinks]);
 
 		if (!links.length) return title;
 

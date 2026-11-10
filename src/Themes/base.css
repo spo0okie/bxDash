@@ -116,6 +116,7 @@
 	--task-stripe-active-now: limegreen;
 	--task-bg-negative: linear-gradient(to bottom, #a83516 5%, #852511 100%);
 	--task-bg-negative-color: #a83516;
+	--task-text: var(--text-primary);
 	--task-text-negative: #ffffff;
 	--task-border-negative: #942911;
 	--task-shadow-negative: inset 0 1px 0 0 #cf866c;

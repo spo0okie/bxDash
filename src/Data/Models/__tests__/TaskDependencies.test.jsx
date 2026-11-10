@@ -1,4 +1,4 @@
-import { runInAction } from 'mobx';
+import { autorun, runInAction } from 'mobx';
 import TaskItem from '../TaskItem';
 
 /** Имитирует очередь связанных объектов: задача может появиться позже исходной выборки. */
@@ -28,6 +28,40 @@ function dependencyBoard() {
 	}
 	return { load, pending };
 }
+
+test.each(['parents', 'children'])('счётчик %s учитывает общие ветки один раз и защищён от циклов', direction => {
+	const { load } = dependencyBoard();
+	const tasks = [1, 2, 3, 4].map(id => load(id));
+	runInAction(() => {
+		// Ромб с обратной связью: исходная задача не должна попасть в счётчик.
+		tasks[0][direction] = [tasks[1], tasks[2]];
+		tasks[1][direction] = [tasks[3]];
+		tasks[2][direction] = [tasks[3]];
+		tasks[3][direction] = [tasks[0]];
+	});
+	expect(tasks[0][direction === 'parents' ? 'dependentCount' : 'prerequisiteCount']).toBe(3);
+});
+
+test.each([
+	['NEXT_TASK_IDS', 'dependentCount'],
+	['PREV_TASK_IDS', 'prerequisiteCount'],
+])('счётчик реактивно обновляется при дозагрузке, закрытии и удалении связей: %s', (field, counter) => {
+	const { load } = dependencyBoard();
+	const task = load(1, { [field]: [2] });
+	const values = [];
+	const dispose = autorun(() => values.push(task[counter]));
+	try {
+		load(2, { [field]: [3] });
+		load(3);
+		// Закрываем промежуточную задачу: дальняя всё ещё учитывается.
+		load(2, { [field]: [3], REAL_STATUS: 5, CLOSED_DATE: '09.11.2026 12:00:00' });
+		load(2, { [field]: [3] });
+		load(1);
+		expect(values).toEqual([0, 1, 2, 1, 2, 0]);
+	} finally {
+		dispose();
+	}
+});
 
 test('обе стороны зависимостей запрашиваются вне выборки и подсвечиваются в нужном направлении', () => {
 	const { load, pending } = dependencyBoard();

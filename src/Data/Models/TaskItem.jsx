@@ -2,7 +2,35 @@ import { action, computed, makeObservable, observable } from "mobx";
 import DashItem from "./DashItem";
 import TimeHelper from "Helpers/TimeHelper";
 
+/** Считает уникальные незакрытые задачи в выбранном направлении связей. */
+function countRelatedTasks(task, direction) {
+	const visited = new Set([task.uid]);
+	const pending = [...task[direction]];
+	let count = 0;
+
+	while (pending.length) {
+		const current = pending.pop();
+		// Общие ветки и циклы не должны повторно учитывать одну задачу.
+		if (current.type !== 'task' || visited.has(current.uid)) continue;
+		visited.add(current.uid);
+		if (!current.isClosed) count++;
+		// Закрытые задачи исключаем из числа, но сохраняем обход их связей.
+		for (const relative of current[direction]) pending.push(relative);
+	}
+	return count;
+}
+
 class TaskItem extends DashItem {
+	/** Сколько незакрытых задач прямо или косвенно зависит от текущей. */
+	get dependentCount() {
+		return countRelatedTasks(this, 'parents');
+	}
+
+	/** Сколько незакрытых задач находится в цепочке предпосылок. */
+	get prerequisiteCount() {
+		return countRelatedTasks(this, 'children');
+	}
+
 	//mark;	//оценка
 	//strStatus;
 
@@ -228,6 +256,8 @@ class TaskItem extends DashItem {
 		super(item, data, list);
 
 		makeObservable(this, {
+			dependentCount: computed,
+			prerequisiteCount: computed,
 			accomplices: observable.ref,
 			auditors: observable.ref,
 			creatorId: observable,

@@ -88,7 +88,7 @@ class ItemsStore {
 			const data = await response.json();
 
 			// Загрузить задачи через существующий initData
-			data.forEach(item => this.initData(item));
+			this.initBatch(data);
 
 			// Сохранить ID найденных задач
 			this.searchResults = data.map(item => Number(item.ID));
@@ -144,7 +144,12 @@ class ItemsStore {
 		};
 	}
 
-    //создать/обновить элемент из JSON данных объекта из битрикс
+	/** Линкует весь ответ одной транзакцией, чтобы не пересчитывать граф после каждой задачи. */
+	initBatch(data) {
+		data.forEach(item => this.initData(item));
+	}
+
+	/** Создаёт или обновляет элемент из JSON-данных Bitrix. */
 	initData(data){
 		const id = Number(data.ID);
 		const ItemClass = classForType(this.type);
@@ -247,7 +252,7 @@ class ItemsStore {
 			.then(response => response.json())
 			.then(data => {
 				console.log('got ' + data.length + ' ' + this.type + 's');
-				data.forEach(function(item) { store.initData(item); });
+				store.initBatch(data);
 				if (onComplete) onComplete();
 				this.updateLoadRange(from,to);
 				//после первичной загрузки пытаемся дозапросить pending-элементы
@@ -272,7 +277,7 @@ class ItemsStore {
 			.then((response) => response.json())
 			.then((data) => {
 				console.log('got ' + data.length + ' ' + this.type + 's');
-				data.forEach(function (item) { store.initData(item) });
+				store.initBatch(data);
 				if (onComplete) onComplete();
 				this.loadPendingItems();
 				return true;
@@ -308,9 +313,7 @@ class ItemsStore {
 			.then(response => response.json())
 			.then(data => {
 				console.log('got ' + data.length + ' linked ' + this.type + 's');
-				data.forEach(function(item){
-					store.initData(item)}
-				);
+				store.initBatch(data);
 				return true;
 			})
 			.catch(error => {
@@ -437,6 +440,7 @@ class ItemsStore {
         isSearching:observable,
         searchMode:observable,
         initData:action,
+		initBatch:action,
         setItem:action,
         updateItem:action,
         deleteItem:action,
