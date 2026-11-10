@@ -48,3 +48,8 @@ div.Interval.column div.Period.column div.PeriodData {
 	overflow-x: hidden;
 	scrollbar-width: none;
 }
+
+/* Открытые и закрытые карточки недельной колонки прокручиваются вместе в PeriodData. */
+div.Interval.column div.userCellContent > ul.droppableBlock {
+	overflow-y: visible;
+}
