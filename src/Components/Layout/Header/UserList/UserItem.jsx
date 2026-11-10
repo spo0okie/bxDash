@@ -20,6 +20,7 @@ const PhoneItem = observer(({ user }) => (
 	</>
 ));
 
+/** Ячейка пользователя в шапке со статусами и переходом на его доску. */
 const UserItem = observer((props)=>{
 	const context = useContext(StoreContext);
 	const users = context.users;
@@ -39,14 +40,11 @@ const UserItem = observer((props)=>{
 		context.users.setHover(null);
 	}, [context.users]);
 
+	// Повторный клик по выбранному пользователю возвращает общую доску.
 	const toggleUser = useCallback(() => {
-		if (users.selected === null) {
-			users.setSelect(id);
-		} else {
-			users.setSelect(null);
-		}
+		users.setSelect(users.selected === id ? null : id);
 	}, [id, users]);
-	
+
 	let title=null;
 	let absentClass=null;
 
@@ -70,7 +68,7 @@ const UserItem = observer((props)=>{
 			item: user,			//dashItem элемент (task|job|ticket|plan)
 			index: index,		//порядок элемента в списке
 			//cell: cell,			//ячейка в которой и список и элемент
-		};		
+		};
 		return combine(
 			//для того чтобы элемент можно было таскать
 		draggable({
@@ -101,7 +99,7 @@ const UserItem = observer((props)=>{
 					//dashItemsDrop(dropData.item,location);  //обрабатываем бросок
 				},
 			}),
-				
+
 			//для того чтобы на элемент можно было бросать другой элемент (вставка в список)
 			dropTargetForElements({
 				element: ref.current,
@@ -121,16 +119,16 @@ const UserItem = observer((props)=>{
 				onDrag({ self, source }) {
 					//если над нами что-то тащат, то подсветим всю свою ячейку (для наглядности)
 					//if (source.data.setCell!==undefined) source.data.setCell(dropData.cell);
-	
+
 					//если мы тащим себя над собой, то выставляем ближйшую грань как null и больше ничего не делаем
 					if (source.element === dropData.element) {setClosestEdge(null); return;}
-	
+
 					//загружаем ближайшую грань, которую сохранили через getData
 					const closestEdge = extractClosestEdge(self.data);
-	
+
 					//если мы тащим себя над соседними ячейками и падаем в итоге на то же место, то тоже прячем грань и выходим
 					//if (samePlace(source,dropData.cell,dropData.index,closestEdge)) {setClosestEdge(null); return;}
-	
+
 					//выставляем внутреннее значение ближайшей грани элемента (используется потом при отрисовке)
 					setClosestEdge(closestEdge);
 				},
@@ -145,7 +143,7 @@ const UserItem = observer((props)=>{
 
 	//if (closestEdge) console.log(closestEdge);
 	return (
-			<td 
+			<td
 				ref={ref}
 				key={'userCard/'+id}
 				title={title}
@@ -153,7 +151,7 @@ const UserItem = observer((props)=>{
 				className={classNames(
 					'UserItem',
 					'clickable',
-					{'hovered':id===users.hovered && !users.selected},
+					{'hovered': (id===users.hovered && !users.selected) || (id === users.selected)},
 					absentClass
 				)}
 				onMouseOver={mouseIn}
@@ -177,7 +175,7 @@ const UserItem = observer((props)=>{
 				<UserAlerts username={user.name} />
 				{closestEdge && <DropIndicator edge={closestEdge} />}
 			</td>
-	)    
+	)
 })
 
 
