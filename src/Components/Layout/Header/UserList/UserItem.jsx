@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { observer } from "mobx-react";
-import { get, values } from 'mobx';
+import { get } from 'mobx';
 import { StoreContext } from "Data/Stores/StoreProvider";
 import './UserItem.css';
 import classNames from "classnames";
@@ -10,7 +10,6 @@ import { attachClosestEdge, extractClosestEdge} from '@atlaskit/pragmatic-drag-a
 import { draggable,	dropTargetForElements} from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { DropIndicator } from '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box';
-import { dashUserNewPos } from "Helpers/DndHelper";
 import UserAlerts from "./UserAlerts";
 
 const PhoneItem = observer(({ user }) => (
@@ -25,7 +24,6 @@ const UserItem = observer((props)=>{
 	const context = useContext(StoreContext);
 	const users = context.users;
 	const id = props.id;
-	const index = props.index;
 	const user = get(users.items,id);
 	const status = userAbsentsStatus(context.items['absent'],id);
 	const ref = useRef(null);
@@ -62,86 +60,50 @@ const UserItem = observer((props)=>{
 	}
 
 	useEffect(()=>{
-		const dropData = {
-			type: 'user',		//тип - элемент списка
-			element: ref.current,//ссылка на отрисованный элемент
-			item: user,			//dashItem элемент (task|job|ticket|plan)
-			index: index,		//порядок элемента в списке
-			//cell: cell,			//ячейка в которой и список и элемент
-		};
+		const element = ref.current;
+		const dropData = { type: 'user', id };
 		return combine(
-			//для того чтобы элемент можно было таскать
-		draggable({
-				element: ref.current,
+			draggable({
+				element,
 				getInitialData: () => dropData,
-				canDrag: () => users.selected===null && user.isDraggable(),   //не все можно переносить
+				canDrag: () => users.selected === null && user.isDraggable(),
 				onDragStart: () => {
-					console.log('drag start');
 					users.setHover(null);
-					user.setDragging(true);        //говорим что потащили элемент (старое место должно стать полупрозрачным)
+					user.setDragging(true);
 				},
-				onDragStop: () => {
-					console.log('drag stop');
-					user.setDragging(false);       //говорим что закончили тащить элемент
-				},
-				onDrop: ({source,location}) => {
-					console.log('drag complete');
-					console.log(source);
-					console.log(location);
-					//user.setDragging(false);       //говорим что закончили тащить элемент
-					const edge=extractClosestEdge(location.current.dropTargets[0].data);
-					users.setOrder(dashUserNewPos(
-						values(users.order),
-						source.data.index,
-						location.current.dropTargets[0].data.index,
-						edge
-					));
-					//dashItemsDrop(dropData.item,location);  //обрабатываем бросок
+				onDrop: ({ source, location }) => {
+					// Сбрасываем состояние и при отмене, когда цели у сброса нет.
+					user.setDragging(false);
+					const target = location.current.dropTargets[0]?.data;
+					if (target?.type === 'user') users.moveUser(source.data.id, target.id, extractClosestEdge(target));
 				},
 			}),
 
-			//для того чтобы на элемент можно было бросать другой элемент (вставка в список)
 			dropTargetForElements({
-				element: ref.current,
+				element,
 				canDrop({ source }) {
-					//нельзя бросать на недвижимые элементы списка, и на самого себя (ну или можно но надо обработать как то иначе)
-					return user.isDraggable() && source.data.type === 'user';
+					return users.selected === null && user.isDraggable() && source.data.type === 'user' && source.data.id !== id;
 				},
-				getData({ input,element }) {//когда над нами тащят элемент
-					//на основании координат мыши (input) и отрендеренного элемента (element) оно добавит к dropData поле Edge - ближайшую к точке сброса грань из вариантов [top,bottom]
-					//console.log(element);
+				getData({ input, element }) {
 					return attachClosestEdge(dropData, {
 						element,
 						input,
-						allowedEdges: ['left','right'],
+						allowedEdges: ['left', 'right'],
 					});
 				},
-				onDrag({ self, source }) {
-					//если над нами что-то тащат, то подсветим всю свою ячейку (для наглядности)
-					//if (source.data.setCell!==undefined) source.data.setCell(dropData.cell);
-
-					//если мы тащим себя над собой, то выставляем ближйшую грань как null и больше ничего не делаем
-					if (source.element === dropData.element) {setClosestEdge(null); return;}
-
-					//загружаем ближайшую грань, которую сохранили через getData
-					const closestEdge = extractClosestEdge(self.data);
-
-					//если мы тащим себя над соседними ячейками и падаем в итоге на то же место, то тоже прячем грань и выходим
-					//if (samePlace(source,dropData.cell,dropData.index,closestEdge)) {setClosestEdge(null); return;}
-
-					//выставляем внутреннее значение ближайшей грани элемента (используется потом при отрисовке)
-					setClosestEdge(closestEdge);
+				onDrag({ self }) {
+					setClosestEdge(extractClosestEdge(self.data));
 				},
 				onDragLeave() {
-					setClosestEdge(null);   //убираем подсветку грани
+					setClosestEdge(null);
 				},
 				onDrop() {
-					setClosestEdge(null);   //убираем подсветку грани
+					setClosestEdge(null);
 				},
 			}),
-		)},[user,users,index,setClosestEdge,ref]);
+		);
+	}, [id, user, users]);
 
-	//if (closestEdge) console.log(closestEdge);
 	return (
 			<td
 				ref={ref}

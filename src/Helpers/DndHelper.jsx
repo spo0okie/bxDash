@@ -1,7 +1,6 @@
 import { attachClosestEdge, extractClosestEdge} from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
 import { draggable,	dropTargetForElements} from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
-import ArrayHelper from './ArrayHelper';
 import notify from './Notify';
 import { chooseTaskRelation } from './TaskRelations';
 
@@ -323,27 +322,4 @@ export function dashItemDragLogic(dropData,ref,setClosestEdge) {
 			},
 		}),
 	)
-}
-
-
-
-/**
- * Какой будет новый индекс сортировки если элемент воткнуть в отсортированный список
- * @param {*} list список в который положили
- * @param {*} itemIndex элемент
- * @param {*} targetIndex позиция на какой элемент положили
- * @param {*} edge край элемента на который положили (top - вставить перед элементом; bottom - после)
- */
-export function dashUserNewPos(list, itemIndex, targetIndex, edge) {
-
-	let before=targetIndex;
-	let after=targetIndex;
-
-	console.log(edge);
-    if (edge==='left') after--;
-    if (edge==='right') before++;
-	if (after<0) after=null;
-	if (before>=list.length) before=null;
-
-    return ArrayHelper.moveItem(list,itemIndex,after,before);
 }

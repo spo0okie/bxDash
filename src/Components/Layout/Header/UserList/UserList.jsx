@@ -24,8 +24,8 @@ import { StoreContext } from "Data/Stores/StoreProvider";
                     <table className="UserCells">
                         <tbody>
                             <tr>
-								{usersStore.order.map((id, index) => (
-									<UserItem key={id} id={id} index={index} />
+								{usersStore.order.map(id => (
+									<UserItem key={id} id={id} />
 								))}
                             </tr>
                         </tbody>

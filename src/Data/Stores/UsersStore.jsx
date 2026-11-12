@@ -118,13 +118,10 @@ class UsersStore {
 			}
 		});
 		for (let i = this.order.length - 1; i >= 0; i--) {
-			if (!has(this.items, this.order[i])) {
-				this.order.splice(i);
-			} else if (!get(this.items, this.order[i]).roles.includes('user')) {
-				this.order.splice(i);
-			}
+			const user = get(this.items, this.order[i]);
+			// Удаляем только недоступную колонку, сохраняя порядок следующих за ней.
+			if (!user?.roles.includes('user')) this.order.splice(i, 1);
 		}
-		console.log(this.order);
 		this.initialized = true;
 	}
 
@@ -258,6 +255,25 @@ class UsersStore {
 		this.saveOption('order', value);
 	}
 
+	/** Перемещает колонку к левой или правой грани другой колонки общей доски. */
+	moveUser(sourceId, targetId, edge) {
+		if (this.selected !== null || sourceId === targetId || (edge !== 'left' && edge !== 'right')) return;
+
+		// Позиции вычисляем на момент сброса по ID, сохранённым в данных перетаскивания.
+		const startIndex = this.order.indexOf(sourceId);
+		const indexOfTarget = this.order.indexOf(targetId);
+		if (startIndex < 0 || indexOfTarget < 0) return;
+
+		// После удаления колонки все позиции справа от неё сдвигаются на одну влево.
+		const insertIndex = indexOfTarget - Number(startIndex < indexOfTarget) + Number(edge === 'right');
+		if (insertIndex === startIndex) return;
+
+		const order = this.order.slice();
+		order.splice(startIndex, 1);
+		order.splice(insertIndex, 0, sourceId);
+		this.setOrder(order);
+	}
+
 	/**
 	 * Обновляет статус телефона пользователя по номеру телефона
 	 * @param {string} phone - Номер телефона
@@ -320,7 +336,9 @@ class UsersStore {
 	constructor(main) {
 		this.main = main;
 		this.selected = this.loadOption('selected') ?? null;
-		this.order = this.loadOption('order') ?? [];
+		const savedOrder = this.loadOption('order');
+		// Старый drag-and-drop мог сохранить дубли в cookie. Оставляем первое вхождение каждого ID.
+		this.order = Array.isArray(savedOrder) ? [...new Set(savedOrder)] : [];
 
 		// Явное объявление реактивных свойств
 		makeObservable(this, {
