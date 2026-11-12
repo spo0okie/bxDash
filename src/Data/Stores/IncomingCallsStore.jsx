@@ -388,7 +388,8 @@ class IncomingCallsStore {
 	async fetchUsersByPhone(num) {
 		const inv = this.main.inventory;
 		try {
-			const response = await inv.fetch(`api/phones/filter-by-num?num=${encodeURIComponent(num)}`);
+			// Инвентаризация сопоставляет также мобильный и личный номера с нормализацией.
+			const response = await inv.fetch(`api/phones/filter-by-num?searchExternal=1&num=${encodeURIComponent(num)}`);
 			if (response.status === 404) return [];
 			if (!response.ok) {
 				console.warn('[IncomingCalls] inventory phones/filter-by-num returned', response.status);
