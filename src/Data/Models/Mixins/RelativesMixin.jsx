@@ -37,14 +37,6 @@ const RelativesMixin = {
 		}
 	},
 
-	directLinkBuild() {
-		this.detachLinks();
-		if (this.list && this.list.master && typeof this.list.master.requestRelated === 'function') {
-			const uids = [...this.parentUids, ...this.childUids];
-			this.list.master.requestRelated(this, uids);
-		}
-	},
-
 	/**
 	 * Удаляет ссылки на себя из объектов на которые ссылается сам.
 	 */
@@ -55,9 +47,16 @@ const RelativesMixin = {
 		this.children=[];
 	},
 
+	/** Перестраивает связи по текущим UID элемента и его прежних соседей. */
 	directLinksRebuild() {
+		const relatives = new Set([...this.parents, ...this.children]);
 		this.detachLinks();
-		this.directLinkBuild();
+		const master = this.list?.master;
+		if (typeof master?.requestRelated === 'function') {
+			master.requestRelated(this, [...this.parentUids, ...this.childUids]);
+		}
+		// Например, связь подзадачи с родителем приходит только в данных подзадачи.
+		for (const relative of relatives) relative.reverseLinksCheck(this);
 	},
 
 	parseTicketReplace(match) {return '';},

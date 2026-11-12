@@ -1,4 +1,5 @@
-import { autorun, runInAction } from 'mobx';
+import { autorun, observable, runInAction } from 'mobx';
+import ItemsMultiStore from 'Data/Stores/Items/ItemsMultiStore';
 import TaskItem from '../TaskItem';
 
 /** Имитирует очередь связанных объектов: задача может появиться позже исходной выборки. */
@@ -103,4 +104,34 @@ test('перезагрузка удаляет старые зависимост�
 	task.setHover(true);
 	expect(prev.isHoveredChild).toBe(false);
 	expect(next.isHoveredParent).toBe(false);
+});
+
+test.each([[1, 2], [2, 1]])('счётчик подзадачи сохраняется при порядке ответов %s, %s', (first, second) => {
+	const main = { itemsTypes: ['task'] };
+	const time = observable({ today: 0, weekMin: 0 });
+	const items = new ItemsMultiStore(main, time, { items: new Map() }, { attachItemsStore() {} });
+	const row = (id, parentId = 0) => ({
+		ID: id, '~TITLE': 'Задача', RESPONSIBLE_ID: 7, REAL_STATUS: 2, PARENT_ID: parentId,
+	});
+	items.task.initBatch([row(1), row(2), row(3)]);
+	const subtask = items.getUidItem('task:1');
+	const values = [];
+	const dispose = autorun(() => values.push(subtask.dependentCount));
+	try {
+		// task/get отдаёт PARENT_ID у подзадачи, а у родителя нет списка подзадач.
+		for (const id of [first, second]) items.task.initBatch([row(id, id === 1 ? 2 : 0)]);
+		expect(values).toEqual([0, 1]);
+		const parent = items.getUidItem('task:2');
+		expect(subtask.parents).toEqual([parent]);
+		expect(parent.children).toEqual([subtask]);
+		expect(parent.prerequisiteCount).toBe(1);
+
+		// После переноса старая обратная ссылка должна исчезнуть.
+		items.task.initBatch([row(1, 3), row(2), row(3)]);
+		expect(subtask.parents).toEqual([items.getUidItem('task:3')]);
+		expect(parent.children).toEqual([]);
+		expect(parent.prerequisiteCount).toBe(0);
+	} finally {
+		dispose();
+	}
 });
