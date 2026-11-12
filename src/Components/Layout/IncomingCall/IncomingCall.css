@@ -20,6 +20,25 @@
 	overflow: hidden;
 }
 
+/* Быстрое создание заявки для пользователя выбранной вкладки. */
+.IncomingCallCard .tab .createTicket {
+	background: none;
+	border: none;
+	padding: 0 0 0 5px;
+	font-size: 14px;
+	cursor: pointer;
+	opacity: 0.6;
+}
+
+.IncomingCallCard .tab .createTicket:hover {
+	opacity: 1;
+}
+
+.IncomingCallCard .tab .createTicket:disabled {
+	cursor: default;
+	opacity: 0.3;
+}
+
 .IncomingCallCard .header {
 	display: flex;
 	align-items: center;

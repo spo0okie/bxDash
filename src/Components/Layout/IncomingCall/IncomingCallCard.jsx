@@ -4,6 +4,8 @@ import classNames from "classnames";
 import { Spin, Modal, message } from "antd";
 import { useStores } from "Data/Stores/StoreProvider";
 import TimeHelper from "Helpers/TimeHelper";
+import TicketItem from 'Data/Models/TicketItem';
+import notify from 'Helpers/Notify';
 import { inventoryUrl, incomingCallConfig } from "config.priv";
 
 const PHASE_LABEL = {
@@ -86,7 +88,39 @@ const ElapsedSince = observer(({ since }) => {
 });
 
 const IncomingCallCard = observer(({ card }) => {
-	const { incomingCalls } = useStores();
+	const { incomingCalls, main, items, layout } = useStores();
+	const [creatingTicket, setCreatingTicket] = useState(false);
+
+	/** Открывает форму с автором из Bitrix, сопоставленным по логину инвентаризации. */
+	const onCreateTicket = async (event, user) => {
+		event.stopPropagation();
+		if (creatingTicket || layout.ticketModalVisible) return;
+		setCreatingTicket(true);
+		try {
+			if (!user.login) throw new Error('У найденного пользователя не указан логин');
+			const bxUsers = await main.fetchBxUsersList();
+			const login = user.login.trim().toLowerCase();
+			const author = bxUsers.find(candidate => candidate.login?.trim().toLowerCase() === login);
+			if (!author) throw new Error(`Пользователь ${user.login} не найден в списке пользователей Bitrix`);
+			// Пока загружался справочник, форму могли открыть из другой карточки.
+			if (layout.ticketModalVisible) return;
+			const tickets = items.ticket;
+			const ticket = new TicketItem({
+				id: tickets.getMaxId() + 64,
+				user: main.bx.userId,
+				isNew: true,
+				isEdit: true,
+			}, {}, tickets);
+			// Поле owner инициализируется классом TicketItem после базового конструктора.
+			ticket.owner = Number(author.id);
+			tickets.setItem(ticket);
+			layout.setTicketModalVisible(true);
+		} catch (error) {
+			notify.error(error.message, { title: 'Не удалось открыть форму заявки' });
+		} finally {
+			setCreatingTicket(false);
+		}
+	};
 	// Map: userId → загружен ли iframe этого пользователя.
 	const [loadedUsers, setLoadedUsers] = useState({});
 	// Инлайн-редактирование номера обратного вызова (одна запись за раз).
@@ -238,6 +272,16 @@ const IncomingCallCard = observer(({ card }) => {
 								title={u.ename}
 							>
 								{u.shortName || u.ename || u.login}
+								<button
+									type="button"
+									className="createTicket"
+									title="Создать заявку от имени пользователя"
+									aria-label={`Создать заявку от имени ${u.ename || u.login}`}
+									disabled={creatingTicket || layout.ticketModalVisible}
+									onClick={(event) => onCreateTicket(event, u)}
+								>
+									🎫
+								</button>
 							</div>
 						))}
 					</div>

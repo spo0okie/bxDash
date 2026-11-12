@@ -151,6 +151,7 @@ const UserItem = observer((props)=>{
 				className={classNames(
 					'UserItem',
 					'clickable',
+					{'selected': id === users.selected },
 					{'hovered': (id===users.hovered && !users.selected) || (id === users.selected)},
 					absentClass
 				)}

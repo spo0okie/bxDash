@@ -4,10 +4,10 @@
 .UserItem.TWO_WEEK_ABSENT	{background-color: var(--user-twoweek-absent);}
 
 /* Внутренняя рамка сохраняет цвет фона и ширину ячейки. */
-/*.UserItem.hovered {
-	outline: 3px solid var(--user-hover);
-	outline-offset: -3px;
-}*/
+.UserItem.selected {
+	outline: 2px solid black;
+	outline-offset: -2px;
+}
 /* Целиком меняем фон, вроде так заметнее */
 .UserItem.hovered {
     background-color: var(--user-hover);
