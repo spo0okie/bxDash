@@ -11,6 +11,7 @@ const TaskLink = observer((props) => {
 	//trace();
 	const scrollDuration = 800;
 	const context = useContext(StoreContext);
+	const users = context.users;
 	const task = get(context.items["task"].items, props.id);
 	const onClick = (e) => {
 		//window.location.href=("#"+task.uid);
@@ -51,6 +52,7 @@ const TaskLink = observer((props) => {
 				)}
 				onClick={onClick}
 			>
+				{users.selected && (users.selected!=task.user) && ('X')}
 				{props.id}
 			</span>
 		</Tooltip>

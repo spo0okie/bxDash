@@ -103,17 +103,26 @@ li.userTask .task-item-updates {
 	vertical-align: middle;
 }
 
-li.userTask .task-blocking-count {
+li.userTask .task-blocking-count,
+li.userTask .task-blocked-count {
 	padding: 1pt 2pt;
 	margin-left: 2px;
-	border-radius: 4pt;
+	border-radius: 1pt;
 	display: inline-block;
-	color: var(--task-updates-text);
-	background: var(--task-text);
 	outline: 0;
 	text-decoration: none !important;
 	line-height: 9px;
 	vertical-align: middle;
+}
+
+li.userTask .task-blocking-count {
+	color: var(--task-updates-text);
+	background: var(--task-bg-closed);
+}
+
+li.userTask .task-blocked-count {
+	color: var(--task-updates-text);
+	background: var(--task-bg-negative-color);
 }
 
 

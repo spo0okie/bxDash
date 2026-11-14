@@ -298,7 +298,8 @@ const TaskCard = observer((props) => {
 								<ModalLink item={task} />
 								<span className="userTaskFooter">
 									<TaskDeadline task={task} />
-										{task.dependentCount && <span title="Блокирует других задач" className="task-blocking-count">{task.dependentCount}</span>}
+										{task.dependentCount>0 && <span title="Блокирует других задач" className="task-blocking-count">{task.dependentCount}</span>}
+										{task.prerequisiteCount>0 && <span title="Блокируется другими задачами" className="task-blocked-count">{task.prerequisiteCount}</span>}
 									<TaskStatus task={task} />
 								</span>
 							</>
