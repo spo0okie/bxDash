@@ -11,4 +11,5 @@
  */
 
 @import './base.css';
+@import './accessible/tokens.css';
 @import './modern/tokens.css';

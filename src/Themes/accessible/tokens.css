@@ -1,0 +1,45 @@
+/* Геометрия, поверхности и шрифты наследуются из классической темы (base.css).
+   Красные предупреждения наследуются из базы, зелёные статусы заменены синими.
+   Фиолетовый отделяет
+   третий статус тикета от новой синей маркировки. */
+[data-theme="accessible"] {
+	--accent-success: #0072b2;
+	--surface-success-header: #e0f0fb;
+	--surface-success-accent: #0072b2;
+	--toast-success: #0072b2;
+	--task-stripe-active-now: #0072b2;
+	--task-priority-low-text: #0072b2;
+	--ticket-stripe-green: #0072b2;
+	--ticket-stripe-blue: #7952a3;
+	--ticket-shadow-blue: inset 0 0 10px 0 #bba5d2;
+	--job-bg-closed: linear-gradient(#d7edfa, #98c9e8);
+	--job-text-closed: #143c56;
+	--job-border-closed: #0072b2;
+	--job-shadow-closed: inset 0 1px 0 0 #eef8ff;
+	--job-text-shadow-closed: none;
+	--memo-bg-closed: var(--job-bg-closed);
+	--memo-text-closed: var(--job-text-closed);
+	--memo-border-closed: var(--job-border-closed);
+	--memo-shadow-closed: var(--job-shadow-closed);
+	--plan-stripe-complete: #56b4e9;
+	--counter-closed-jobs: #56b4e9;
+	--item-hover-border: #0072b2;
+	--item-hover-bg: #d7edfa;
+	--item-flash-bg-1: #d7edfa;
+	--item-flash-bg-2: #0072b2;
+	--period-1-color: #ffe0a3;
+	--period-2-color: #b3d9ef;
+	--user-hover: #56b4e9;
+	--user-status-online: #0072b2;
+	--phone-idle: #0072b2;
+	--alert-severity-5-text: white;
+	--conn-green: #56b4e9;
+	--create-closedJob-hover: #56b4e9;
+	--header-button-hover-bg: #d7edfa;
+	--auth-on-bg: #102c40;
+	--auth-on-border: #56b4e9;
+	--auth-on-text: #56b4e9;
+	--auth-off-bg: #151515;
+	--auth-off-border: #999;
+	--auth-off-text: #999;
+}

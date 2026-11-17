@@ -10,11 +10,13 @@
  */
 import classic from 'Themes/classic';
 import modern from 'Themes/modern';
+import accessible from 'Themes/accessible';
 
 export const DEFAULT_THEME_ID = 'classic';
 
 export const themes = [
 	classic,
+	accessible,
 	modern,
 ];
 
