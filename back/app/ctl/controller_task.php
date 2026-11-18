@@ -410,10 +410,18 @@ class controller_task {
 		echo json_encode(array('result' => 'ok', 'id' => $id, 'targetId' => $targetId));
 	}
 
+	/** Сохраняет поля задачи и привязку к столбцу по правилам доступа каждой операции. */
 	function action_update() {
 		global $USER;
 		if (is_null($id=router::getRoute(3, 'id')))
 			router::haltJson(static::MSG_NO_TASK_ID);
+
+		$hasStage = stages_provider::requested();
+		if ($hasStage) {
+			// Для привязки достаточно видеть задачу. Проверка нужна и для legacy-провайдера.
+			$visible = CTasks::GetList([], ['ID' => (int)$id, 'CHECK_PERMISSIONS' => 'Y'], ['ID']);
+			if (!$visible->Fetch()) router::haltJson('Задача недоступна', 409);
+		}
 
 		// GetID — метод объекта текущей сессии; статический вызов запрещён на PHP 8.
 		$userID=$USER->GetID();
@@ -478,7 +486,10 @@ class controller_task {
 		}
 
 		if ($sorting=router::getRoute(null,'sorting')) {
-			$oTaskItem->Update(['XML_ID' => $sorting]);
+			// При переносе между столбцами позиция в списке необязательна: XML_ID — поле самой задачи.
+			if (!$hasStage || $oTaskItem->isActionAllowed(CTaskItem::ACTION_EDIT)) {
+				$oTaskItem->Update(['XML_ID' => $sorting]);
+			}
 		}
 
 		$priority=router::getRoute(null,'priority','##UNSET');

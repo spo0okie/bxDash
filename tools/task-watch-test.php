@@ -1,6 +1,9 @@
 <?php
 /** Контракт самонаблюдения без подключения к порталу. */
-class stages_provider { static function applyRequest($type, $id) {} }
+class stages_provider {
+	static function requested() { return false; }
+	static function applyRequest($type, $id) {}
+}
 class WatchTestHalt extends Exception {}
 
 /** Маршрутизатор возвращает параметры и превращает HTTP-отказ в проверяемое исключение. */
