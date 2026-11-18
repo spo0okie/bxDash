@@ -1,15 +1,20 @@
-html, div#root {margin: 0; padding: 0; height: 100%; display: block;}
+html, div#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  display: block;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base) ;
+}
 
 body {
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-base);
   color: var(--text-primary);
   background-color: var(--surface-page);
-  padding: 47px 0 0;
-  display: block;
-  height: 100%;
-  margin: 0;
-  box-sizing: border-box;
+  padding: 47px 0 0 !important;
+  display: block !important;
+  height: 100% !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
 }
 
 code {

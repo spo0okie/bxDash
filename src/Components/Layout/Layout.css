@@ -5,6 +5,12 @@ div.layout {
 	min-width: 100%;
 	align-items: stretch;
 	height: 100%;
+	padding: 0;
+	margin: 0;
+}
+
+div.layout.app {
+	background: var(--surface-page);
 }
 
 div.leftPane {
@@ -26,7 +32,7 @@ div.dashBoard {
 	display: inline-block;
 	height: 100%;
 	flex: 1;
-	
+
 }
 
 .Calendar {

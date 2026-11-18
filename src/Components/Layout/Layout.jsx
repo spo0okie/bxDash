@@ -62,7 +62,7 @@ const Layout = observer(() => {
 			{!kanban && <MenuButton property='expand' title={['📅', '📆']} classNames='calendarButton' />}
 			{personal && <MenuButton property='kanban' title={['🗓️', '🗂️']} classNames='kanbanButton' />}
 
-			<div className="layout">
+			<div className="layout app">
 				{layout.memosVisible && (
 					<Sidebar>
 						<MemoCell />
