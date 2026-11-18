@@ -24,7 +24,7 @@ inline-настройки `BX` в порядке вывода портала. Ф
 | Профиль | Подключение |
 | --- | --- |
 | `legacy` | `CJSCore::Init` для библиотек старого Bitrix и его служебные JS-файлы |
-| `modern` | С новой карточкой регистрируются `main.core`, `main.sidepanel` и `tasks.v2.application.task-full-card`. Bitrix сам подключает их зависимости. На современных версиях со старой карточкой используются `main.core`, `main.popup`, `main.date` и `CJSCore::Init('sidepanel')`. |
+| `modern` | С новой карточкой регистрируются `main.core`, `main.sidepanel` и `tasks.v2.application.task-full-card`. При наличии также регистрируются расширения меню результатов в чате. Bitrix сам подключает их зависимости. На современных версиях со старой карточкой используются `main.core`, `main.popup`, `main.date` и `CJSCore::Init('sidepanel')`. |
 
 При необходимости перенесите настройки прежнего `portal.config.php` в массив
 `$bitrixResources` в `back/conf.php`. Ключи `profile`, `extensions`,

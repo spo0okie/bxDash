@@ -28,6 +28,13 @@ class controller_portal {
 			if ($hasTaskFullCard && !in_array($taskCardExtension, $extensions, true)) {
 				$extensions[] = $taskCardExtension;
 			}
+			// Карточка запрашивает эти расширения отдельно при регистрации меню сообщений.
+			if ($hasTaskFullCard && is_file($root . '/bitrix/js/tasks/v2/lib/result-message-menu/config.php')
+				&& is_file($root . '/bitrix/js/im/v2/lib/menu/config.php')) {
+				$extensions = array_values(array_unique(array_merge($extensions, array(
+					'im.v2.lib.menu', 'tasks.v2.lib.result-message-menu',
+				))));
+			}
 			\Bitrix\Main\UI\Extension::load($extensions);
 			$coreExtensions = isset($config['coreExtensions']) ? $config['coreExtensions'] : ($hasTaskFullCard ? array() : array('sidepanel'));
 			if ($coreExtensions) \CJSCore::Init($coreExtensions);

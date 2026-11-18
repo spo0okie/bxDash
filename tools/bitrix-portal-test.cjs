@@ -9,7 +9,7 @@ const back = path.resolve(__dirname, '../back');
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'bxdash-portal-'));
 
 /** Создаёт изолированный портал и выполняет маршрут через штатный api.php. */
-function runScenario(name, modern, config, authorized = true, taskFullCard = false) {
+function runScenario(name, modern, config, authorized = true, taskFullCard = false, taskResultMenu = false) {
 	const root = path.join(temp, name);
 	const includeDir = path.join(root, 'bitrix/modules/main/include');
 	fs.mkdirSync(includeDir, { recursive: true });
@@ -28,9 +28,13 @@ function runScenario(name, modern, config, authorized = true, taskFullCard = fal
 		}
 	}
 	if (taskFullCard) {
-		const dir = path.join(root, 'bitrix/js/tasks/v2/application/task-full-card');
-		fs.mkdirSync(dir, { recursive: true });
-		fs.writeFileSync(path.join(dir, 'config.php'), '<?php return array();');
+		const extensions = ['tasks/v2/application/task-full-card'];
+		if (taskResultMenu) extensions.push('im/v2/lib/menu', 'tasks/v2/lib/result-message-menu');
+		for (const extension of extensions) {
+			const dir = path.join(root, 'bitrix/js', extension);
+			fs.mkdirSync(dir, { recursive: true });
+			fs.writeFileSync(path.join(dir, 'config.php'), '<?php return array();');
+		}
 	}
 	// API fixture намеренно не эмулирует работу JS: только контракт регистрации/вывода.
 	const modernApi = modern ? 'namespace Bitrix\\Main\\UI { class Extension { static function load($items) { $GLOBALS["calls"]["modern"] = $items; } } }' : '';
@@ -74,6 +78,10 @@ try {
 	assert(!withTaskFullCard.calls.core);
 	assert(withTaskFullCard.output.includes('data-task-full-card="1"'));
 	assert(!modern.output.includes('data-task-full-card'));
+	const withTaskResultMenu = runScenario('modern-task-result-menu', true, undefined, true, true, true);
+	assert.deepEqual(withTaskResultMenu.calls.modern, [
+		...withTaskFullCard.calls.modern, 'im.v2.lib.menu', 'tasks.v2.lib.result-message-menu',
+	]);
 	const forced = runScenario('forced-legacy', true, "array('profile'=>'legacy', 'extensions'=>array('popup'), 'scripts'=>array())");
 	assert.deepEqual(forced.calls.core, ['popup']);
 	assert(!forced.calls.modern);
@@ -94,7 +102,7 @@ try {
 		assert.match(assets.output, /portal\.js.*<body>.*portal-body\.js/s);
 		assert(!assets.output.includes('app.js'));
 	}
-	console.log('OK: 7 сценариев GET portal/resources с подставным Bitrix');
+	console.log('OK: 8 сценариев GET portal/resources с подставным Bitrix');
 } finally {
 	// Удаляем только созданный этим тестом временный каталог.
 	fs.rmSync(temp, { recursive: true, force: true });
