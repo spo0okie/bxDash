@@ -18,8 +18,15 @@ class controller_portal {
 		}
 
 		// Bitrix сам разрешает зависимости зарегистрированных расширений.
+		$hasTaskFullCard = false;
 		if ($profile === 'modern') {
 			$extensions = isset($config['extensions']) ? $config['extensions'] : array('main.core', 'main.popup', 'main.date');
+			// Подключаем новую карточку вместе с её настройками и зависимостями портала.
+			$taskCardExtension = 'tasks.v2.application.task-full-card';
+			$hasTaskFullCard = is_file($root . '/bitrix/js/tasks/v2/application/task-full-card/config.php');
+			if ($hasTaskFullCard && !in_array($taskCardExtension, $extensions, true)) {
+				$extensions[] = $taskCardExtension;
+			}
 			\Bitrix\Main\UI\Extension::load($extensions);
 			\CJSCore::Init(isset($config['coreExtensions']) ? $config['coreExtensions'] : array('sidepanel'));
 		} else {
@@ -34,7 +41,8 @@ class controller_portal {
 
 		// Inline-настройки могут содержать данные текущей сессии портала.
 		header('Cache-Control: private, no-store');
-		echo '<!doctype html><html><head><meta name="bxdash-portal-assets" content="1">';
+		echo '<!doctype html><html><head><meta name="bxdash-portal-assets" content="1"'
+			. ($hasTaskFullCard ? ' data-task-full-card="1"' : '') . '>';
 		$APPLICATION->ShowCSS();
 		$APPLICATION->ShowHeadStrings();
 		$APPLICATION->ShowHeadScripts();

@@ -135,3 +135,6 @@ dev
 env.cmd
 
 .vscode
+vite.dst.js
+start-dst.cmd
+public/config.dst.js

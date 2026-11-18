@@ -1,8 +1,49 @@
 import React, { useContext, useCallback } from "react";
 import { StoreContext } from "Data/Stores/StoreProvider";
 import { attachInventoryUserTtips } from "Helpers/InventoryUserTtip";
+import { waitForBitrixLibraries } from "Helpers/BitrixLibraries";
+import notify from "Helpers/Notify";
 
 import "./ModalWindow.css";
+
+/** Показывает причину сбоя открытия задачи. */
+function reportTaskOpenError(id, error) {
+	notify.error(notify.describe(error), { title: `Не удалось открыть задачу ${id}` });
+}
+
+/** Открывает задачу в SidePanel и сохраняет жизненный цикл штатной карточки Bitrix. */
+function openTaskSidePanel(bx, item, refreshItem) {
+	const { id, viewUrl } = item;
+	const sidePanel = bx.SidePanel.Instance;
+	const TaskFullCard = bx.Tasks?.V2?.Application?.TaskFullCard;
+	let card;
+	const options = {
+		allowChangeHistory: false,
+		cacheable: false,
+		events: {
+			onClose: event => card?.onClose(event),
+			onCloseComplete: () => {
+				card?.onCloseComplete();
+				refreshItem();
+			},
+		},
+	};
+	if (typeof TaskFullCard === 'function') {
+		// Сервер уже подключил карточку вместе с ресурсами. В iframe Bitrix вернул бы только запускающий скрипт.
+		options.contentCallback = async slider => {
+			try {
+				card = new TaskFullCard({ taskId: Number(id), url: viewUrl, focusVisible: false });
+				await card.mount(slider);
+			} catch (error) {
+				reportTaskOpenError(id, error);
+				slider.close();
+			}
+		};
+	}
+	if (sidePanel.open(viewUrl, options) === false && sidePanel.getTopSlider?.()?.getUrl?.() !== viewUrl) {
+		throw new Error('Bitrix отказался открыть боковую панель');
+	}
+}
 
 /** Открывает карточку из дашборда и обновляет её данные после закрытия. */
 const ModalLink = (props) => {
@@ -24,16 +65,20 @@ const ModalLink = (props) => {
 	}, [item]);
 
 	/** Открывает задачи в SidePanel, если он доступен на портале. */
-	const openCard = useCallback(() => {
-		const sidePanel = window.BX?.SidePanel?.Instance;
-		if (item?.type === "task" && typeof sidePanel?.open === "function") {
-			// Bitrix сам создаёт iframe панели и сохраняет адрес дашборда.
-			sidePanel.open(href, {
-				allowChangeHistory: false,
-				cacheable: false,
-				events: { onCloseComplete: refreshItem },
-			});
-			return;
+	const openCard = useCallback(async () => {
+		if (item?.type === "task") {
+			try {
+				// Клик во время запуска ждёт тот же запрос, который подключает BX и карточку.
+				await waitForBitrixLibraries();
+				const bx = window.BX;
+				if (typeof bx?.SidePanel?.Instance?.open === "function") {
+					openTaskSidePanel(bx, item, refreshItem);
+					return;
+				}
+			} catch (error) {
+				reportTaskOpenError(item.id, error);
+				return;
+			}
 		}
 
 		layout.setModal({

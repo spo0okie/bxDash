@@ -4,6 +4,11 @@ const RESOURCES_ROUTE = 'portal/resources';
 
 let loading;
 
+/** Возвращает уже начатую загрузку ресурсов для действий, которым нужен Bitrix. */
+export function waitForBitrixLibraries() {
+	return loading;
+}
+
 /** Подключает скрипт и ждёт выполнения внешнего файла или модуля. */
 function loadScript(script) {
 	return new Promise((resolve, reject) => {
@@ -29,7 +34,8 @@ async function loadPortalAssets(backend) {
 
 	const page = new window.DOMParser().parseFromString(await response.text(), 'text/html');
 	// Страница входа или ответ Vite не содержат эту метку.
-	if (!page.head.querySelector('meta[name="bxdash-portal-assets"][content="1"]')) {
+	const assets = page.head.querySelector('meta[name="bxdash-portal-assets"][content="1"]');
+	if (!assets) {
 		throw new Error('API не вернул ресурсы Bitrix. Проверьте маршрут и сессию портала');
 	}
 
@@ -43,6 +49,10 @@ async function loadPortalAssets(backend) {
 		node.textContent = resource.textContent;
 		if (node.localName === 'script') await loadScript(node);
 		else document.head.appendChild(node);
+	}
+	// Событие load у скрипта возможно и при ошибке выполнения. Проверяем экспорт, обещанный порталом.
+	if (assets.dataset.taskFullCard === '1' && typeof window.BX?.Tasks?.V2?.Application?.TaskFullCard !== 'function') {
+		throw new Error('Ресурсы портала не зарегистрировали BX.Tasks.V2.Application.TaskFullCard');
 	}
 }
 

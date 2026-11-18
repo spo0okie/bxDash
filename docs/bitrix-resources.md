@@ -8,8 +8,9 @@ Bitrix фронтенд запрашивает `GET portal/resources` по ба�
 API использует пролог и эпилог Bitrix. Ответ содержит CSS, внешние скрипты и
 inline-настройки `BX` в порядке вывода портала. Фронтенд выполняет скрипты
 последовательно. Для запроса используется тот же origin, что и для дашборда.
-Страницы задач внутри iframe загружают свои зависимости. Для доступа к
-`parent.BX` и `top.BX` у дашборда и задачи должен совпадать origin.
+Страницы старых карточек внутри iframe загружают свои зависимости. Для доступа к
+`parent.BX` и `top.BX` у дашборда и задачи должен совпадать origin. Новую
+`TaskFullCard` дашборд монтирует в SidePanel из ресурсов, подключённых на старте.
 [Документация вывода ресурсов Bitrix](https://dev.1c-bitrix.ru/api_help/main/reference/cmain/showheadstrings.php)
 
 ## Профиль Bitrix
@@ -21,7 +22,7 @@ inline-настройки `BX` в порядке вывода портала. Ф
 | Профиль | Подключение |
 | --- | --- |
 | `legacy` | `CJSCore::Init` для библиотек старого Bitrix и его служебные JS-файлы |
-| `modern` | `Extension::load` для `main.core`, `main.popup`, `main.date` и `CJSCore::Init('sidepanel')` |
+| `modern` | `Extension::load` для `main.core`, `main.popup`, `main.date` и `CJSCore::Init('sidepanel')`. `tasks.v2.application.task-full-card` подключается при наличии на портале. |
 
 При необходимости перенесите настройки прежнего `portal.config.php` в массив
 `$bitrixResources` в `back/conf.php`. Ключи `profile`, `extensions`,

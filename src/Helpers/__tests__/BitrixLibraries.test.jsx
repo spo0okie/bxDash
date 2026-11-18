@@ -73,4 +73,14 @@ describe('BitrixLibraries', () => {
 		await expect(loadBitrixLibraries({ baseUrl: '/back/api/', fetch: fetchMock })).rejects.toThrow('Проверьте маршрут и сессию портала');
 		expect(document.scripts).toHaveLength(0);
 	});
+
+	test('сообщает о сбое, если портал объявил TaskFullCard, а класс не зарегистрирован', async () => {
+		delete window.__CONFIG__.bitrixResources.scripts;
+		const fetchMock = jest.fn().mockResolvedValue({
+			ok: true, text: async () => '<meta name="bxdash-portal-assets" content="1" data-task-full-card="1">',
+		});
+		window.BX = { ready: jest.fn() };
+		const { loadBitrixLibraries } = require('../BitrixLibraries');
+		await expect(loadBitrixLibraries({ baseUrl: '/back/api/', fetch: fetchMock })).rejects.toThrow('TaskFullCard');
+	});
 });
