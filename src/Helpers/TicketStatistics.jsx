@@ -10,9 +10,9 @@ export function monthRange(month) {
 	return { from: `${month}-01`, to: `${month}-${String(last).padStart(2, '0')}` };
 }
 
-/** Предыдущий месяц относительно московской даты приложения. */
+/** Предыдущий месяц относительно календаря отчёта на сервере. */
 export function previousMonth() {
-	const date = new Date(Date.now() + TimeHelper.mskOffsetMs);
+	const date = new Date(Date.now() + TimeHelper.bitrixOffsetMs);
 	date.setUTCDate(1);
 	date.setUTCMonth(date.getUTCMonth() - 1);
 	return date.toISOString().slice(0, 7);

@@ -1,6 +1,11 @@
 import { runInAction } from 'mobx';
 import TicketItem from '../TicketItem';
 import ScheduleStore from '../../Stores/ScheduleStore';
+import TimeHelper from 'Helpers/TimeHelper';
+
+// Даты фикстур записаны в поясе тестового API.
+beforeEach(() => TimeHelper.setStore({ bitrixOffset: '+05:00', bitrixOffsetMin: 300 }));
+afterEach(() => TimeHelper.setStore(null));
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

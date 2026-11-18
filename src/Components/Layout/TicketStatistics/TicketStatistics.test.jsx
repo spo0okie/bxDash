@@ -5,6 +5,11 @@ import { useStores } from 'Data/Stores/StoreProvider';
 import { bxJson } from 'Helpers/BxJson';
 import notify from 'Helpers/Notify';
 import TicketStatistics, { TicketStatisticsButton } from './TicketStatistics';
+import TimeHelper from 'Helpers/TimeHelper';
+
+// Даты фикстур записаны в поясе тестового API.
+beforeEach(() => TimeHelper.setStore({ bitrixOffset: '+05:00', bitrixOffsetMin: 300 }));
+afterEach(() => TimeHelper.setStore(null));
 
 jest.mock('Data/Stores/StoreProvider', () => ({ useStores: jest.fn() }));
 jest.mock('Helpers/BxJson', () => ({ bxJson: jest.fn() }));

@@ -2,7 +2,7 @@
 /**
  * Диагностика TZ без изменения бизнес-данных и настроек БД (PHP 5).
  * Скопировать на портал рядом с api.php. Открывать администратором:
- * ?mode=api&taskId=123 и ?mode=native&taskId=123 в разных запросах.
+ * ?mode=native&taskId=123 — настройки портала, ?taskId=123 — пояс дат API.
  */
 define('NO_KEEP_STATISTIC', true);
 define('NO_AGENT_STATISTIC', true);
@@ -14,9 +14,7 @@ function bxdashTimezonePhpSnapshot() {
 }
 
 $beforeProlog = bxdashTimezonePhpSnapshot();
-$mode = isset($_GET['mode']) && $_GET['mode'] === 'native' ? 'native' : 'api';
-// Воспроизводим текущую подмену в api.php, но не отправляем куки браузеру.
-$_COOKIE['BITRIX_SM_TIME_ZONE'] = '-180';
+$mode = isset($_GET['mode']) && $_GET['mode'] === 'native' ? 'native' : 'server';
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_before.php';
 
 global $USER, $DB;
@@ -30,7 +28,8 @@ if (!$USER->IsAuthorized() || !$USER->IsAdmin()) {
 // Модули загружаем в том же порядке, что в API; настройки соединения не меняем.
 foreach (array('iblock', 'tasks', 'support', 'search', 'forum') as $module) CModule::IncludeModule($module);
 $afterProlog = bxdashTimezonePhpSnapshot();
-if ($mode === 'api') date_default_timezone_set('Europe/Moscow');
+// Режим server показывает даты в серверном поясе, как API с BXDASH_TIMEZONE.
+if ($mode === 'server') CTimeZone::Disable();
 
 $result = array(
 	'mode' => $mode,
@@ -40,7 +39,7 @@ $result = array(
 	'phpAfterProlog' => $afterProlog,
 	'phpEffective' => bxdashTimezonePhpSnapshot(),
 	'utcNow' => gmdate('c'),
-	'frontendExpectedOffsetSeconds' => 10800,
+	'frontendExpectedOffsetSeconds' => $mode === 'server' ? (int)date('Z') : null,
 	'bitrix' => array(
 		'timezoneEnabled' => CTimeZone::Enabled(),
 		'userMinusServerSeconds' => CTimeZone::GetOffset(),

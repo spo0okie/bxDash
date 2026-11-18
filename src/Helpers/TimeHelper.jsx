@@ -1,32 +1,37 @@
 /*
 Задача класса выдавать результаты в выбранном TimeStore часовом поясе.
 Сам режим TZ хранится в TimeStore.tzMode, инжектится через setStore().
-До инжекта (например, в самом раннем bootstrap) — fallback на MSK +3.
 */
 class TimeHelper {
-	tz = "Europe/Moscow"; //нигде не используется, просто памятка
+	/** Передаёт полученный при входе пояс в реактивное хранилище времени. */
+	setBitrixOffset(offset) {
+		if (typeof offset !== 'string' || !/^[+-](?:(?:0\d|1[0-3]):[0-5]\d|14:00)$/.test(offset)) {
+			throw new Error('Bitrix API не вернул корректный timezoneOffset');
+		}
+		this._store?.setBitrixOffset(offset);
+	}
 
-	/** Фиксированный MSK-сдвиг для интеропа с бэкендом — НЕ зависит от режима отображения.
-	 *  Контракт API предполагает строки в MSK, поэтому при отправке
-	 *  и приёме данных используем именно эту константу, а не display-TZ. */
-	mskOffsetMs = 3 * 3600 * 1000;
+	/** Смещение дат отчёта соответствует календарю API. */
+	get bitrixOffsetMs() {
+		return (this._store?.bitrixOffsetMin ?? 0) * 60000;
+	}
+
+	/** API принимает Unix-секунды. */
+	toBitrixTimestamp(time) {
+		return Math.round(time / 1000);
+	}
 
 	/** TimeStore инжектится через setStore() в StoreProvider. */
 	_store = null;
 
 	/** Сдвиг текущей TZ-маски ОТОБРАЖЕНИЯ в мс относительно UTC. Реактивно из TimeStore. */
 	get tzOffest() {
-		return this._store?.tzOffsetMs ?? this.mskOffsetMs;
+		return this._store?.tzOffsetMs ?? -new Date().getTimezoneOffset() * 60000;
 	}
 	/** Сдвиг отображения в часах. */
 	get tzHoursOffset() {
 		return Math.round(this.tzOffest / 3600000);
 	}
-	/** Текстовый offset отображения для подстановки в ISO. */
-	get tsStrOffset() {
-		return this._store?.tzStrOffset ?? "+03:00";
-	}
-
 	/** Однократная инъекция из StoreProvider после создания TimeStore. */
 	setStore(store) {
 		this._store = store;
@@ -39,7 +44,7 @@ class TimeHelper {
 
 	wDays = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"];
 
-	//возвращает дату/время, которая по запросам getUTC* будет отдавать данные в московском часовом поясе
+	/** Возвращает текущее время выбранного пояса в полях getUTC*. */
 	getTime() {
 		//украдено https://stackoverflow.com/a/10088053
 		// create Date object for current location
@@ -53,16 +58,12 @@ class TimeHelper {
 		return new Date(utc + this.tzOffest);
 	}
 
-	//возвращает дату-время начала сегодняшнего (по МСК) дня
+	/** Возвращает Unix-время полуночи выбранного пояса. */
 	getToday() {
-		// getTime() возвращает Date, в полях getUTC* которой лежит МСК-время.
-		// Обнуляем часы/минуты/сек/мс — получаем МСК-полночь, выраженную как UTC-поля,
-		// затем сдвигаем обратно на tzOffest, чтобы получить реальный UTC-таймстамп этой полночи.
-		// Прямой setUTCHours(-3,...) на new Date() ломается в окне 00:00-02:59 МСК,
-		// когда UTC-дата ещё вчерашняя и -3 часа откатывают на позавчера.
-		let mskNow = this.getTime();
-		mskNow.setUTCHours(0, 0, 0, 0);
-		return new Date(mskNow.getTime() - this.tzOffest);
+		// Обнуляем время в выбранном поясе, затем возвращаемся к реальному Unix-времени.
+		const localMidnight = this.getTime();
+		localMidnight.setUTCHours(0, 0, 0, 0);
+		return new Date(localMidnight.getTime() - this.tzOffest);
 	}
 
 	getTimestamp() {
@@ -147,8 +148,8 @@ class TimeHelper {
 		let y = Y % 100;
 		return {
 			h: t.getUTCHours(),
-			m: t.getMinutes(),
-			s: t.getSeconds(),
+			m: t.getUTCMinutes(),
+			s: t.getUTCSeconds(),
 
 			D: t.getUTCDate(),
 			M: t.getUTCMonth() + 1, //месяц по умолчанию начинается с ноля, нам это неудобно
@@ -242,18 +243,15 @@ class TimeHelper {
 	}
 
 	//приводит текстовую запись даты-времени в формате Битрикса к формату JS.
-	//Контракт API: строки дат должны быть в MSK. MySQL TZ здесь не меняется.
-	//Поэтому здесь жёсткий '+03:00' — НЕ зависит от режима отображения tzMode.
+	// Пояс строки задаёт API, пользовательский режим меняет только отображение.
 	bitrixDateTimeToJs(time) {
-		if (typeof time !== "string") return null;
+		if (typeof time !== "string" || !time) return null;
+		const offset = this._store?.bitrixOffset;
+		if (!offset) throw new Error('Смещение дат Bitrix ещё не получено');
 		let $tokens = time.split(" ");
 		let $newDate = $tokens[0].split(".").reverse().join("-");
-		if ($tokens.length === 2) {
-			return Date.parse($newDate + "T" + $tokens[1] + "+03:00");
-		} else {
-			//console.log($newDate + "T00:00:00" + "+03:00");
-			return Date.parse($newDate + "T00:00:00" + "+03:00");
-		}
+		const clock = $tokens.length === 2 ? $tokens[1] : '00:00:00';
+		return Date.parse($newDate + 'T' + clock + offset);
 	}
 
 	getWeek(time) {

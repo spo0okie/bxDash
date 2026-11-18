@@ -316,15 +316,15 @@ export default class DashItem {
 
 		//смена крайнего срока и даты закрытия
 		if (params.deadline !== undefined && params.deadline!==null) {
-			params.deadline = Math.round((params.deadline - TimeHelper.mskOffsetMs) / 1000) ;
+			params.deadline = TimeHelper.toBitrixTimestamp(params.deadline);
 		}
 
 		if (params.startDatePlan !== undefined && params.startDatePlan !== null) {
-			params.startDatePlan = Math.round((params.startDatePlan - TimeHelper.mskOffsetMs) / 1000);
+			params.startDatePlan = TimeHelper.toBitrixTimestamp(params.startDatePlan);
 		}
 
 		if (params.closedDate !== undefined && params.closedDate !== null) {
-			params.closedDate = Math.round((params.closedDate - TimeHelper.mskOffsetMs) / 1000);
+			params.closedDate = TimeHelper.toBitrixTimestamp(params.closedDate);
 		}
 
 		this.setUpdating(true);

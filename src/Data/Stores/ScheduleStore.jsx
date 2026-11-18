@@ -1,4 +1,5 @@
 import { action, computed, makeObservable, observable, runInAction, when } from 'mobx';
+import TimeHelper from 'Helpers/TimeHelper';
 import { ScheduleRuntime, strToTsm, tsmToStr, MS_IN_MINUTE, MINUTES_IN_DAY } from 'Vendor/scheduleRuntime/scheduleRuntime';
 
 /**
@@ -6,11 +7,9 @@ import { ScheduleRuntime, strToTsm, tsmToStr, MS_IN_MINUTE, MINUTES_IN_DAY } fro
  * Используется до загрузки реального расписания и если оно недоступно:
  *   пн-пт 09:00-18:00, сб/вс — выходной, праздничных дней нет.
  *
- * tz_shift_tsm = 180 минут (UTC+3, MSK) — приложение работает в МСК.
+ * Без расписания Inventory рабочие часы отсчитываются в поясе бэкенда.
  */
 const FALLBACK_COMPILED = Object.freeze({
-	tz: 'Europe/Moscow',
-	tz_shift_tsm: 180,
 	main: {
 		name: 'fallback (Mon-Fri 09:00-18:00)',
 		start: null, start_tsm: null,
@@ -106,7 +105,7 @@ class ScheduleStore {
 	 *  и пересчитываются автоматически.
 	 */
 	get runtime() {
-		return new ScheduleRuntime(this.compiled ?? FALLBACK_COMPILED);
+		return new ScheduleRuntime(this.compiled ?? { ...FALLBACK_COMPILED, tz_shift_tsm: this.tzShiftMin });
 	}
 
 	get hasLoadedSchedule() {
@@ -115,7 +114,8 @@ class ScheduleStore {
 
 	/** Минуты сдвига часового пояса расписания относительно UTC. */
 	get tzShiftMin() {
-		const v = (this.compiled ?? FALLBACK_COMPILED).tz_shift_tsm;
+		if (!this.compiled) return TimeHelper.bitrixOffsetMs / MS_IN_MINUTE;
+		const v = this.compiled.tz_shift_tsm;
 		return typeof v === 'number' ? v : 0;
 	}
 

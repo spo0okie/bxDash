@@ -31,6 +31,8 @@ class controller_user {
 		// Старый хеш сохраняем для совместимости; запросы bxDash используют Basic Auth.
 		// В новых версиях CUser этого метода нет, и хеш не является условием входа.
 		$status->hash=method_exists($USER, 'GetSessionHash') ? $USER->GetSessionHash() : null;
+		// Клиент получает обязательное смещение до первой загрузки дат.
+		$status->timezoneOffset = date('P');
 		echo json_encode($status,JSON_UNESCAPED_UNICODE);
 	}
 

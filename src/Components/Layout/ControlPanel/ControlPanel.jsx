@@ -176,13 +176,13 @@ const ControlPanel = observer(function ControlPanel() {
 						Часовой пояс:
 						<br />
 						<button
-							onClick={() => context.time.setTzMode("msk")}
+							onClick={() => context.time.setTzMode("backend")}
 							className={classNames(
-								{ on: context.time.tzMode === "msk" },
-								{ off: context.time.tzMode !== "msk" },
+								{ on: context.time.tzMode === "backend" },
+								{ off: context.time.tzMode !== "backend" },
 							)}
 						>
-							МСК (+3)
+							Пояс бэкенда
 						</button>
 						<button
 							onClick={() => context.time.setTzMode("browser")}

@@ -30,8 +30,9 @@ class TimeStore {
 
 	isOverridden = false;       // флаг принудительного переопределения даты
 
-	/** Режим часового пояса для отображения: 'msk' = фиксированный +3, 'browser' = локальный браузера. */
-	tzMode = 'msk';
+	/** Режим отображения и смещение строк дат, полученное от Bitrix при входе. */
+	tzMode = 'backend';
+	bitrixOffset = null;
 
 	constructor(main) {
 		this.main = main;
@@ -57,6 +58,8 @@ class TimeStore {
 			today: observable,
 			isOverridden: observable,
 			tzMode: observable,
+			bitrixOffset: observable,
+			bitrixOffsetMin: computed,
 			tzOffsetMin: computed,
 			tzOffsetMs: computed,
 			tzStrOffset: computed,
@@ -68,11 +71,12 @@ class TimeStore {
 			setWeekMin: action,
 			setWeekMax: action,
 			setTzMode: action,
+			setBitrixOffset: action,
 		});
 
 		this.weekMax = this.loadOption('weekMax') ?? 4;
 		this.weekMin = this.loadOption('weekMin') ?? -4;
-		this.tzMode = this.loadOption('tzMode') ?? 'msk';
+		this.tzMode = this.loadOption('tzMode') === 'browser' ? 'browser' : 'backend';
 		this.updateTime();
 
 		setInterval(() => {
@@ -91,8 +95,8 @@ class TimeStore {
 		let now = TimeHelper.getTime();
 
 		let h = this.hours = now.getUTCHours();
-		let m = this.minutes = now.getMinutes();
-		let s = this.hours = now.getSeconds();
+		let m = this.minutes = now.getUTCMinutes();
+		let s = this.seconds = now.getUTCSeconds();
 
 		let d = now.getUTCDate();
 		let M = this.month;
@@ -193,16 +197,34 @@ class TimeStore {
 
 	// === Часовой пояс отображения ===
 
+	/** Смещение дат Bitrix в минутах. До ответа API оно неизвестно. */
+	get bitrixOffsetMin() {
+		if (this.bitrixOffset === null) return null;
+		const [hours, minutes] = this.bitrixOffset.slice(1).split(':').map(Number);
+		return (hours * 60 + minutes) * (this.bitrixOffset[0] === '-' ? -1 : 1);
+	}
+
+	/** Обновляет календарь до загрузки данных с новым смещением. */
+	setBitrixOffset(offset) {
+		if (this.bitrixOffset === offset) return;
+		this.bitrixOffset = offset;
+		if (this.tzMode === 'backend' && !this.isOverridden) {
+			this.day = null;
+			this.updateTime();
+		}
+	}
+
 	/** Сдвиг текущей TZ-маски в минутах относительно UTC. */
 	get tzOffsetMin() {
-		if (this.tzMode === 'browser') return -new Date().getTimezoneOffset();
-		return 180; // 'msk' — фиксированный +3
+		// До входа интерфейс показывает локальные часы.
+		if (this.tzMode === 'browser' || this.bitrixOffset === null) return -new Date().getTimezoneOffset();
+		return this.bitrixOffsetMin;
 	}
 
 	/** Сдвиг текущей TZ-маски в миллисекундах относительно UTC. */
 	get tzOffsetMs() { return this.tzOffsetMin * 60 * 1000; }
 
-	/** Текстовый offset вида '+03:00' / '-04:30' для подстановки в ISO-строки. */
+	/** Текстовое смещение для подписи часового пояса. */
 	get tzStrOffset() {
 		const off = this.tzOffsetMin;
 		const sign = off >= 0 ? '+' : '-';
@@ -214,15 +236,13 @@ class TimeStore {
 
 	/** Человекочитаемый ярлык TZ для UI. */
 	get tzLabel() {
-		if (this.tzMode === 'msk') return 'МСК (+3)';
-		const off = this.tzOffsetMin;
-		const sign = off >= 0 ? '+' : '-';
-		const h = Math.floor(Math.abs(off) / 60);
-		return `локально (${sign}${h})`;
+		const mode = this.tzMode === 'backend' && this.bitrixOffset !== null ? 'бэкенд' : 'локально';
+		return `${mode} (UTC${this.tzStrOffset})`;
 	}
 
+	/** Переключает пояс интерфейса и пересчитывает границы календаря. */
 	setTzMode(mode) {
-		if (mode !== 'msk' && mode !== 'browser') return;
+		if (mode !== 'backend' && mode !== 'browser') return;
 		if (this.tzMode === mode) return;
 		this.tzMode = mode;
 		this.saveOption('tzMode', mode);

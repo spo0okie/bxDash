@@ -1,5 +1,10 @@
 import ScheduleStore from 'Data/Stores/ScheduleStore';
 import { buildTicketStatistics, DAY_MS, monthRange, statisticsCsv, statisticsDetails } from '../TicketStatistics';
+import TimeHelper from 'Helpers/TimeHelper';
+
+// Даты фикстур записаны в поясе тестового API.
+beforeEach(() => TimeHelper.setStore({ bitrixOffset: '+05:00', bitrixOffsetMin: 300 }));
+afterEach(() => TimeHelper.setStore(null));
 
 const employees = [{ id: 1, name: 'Иванов' }, { id: 2, name: 'Петров' }, { id: 3, name: 'Без заявок' }];
 const schedule = new ScheduleStore({}, 0);
@@ -95,9 +100,9 @@ test('порог 2 суток применяется после вычитани
 });
 
 test('время многолетней заявки считается без обрезания до 366 дней', () => {
-	const start = Date.parse('2024-01-01T00:00:00+03:00');
-	const middle = Date.parse('2025-01-01T00:00:00+03:00');
-	const end = Date.parse('2026-01-01T00:00:00+03:00');
+	const start = Date.parse('2024-01-01T00:00:00+05:00');
+	const middle = Date.parse('2025-01-01T00:00:00+05:00');
+	const end = Date.parse('2026-01-01T00:00:00+05:00');
 	expect(schedule.workMsBetween(start, end)).toBe(schedule.workMsBetween(start, middle) + schedule.workMsBetween(middle, end));
 });
 

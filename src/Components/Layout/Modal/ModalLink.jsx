@@ -4,8 +4,8 @@ import { attachInventoryUserTtips } from "Helpers/InventoryUserTtip";
 
 import "./ModalWindow.css";
 
+/** Открывает карточку из дашборда и обновляет её данные после закрытия. */
 const ModalLink = (props) => {
-	//trace();
 	const context = useContext(StoreContext);
 	const layout = context.layout;
 	const item = props.item;
@@ -15,9 +15,27 @@ const ModalLink = (props) => {
 	const title = props.title !== undefined ? props.title : content;
 	const href = item !== undefined ? item.viewUrl : link;
 
-	// Открыть ссылку в модальном окне
-	const openInModal = useCallback(() => {
-		//console.log(item);
+	/** Обновляет карточку в текущем дашборде и оповещает другие клиенты. */
+	const refreshItem = useCallback(() => {
+		if (item !== undefined) {
+			item.reload();
+			item.broadcastUpdate();
+		}
+	}, [item]);
+
+	/** Открывает задачи в SidePanel, если он доступен на портале. */
+	const openCard = useCallback(() => {
+		const sidePanel = window.BX?.SidePanel?.Instance;
+		if (item?.type === "task" && typeof sidePanel?.open === "function") {
+			// Bitrix сам создаёт iframe панели и сохраняет адрес дашборда.
+			sidePanel.open(href, {
+				allowChangeHistory: false,
+				cacheable: false,
+				events: { onCloseComplete: refreshItem },
+			});
+			return;
+		}
+
 		layout.setModal({
 			title: content,
 			content: (
@@ -34,14 +52,9 @@ const ModalLink = (props) => {
 					}
 				/>
 			),
-			onClose: () => {
-				if (item !== undefined) {
-					item.reload();
-					item.broadcastUpdate();
-				}
-			},
+			onClose: refreshItem,
 		});
-	}, [layout, context.main, item, content, title, href]);
+	}, [layout, context.main, item, content, title, href, refreshItem]);
 
 	// Открыть ссылку в новом окне
 	const openInNewWindow = useCallback(() => {
@@ -58,12 +71,12 @@ const ModalLink = (props) => {
 			}
 
 			if (e.button === 0) {
-				openInModal();
+				openCard();
 				e.preventDefault();
 				e.stopPropagation();
 			}
 		},
-		[openInModal, openInNewWindow],
+		[openCard, openInNewWindow],
 	);
 
 	// Обработчик нажатия кнопки мыши

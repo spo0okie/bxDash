@@ -48,7 +48,7 @@ const createMockStore = () => ({
     setKeepPlanning: jest.fn(),
   },
   time: {
-    tzMode: 'msk',
+    tzMode: 'backend',
     setTzMode: jest.fn(),
     strTime: '12:00:00',
     tzLabel: 'МСК',

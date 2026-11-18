@@ -1,4 +1,4 @@
-
+import TimeHelper from './TimeHelper';
 /** Авторизация Bitrix; дальнейшие запросы используют логин и пароль через Basic. */
 export const bxAuthScheme={
 	authorize: async (be)=>{
@@ -16,6 +16,8 @@ export const bxAuthScheme={
 			
 			const data = await response.json();
 			if (!data?.auth || !(Number(data.id) > 0)) return false;
+			// Запоминаем пояс до запуска загрузки данных при успешном входе.
+			TimeHelper.setBitrixOffset(data.timezoneOffset);
 			// Старый портал возвращает hash, новый может обходиться без него.
 			be.token = data.hash || '';
 			return true;
@@ -36,6 +38,7 @@ export const bxAuthScheme={
 			
 			const data = await response.json();
 			if (data?.id) {
+				TimeHelper.setBitrixOffset(data.timezoneOffset);
 				be.setUserId(Number(data.id));
 				return true;
 			}

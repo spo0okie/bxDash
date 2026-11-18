@@ -1,6 +1,11 @@
 import { autorun, observable, runInAction } from 'mobx';
 import ItemsMultiStore from 'Data/Stores/Items/ItemsMultiStore';
 import TaskItem from '../TaskItem';
+import TimeHelper from 'Helpers/TimeHelper';
+
+// Даты фикстур записаны в поясе тестового API.
+beforeEach(() => TimeHelper.setStore({ bitrixOffset: '+05:00', bitrixOffsetMin: 300 }));
+afterEach(() => TimeHelper.setStore(null));
 
 /** Имитирует очередь связанных объектов: задача может появиться позже исходной выборки. */
 function dependencyBoard() {
