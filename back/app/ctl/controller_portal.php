@@ -28,6 +28,12 @@ class controller_portal {
 			if ($hasTaskFullCard && !in_array($taskCardExtension, $extensions, true)) {
 				$extensions[] = $taskCardExtension;
 			}
+			// Bitrix ждёт сервис чек-листа перед завершением любой задачи, даже без пунктов чек-листа.
+			$checkListCompletion = 'tasks.v2.lib.check-list-completion';
+			if ($hasTaskFullCard && is_file($root . '/bitrix/js/tasks/v2/lib/check-list-completion/config.php')
+				&& !in_array($checkListCompletion, $extensions, true)) {
+				$extensions[] = $checkListCompletion;
+			}
 			// Карточка запрашивает эти расширения отдельно при регистрации меню сообщений.
 			if ($hasTaskFullCard && is_file($root . '/bitrix/js/tasks/v2/lib/result-message-menu/config.php')
 				&& is_file($root . '/bitrix/js/im/v2/lib/menu/config.php')) {
