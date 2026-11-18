@@ -3,14 +3,12 @@ describe('BitrixLibraries', () => {
 	beforeEach(() => {
 		jest.resetModules();
 		window.__CONFIG__ = { bitrixResources: { scripts: ['/first.js', '/second.js'] } };
-		delete window.__BXDASH_PORTAL__;
 		delete window.BX;
 		document.head.innerHTML = '';
 	});
 
 	afterEach(() => {
 		delete window.__CONFIG__;
-		delete window.__BXDASH_PORTAL__;
 		delete window.BX;
 	});
 
@@ -40,17 +38,39 @@ describe('BitrixLibraries', () => {
 		expect(document.scripts).toHaveLength(1);
 	});
 
-	test('в portal использует готовый BX без статических файлов', async () => {
-		window.__BXDASH_PORTAL__ = true;
-		window.BX = { ready: jest.fn() };
+	test('получает авторизованным запросом CSS и скрипты в порядке ответа API', async () => {
+		delete window.__CONFIG__.bitrixResources.scripts;
+		const fetchMock = jest.fn().mockResolvedValue({
+			ok: true,
+			text: async () => '<head><meta name="bxdash-portal-assets" content="1"><link rel="stylesheet" href="/bitrix/main.css">'
+				+ '<script src="core.js"></script><script>window.BX.messages = true;</script></head>'
+				+ '<body><script src="/bitrix/tasks.js"></script></body>',
+		});
 		const { loadBitrixLibraries } = require('../BitrixLibraries');
-		await loadBitrixLibraries();
-		expect(document.scripts).toHaveLength(0);
+		const pending = loadBitrixLibraries({ baseUrl: '/back/api/', fetch: fetchMock });
+		await Promise.resolve();
+		await Promise.resolve();
+		expect(fetchMock).toHaveBeenCalledWith('portal/resources', { cache: 'no-store', redirect: 'error' });
+		expect(document.querySelector('link[rel="stylesheet"]').href).toBe(window.location.origin + '/bitrix/main.css');
+		expect(document.scripts).toHaveLength(1);
+		expect(document.scripts[0].src).toBe(window.location.origin + '/back/api/portal/core.js');
+		window.BX = { ready: jest.fn() };
+		document.scripts[0].dispatchEvent(new Event('load'));
+		await Promise.resolve();
+		await Promise.resolve();
+		expect(window.BX.messages).toBe(true);
+		expect(document.scripts[2].src).toBe(window.location.origin + '/bitrix/tasks.js');
+		document.scripts[2].dispatchEvent(new Event('load'));
+		await pending;
 	});
 
-	test('сообщает, если portal не вывел ядро', async () => {
-		window.__BXDASH_PORTAL__ = true;
+	test('страница входа без метки не выполняет скрипты', async () => {
+		delete window.__CONFIG__.bitrixResources.scripts;
+		const fetchMock = jest.fn().mockResolvedValue({
+			ok: true, text: async () => '<script src="/login.js"></script>',
+		});
 		const { loadBitrixLibraries } = require('../BitrixLibraries');
-		await expect(loadBitrixLibraries()).rejects.toThrow('не инициализировал');
+		await expect(loadBitrixLibraries({ baseUrl: '/back/api/', fetch: fetchMock })).rejects.toThrow('Проверьте маршрут и сессию портала');
+		expect(document.scripts).toHaveLength(0);
 	});
 });

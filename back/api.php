@@ -31,6 +31,9 @@ if (!@date_default_timezone_set(BXDASH_TIMEZONE) || date('P') !== $bitrixServerO
 CTimeZone::Disable();
 $globalTzOffset = (int)date('Z');
 
-router::init();
+if (router::init() === router::FINISH_BITRIX_PAGE) {
+	// Эпилог в глобальной области видимости завершает отложенный вывод Bitrix.
+	require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/epilog_after.php';
+}
 
 ?>

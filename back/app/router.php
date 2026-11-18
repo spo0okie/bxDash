@@ -5,6 +5,8 @@
  */
 class router
 {
+	// Контроллер HTML запрашивает выполнение эпилога после выхода из маршрутизатора.
+	const FINISH_BITRIX_PAGE = 'finish-bitrix-page';
 
 	private static $input=null;
 	private static $inputJson=null;
@@ -171,7 +173,7 @@ class router
 		// На PHP 5 класса Throwable нет: такой catch там просто никогда не срабатывает,
 		// поэтому Exception ловим отдельной веткой, а Throwable оставляем для Error на PHP 7+.
 		try {
-			$controller->$action_name();
+			return $controller->$action_name();
 		} catch (\Exception $e) {
 			static::haltException($e, $controller_name, $action_name);
 		} catch (\Throwable $e) {

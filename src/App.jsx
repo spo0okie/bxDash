@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import { ConfigProvider } from "antd";
+import { when } from 'mobx';
 
 import './App.css';
 import Layout from "Components/Layout/Layout";
 import { loadBitrixLibraries } from 'Helpers/BitrixLibraries';
 import notify from 'Helpers/Notify';
 import { StoreContext, createStores } from "Data/Stores/StoreProvider";
+import { bitrixResources } from 'config.priv';
 
 
 /** Корневой компонент приложения и инициализация интеграций. */
@@ -16,11 +18,14 @@ function App() {
     const [stores] = useState(() => createStores());
 
     useEffect(() => {
-        // Общий Promise исключает повторное подключение в StrictMode.
-        loadBitrixLibraries().catch(error => {
-            notify.error(error.message, { title: 'Не удалось подключить Bitrix' });
+        const bx = stores.main.bx;
+        // API ресурсов использует штатную авторизацию, явный список можно загрузить сразу.
+        return when(() => bitrixResources.scripts !== undefined || bx.authStatus === 'OK', () => {
+            loadBitrixLibraries(bx).catch(error => {
+                notify.error(error.message, { title: 'Не удалось подключить Bitrix' });
+            });
         });
-    }, []);
+    }, [stores]);
 
     // Доступ из консоли только в dev-сборке
     useEffect(() => {

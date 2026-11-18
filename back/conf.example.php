@@ -13,3 +13,11 @@ define('BXDASH_MEMO_IBLOCK_ID', null);
 // Укажите table явно, если нужно продолжить использовать существующие bxdash_*.
 // bitrix требует штатного API и при его отсутствии завершится ошибкой.
 $stagesProvider = 'auto';
+
+// Необязательные переопределения профиля ресурсов для portal/resources.
+// $bitrixResources = array(
+//     'profile' => 'auto', // auto, legacy или modern
+//     'extensions' => array('main.core', 'main.popup', 'main.date'),
+//     'coreExtensions' => array('sidepanel'), // только modern
+//     'scripts' => array(), // URL дополнительных файлов
+// );

@@ -9,9 +9,8 @@
  */
 
 window.__CONFIG__ = {
-	// Статический index.html: свой упорядоченный список скриптов Bitrix.
-	// Без scripts используется прежний набор 2017 года; [] отключает загрузку.
-	// При входе через index.php ресурсы задаются в portal.config.php.
+	// Ресурсы Bitrix загружаются из apiUrl + 'portal/resources'.
+	// При необходимости scripts задаёт явный список; [] отключает загрузку.
 	bitrixResources: {},
 	// === URL сервисов ===
 	inventoryUrl: '',      // URL Inventory API

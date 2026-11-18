@@ -1,21 +1,25 @@
-/** Проверяет PHP-точку входа с подставными старым и новым API без живого портала. */
+/** Проверяет маршрут ресурсов с подставными старым и новым Bitrix. */
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const assert = require('node:assert/strict');
 const { execFileSync } = require('node:child_process');
 
-const entry = path.resolve(__dirname, '../public/index.php');
+const back = path.resolve(__dirname, '../back');
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'bxdash-portal-'));
 
-/** Создаёт изолированный портал и выполняет точку входа отдельным PHP-процессом. */
-function runScenario(name, modern, config) {
+/** Создаёт изолированный портал и выполняет маршрут через штатный api.php. */
+function runScenario(name, modern, config, authorized = true) {
 	const root = path.join(temp, name);
 	const includeDir = path.join(root, 'bitrix/modules/main/include');
 	fs.mkdirSync(includeDir, { recursive: true });
-	fs.copyFileSync(entry, path.join(root, 'index.php'));
-	fs.writeFileSync(path.join(root, 'index.html'), '<html><head><script type="module" src="app.js"></script></head><body></body></html>');
-	if (config) fs.writeFileSync(path.join(root, 'portal.config.php'), '<?php return ' + config + ';');
+	const apiDir = path.join(root, 'fixture/back');
+	fs.mkdirSync(path.join(apiDir, 'app/ctl'), { recursive: true });
+	for (const file of ['api.php', 'app/router.php', 'app/ctl/controller_portal.php']) {
+		fs.copyFileSync(path.join(back, file), path.join(apiDir, file));
+	}
+	fs.writeFileSync(path.join(apiDir, 'conf.php'), `<?php define('BXDASH_TIMEZONE', 'UTC'); $bitrixResources = ${config || 'array()'};`);
+	fs.writeFileSync(path.join(includeDir, '../bx_root.php'), '<?php');
 	if (modern) {
 		for (const name of ['popup', 'date']) {
 			const dir = path.join(root, 'bitrix/js/main', name);
@@ -29,19 +33,25 @@ function runScenario(name, modern, config) {
 ${modernApi}
 namespace {
 	$GLOBALS['calls'] = array();
+	date_default_timezone_set('UTC');
+	class CModule { static function IncludeModule($name) {} }
+	class CTimeZone { static function Disable() {} }
+	class PortalUser { function IsAuthorized() { return ${authorized ? 'true' : 'false'}; } }
 	class CJSCore { static function Init($items) { $GLOBALS['calls']['core'] = $items; } }
 	class PortalApplication {
 		function AddHeadScript($src) { $GLOBALS['calls']['scripts'][] = $src; }
 		function ShowCSS() { echo '<link data-portal-css>'; }
 		function ShowHeadStrings() { echo '<script>window.BX = function(){}; BX.ready = function(){};</script>'; }
 		function ShowHeadScripts() { echo '<script src="portal.js"></script>'; }
+		function ShowBodyScripts() { echo '<script src="portal-body.js"></script>'; }
 	}
 	$APPLICATION = new PortalApplication();
+	$USER = new PortalUser();
 }
 `);
 	fs.writeFileSync(path.join(includeDir, 'epilog_after.php'), '<?php echo "\\nCALLS:" . json_encode($GLOBALS["calls"]);');
 	const phpRoot = root.replaceAll('\\', '/').replaceAll("'", "\\'");
-	const output = execFileSync('php', ['-r', `$_SERVER['DOCUMENT_ROOT']='${phpRoot}'; require '${phpRoot}/index.php';`], { encoding: 'utf8' });
+	const output = execFileSync('php', ['-r', `$_SERVER['DOCUMENT_ROOT']='${phpRoot}'; $_SERVER['REQUEST_METHOD']='GET'; $_SERVER['REQUEST_URI']='/fixture/back/api/portal/resources'; require 'api.php';`], { cwd: apiDir, encoding: 'utf8' });
 	return { output, calls: output.includes('CALLS:') ? JSON.parse(output.split('CALLS:')[1]) : null };
 }
 
@@ -50,8 +60,6 @@ try {
 	assert(legacy.calls.core.includes('popup'));
 	assert(legacy.calls.core.includes('autosave'));
 	assert(!legacy.calls.modern);
-	assert(legacy.output.indexOf('portal.js') < legacy.output.indexOf('app.js'));
-	assert(legacy.output.includes('window.__BXDASH_PORTAL__ = true'));
 	const modern = runScenario('modern-auto', true);
 	assert.deepEqual(modern.calls.modern, ['main.core', 'main.popup', 'main.date']);
 	assert.deepEqual(modern.calls.core, ['sidepanel']);
@@ -65,8 +73,18 @@ try {
 	assert.deepEqual(custom.calls.scripts, ['/custom.js']);
 	const unavailable = runScenario('unavailable-modern', false, "array('profile'=>'modern')");
 	assert.equal(unavailable.calls, null);
-	assert(unavailable.output.includes('недоступный профиль'));
-	console.log('OK: 5 сценариев PHP portal (подставные API, не проверка живого Bitrix)');
+	assert(unavailable.output.includes('Недоступный профиль'));
+	const anonymous = runScenario('anonymous', true, undefined, false);
+	assert.equal(anonymous.calls, null);
+	assert(JSON.parse(anonymous.output).error.includes('Требуется авторизация'));
+	for (const assets of [legacy, modern]) {
+		assert(assets.output.includes('name="bxdash-portal-assets"'));
+		assert(assets.output.includes('data-portal-css'));
+		assert(assets.output.includes('BX.ready'));
+		assert.match(assets.output, /portal\.js.*<body>.*portal-body\.js/s);
+		assert(!assets.output.includes('app.js'));
+	}
+	console.log('OK: 6 сценариев GET portal/resources с подставным Bitrix');
 } finally {
 	// Удаляем только созданный этим тестом временный каталог.
 	fs.rmSync(temp, { recursive: true, force: true });

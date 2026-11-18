@@ -5,6 +5,18 @@
 `/dashboard/back/api/` — отдельный адрес PHP API bxDash внутри Bitrix.
 Имена каталогов можно выбрать другие, согласовав пути сборки, конфиг и маршрутизацию.
 
+## DEV через локальный nginx
+
+В каждом виртуальном хосте nginx подставляет свой `config.priv.js` и
+проксирует публичный путь дашборда в соответствующий локальный Vite.
+Vite отдаёт HTML и обслуживает HMR. Запросы к `/bitrix/`, страницам задач
+и API направляются по обычным правилам в Bitrix соответствующего домена.
+
+В локальном конфиге укажите `apiUrl` текущего домена, например
+`'/reviakin/back/api/'`. После входа браузер запрашивает
+`/reviakin/back/api/portal/resources`. Тот же относительный адрес на двух
+доменах попадает в API двух разных порталов. [Подключение ресурсов и проверка](bitrix-resources.md)
+
 ## 1. Размещение файлов и конфигурация Apache/nginx
 
 ```text
@@ -13,11 +25,8 @@ DOCUMENT_ROOT/                           # Корень уже установл�
 └── dashboard/
     ├── v1/                              # Содержимое build/ после npm run build
     │   ├── index.html                   # HTML собранного frontend
-    │   ├── index.php                    # Обёртка: пролог и библиотеки Bitrix + HTML сборки
     │   ├── assets/                      # Собранные JS/CSS: приложение работает в браузере
     │   ├── config.priv.js               # Браузерный конфиг: URL backend-систем и настройки UI
-    │   ├── portal.config.example.php    # Образец серверного профиля библиотек
-    │   ├── portal.config.php            # Необязательный серверный профиль библиотек
     │   └── ...                          # Иконки, шрифты и остальные файлы build/
     └── back/                            # Содержимое back/; публикуется отдельно от build/
         ├── .htaccess                    # Apache: api/* → api.php
@@ -37,29 +46,26 @@ DOCUMENT_ROOT/                           # Корень уже установл�
 Конфигурация веб-сервера сайта bitrix.domain.local
 ├── Apache — виртуальный хост сайта
 │   ├── Каталог DOCUMENT_ROOT/dashboard/v1/
-│   │   └── DirectoryIndex index.php index.html
+│   │   └── DirectoryIndex index.html
 │   ├── Каталог DOCUMENT_ROOT/dashboard/back/
 │   │   └── Разрешены mod_rewrite и обработка опубликованного .htaccess
-│   └── Существующий обработчик PHP Bitrix обслуживает index.php и api.php
+│   └── Существующий обработчик PHP Bitrix обслуживает api.php
 └── nginx — блок server сайта
     ├── Каталог /dashboard/v1/
-    │   └── index index.php index.html
+    │   └── index index.html
     ├── Маршрут /dashboard/back/api/*
     │   └── Передача в /dashboard/back/api.php с сохранением исходного URI
     ├── Существующий обработчик PHP/FastCGI Bitrix обслуживает PHP-точки входа
     └── .htaccess не используется; правило API задаётся в конфигурации nginx
 ```
 
-`npm run build` создаёт статическую сборку. Каталог `back/` в неё не входит:
-его публикуют отдельно. Файлы `public/index.php` и `public/portal.config.example.php`
-попадают в сборку вместе с остальным `public/`.
+`npm run build` создаёт статическую сборку. Каталог `back/` публикуют отдельно.
 
 | Настройка | Где находится после публикации | Кто читает |
 | --- | --- | --- |
 | `base` Vite | При сборке задаётся в `vite.config.js` | Vite формирует URL ресурсов |
 | `config.priv.js` | `/dashboard/v1/config.priv.js` | Браузер; файл доступен посетителю |
-| `portal.config.php` | Рядом с `/dashboard/v1/index.php` | PHP-обёртка frontend |
-| `conf.php` | Рядом с `/dashboard/back/api.php` | PHP backend bxDash |
+| `conf.php` | Рядом с `/dashboard/back/api.php` | PHP API, в том числе профиль ресурсов Bitrix |
 | Индекс каталога и rewrite | Конфигурация виртуального хоста или разрешённый `.htaccess` | Apache/nginx |
 
 В `config.priv.js` для этого примера:
@@ -84,12 +90,9 @@ Zabbix — `api_jsonrpc.php`. Если сервис опубликован в п
 Пользовательские учётные данные вводятся в интерфейсе. `config.priv.js`
 загружается в браузер, поэтому серверные секреты в нём не хранят.
 
-Для открытия именно `/dashboard/v1/` веб-сервер должен выбирать `index.php`
-раньше `index.html`. Например, у Apache для этого каталога —
-`DirectoryIndex index.php index.html`; у nginx — соответствующая директива
-`index index.php index.html` и уже настроенный обработчик PHP.
-Без такого выбора откройте `/dashboard/v1/index.php` явно. В режиме
-`index.html` запускается тот же React frontend, но без серверной обёртки ресурсов Bitrix.
+Для адреса `/dashboard/v1/` настройте индекс `index.html`.
+После обновления старой установки переключите индекс фронтенда с PHP на HTML
+и перенесите профиль библиотек в `back/conf.php`. [Шаги обновления](bitrix-resources.md#обновление-размещения)
 
 Apache использует опубликованный `back/.htaccess`, если разрешены rewrite и
 чтение `.htaccess`. Nginx `.htaccess` не читает: правило передачи
@@ -99,10 +102,8 @@ Apache использует опубликованный `back/.htaccess`, ес�
 ему соответствует. При другой глубине URL нужно согласовать смещение
 в `back/app/router.php` или способ передачи параметров маршрута.
 
-Обёртка и API используют существующий пролог установленного Bitrix. Приложение
-подключает его из своих точек входа; код bxDash не требуется вставлять в ядро
-Bitrix или `init.php`. Настройки приложения хранятся в его собственных файлах,
-а подключение к БД выполняется средствами портала.
+`api.php` подключает пролог установленного Bitrix. Настройки приложения
+хранятся в его собственных файлах, подключение к БД выполняется средствами портала.
 
 ## 2. Последовательность обращений при инициализации
 
@@ -118,8 +119,7 @@ sequenceDiagram
 
     User->>Browser: Открывает bitrix.domain.local/dashboard/v1/
     Browser->>Web: GET /dashboard/v1/
-    Web->>Web: index.php: отдает статичный dashboard (HTML), PHP часть отдает нужные bitrix JS
-    Web-->>Browser: HTML со ссылками на ресурсы Bitrix и сборку
+    Web-->>Browser: index.html со ссылками на сборку
     Browser->>Web: GET config.priv.js и JS/CSS сборки
     Web-->>Browser: Конфиг с адресами backend-систем и статические файлы
     Browser->>Browser: Запуск React, инициализация, форма входа
@@ -143,6 +143,8 @@ sequenceDiagram
         end
     end
 
+    Browser->>API: GET portal/resources
+    API-->>Browser: CSS и JavaScript для установленного Bitrix
     Browser->>API: Загрузка задач, работ, планов, заметок и колонок
     Note over Browser,API: Запросы Bitrix API после входа используют HTTP Basic over HTTPS.
     API->>BX: Чтение данных с правами пользователя
@@ -170,7 +172,7 @@ PHP API bxDash обслуживает операции Bitrix; он не явл�
 статус ошибки соответствующего backend. Телефония и WebSocket отключаются
 значением `false`; обязательными системами остаются Bitrix, Inventory и Zabbix.
 
-PHP на сервере выполняется при открытии обёртки и при запросах API. React,
+PHP на сервере выполняется при запросах API. React,
 MobX, раскладка карточек и обработка пользовательских действий выполняются
 в браузере. Страницы задач/заявок, открываемые в iframe, отдельно обслуживает
 Bitrix: для них важны сессия портала, его ресурсы и одинаковый origin при
