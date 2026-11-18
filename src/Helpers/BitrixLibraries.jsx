@@ -1,12 +1,32 @@
 import { bitrixResources } from 'config.priv';
 
 const RESOURCES_ROUTE = 'portal/resources';
+const EXTERNAL_ASSETS = 'script[src], link[rel~="stylesheet"][href]';
 
 let loading;
 
 /** Возвращает уже начатую загрузку ресурсов для действий, которым нужен Bitrix. */
 export function waitForBitrixLibraries() {
 	return loading;
+}
+
+/** Сопоставляет один и тот же файл Bitrix в обычном и минифицированном виде. */
+function assetUrl(node) {
+	const url = new URL(node.src || node.href);
+	url.hash = '';
+	if (url.origin === window.location.origin && url.pathname.startsWith('/bitrix/js/')) {
+		// Bitrix сам считает числовой суффикс отметкой кеша при проверке уже подключённых файлов.
+		if (/^\?\d+$/.test(url.search)) url.search = '';
+		url.pathname = url.pathname.replace(/\.min(?=\.(?:js|css)$)/, '');
+	}
+	return url;
+}
+
+/** Учитывает тип скрипта и режим применения стилей при поиске дубликатов. */
+function assetKey(node, url = assetUrl(node)) {
+	const type = node.type?.trim().toLowerCase();
+	const scriptType = node.localName === 'script' && !['text/javascript', 'application/javascript'].includes(type) ? type : '';
+	return JSON.stringify([node.localName, scriptType, node.noModule, node.media, url.href]);
 }
 
 /** Подключает скрипт и ждёт выполнения внешнего файла или модуля. */
@@ -39,6 +59,9 @@ async function loadPortalAssets(backend) {
 		throw new Error('API не вернул ресурсы Bitrix. Проверьте маршрут и сессию портала');
 	}
 
+	const seen = new Set(Array.from(document.querySelectorAll(EXTERNAL_ASSETS), node => assetKey(node)));
+	const scripts = new Set();
+	const styles = new Set();
 	for (const resource of page.querySelectorAll('script, style, link[rel~="stylesheet"]')) {
 		const node = document.createElement(resource.localName);
 		for (const { name, value } of resource.attributes) {
@@ -47,9 +70,22 @@ async function loadPortalAssets(backend) {
 			node.setAttribute(name, name === 'src' || name === 'href' ? new URL(value, endpoint).href : value);
 		}
 		node.textContent = resource.textContent;
+		if (node.matches(EXTERNAL_ASSETS)) {
+			const url = assetUrl(node);
+			const key = assetKey(node, url);
+			if (url.origin === window.location.origin && url.pathname.startsWith('/bitrix/')) {
+				const loaded = node.localName === 'script' ? scripts : styles;
+				loaded.add(url.pathname + url.search);
+			}
+			if (seen.has(key)) continue;
+			seen.add(key);
+		}
 		if (node.localName === 'script') await loadScript(node);
 		else document.head.appendChild(node);
 	}
+	// Списки BX могли инициализироваться до вставки ресурсов. Синхронизируем их для вложенных окон карточки.
+	if (scripts.size) window.BX?.setJSList?.([...scripts]);
+	if (styles.size) window.BX?.setCSSList?.([...styles]);
 	// Событие load у скрипта возможно и при ошибке выполнения. Проверяем экспорт, обещанный порталом.
 	if (assets.dataset.taskFullCard === '1' && typeof window.BX?.Tasks?.V2?.Application?.TaskFullCard !== 'function') {
 		throw new Error('Ресурсы портала не зарегистрировали BX.Tasks.V2.Application.TaskFullCard');
@@ -78,9 +114,13 @@ export function loadBitrixLibraries(backend) {
 		if (!Array.isArray(scripts) || scripts.some(url => typeof url !== 'string' || !url)) {
 			throw new Error('bitrixResources.scripts должен быть массивом URL');
 		}
+		const seen = new Set(Array.from(document.scripts).filter(script => script.src).map(script => assetKey(script)));
 		for (const url of scripts) {
 			const script = document.createElement('script');
 			script.src = url;
+			const key = assetKey(script);
+			if (seen.has(key)) continue;
+			seen.add(key);
 			await loadScript(script);
 		}
 	})();

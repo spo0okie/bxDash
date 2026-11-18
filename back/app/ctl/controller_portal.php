@@ -20,15 +20,17 @@ class controller_portal {
 		// Bitrix сам разрешает зависимости зарегистрированных расширений.
 		$hasTaskFullCard = false;
 		if ($profile === 'modern') {
-			$extensions = isset($config['extensions']) ? $config['extensions'] : array('main.core', 'main.popup', 'main.date');
-			// Подключаем новую карточку вместе с её настройками и зависимостями портала.
 			$taskCardExtension = 'tasks.v2.application.task-full-card';
 			$hasTaskFullCard = is_file($root . '/bitrix/js/tasks/v2/application/task-full-card/config.php');
+			// Для новой карточки регистрируем SidePanel через тот же API и оставляем Bitrix выбор её зависимостей.
+			$defaultExtensions = $hasTaskFullCard ? array('main.core', 'main.sidepanel') : array('main.core', 'main.popup', 'main.date');
+			$extensions = isset($config['extensions']) ? $config['extensions'] : $defaultExtensions;
 			if ($hasTaskFullCard && !in_array($taskCardExtension, $extensions, true)) {
 				$extensions[] = $taskCardExtension;
 			}
 			\Bitrix\Main\UI\Extension::load($extensions);
-			\CJSCore::Init(isset($config['coreExtensions']) ? $config['coreExtensions'] : array('sidepanel'));
+			$coreExtensions = isset($config['coreExtensions']) ? $config['coreExtensions'] : ($hasTaskFullCard ? array() : array('sidepanel'));
+			if ($coreExtensions) \CJSCore::Init($coreExtensions);
 		} else {
 			$extensions = isset($config['extensions']) ? $config['extensions']
 				: array('ajax', 'json', 'ls', 'popup', 'date', 'fx', 'webrtc', 'dd', 'tooltip', 'timer', 'window', 'autosave');

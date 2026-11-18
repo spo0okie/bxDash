@@ -14,6 +14,7 @@ describe('BitrixLibraries', () => {
 
 	test('ждёт первую зависимость, сохраняет BX и не создаёт дубли', async () => {
 		window.BX = { existing: true };
+		window.__CONFIG__.bitrixResources.scripts.push(window.location.origin + '/first.js');
 		const bx = window.BX;
 		const { loadBitrixLibraries } = require('../BitrixLibraries');
 		const pending = loadBitrixLibraries();
@@ -25,8 +26,36 @@ describe('BitrixLibraries', () => {
 		expect(document.scripts).toHaveLength(2);
 		document.scripts[1].dispatchEvent(new Event('load'));
 		await pending;
+		expect(document.scripts).toHaveLength(2);
 		expect(window.BX).toBe(bx);
 		expect(loadBitrixLibraries()).toBe(pending);
+	});
+
+	test('объединяет повторы JS и CSS Bitrix из head и body и сообщает о них загрузчику BX', async () => {
+		delete window.__CONFIG__.bitrixResources.scripts;
+		window.BX = { ready: jest.fn(), setJSList: jest.fn(), setCSSList: jest.fn() };
+		const fetchMock = jest.fn().mockResolvedValue({
+			ok: true,
+			text: async () => '<head><meta name="bxdash-portal-assets" content="1">'
+				+ '<link rel="stylesheet" href="/bitrix/js/tasks/task-card.bundle.min.css?123">'
+				+ '<script src="/bitrix/js/tasks/task-card.bundle.min.js?123"></script></head>'
+				+ '<body><script type="text/javascript" src="/bitrix/js/tasks/task-card.bundle.js"></script>'
+				+ '<link rel="stylesheet" href="/bitrix/js/tasks/task-card.bundle.css">'
+				+ '<link rel="stylesheet" media="print" href="/bitrix/js/tasks/task-card.bundle.css"></body>',
+		});
+		const { loadBitrixLibraries } = require('../BitrixLibraries');
+		const pending = loadBitrixLibraries({ baseUrl: '/back/api/', fetch: fetchMock });
+		await Promise.resolve();
+		await Promise.resolve();
+		// Браузер получает первый URL с исходной отметкой кеша, а не нормализованный ключ.
+		expect(document.scripts[0].getAttribute('src')).toBe(window.location.origin + '/bitrix/js/tasks/task-card.bundle.min.js?123');
+		document.scripts[0].dispatchEvent(new Event('load'));
+		await pending;
+		expect(document.scripts).toHaveLength(1);
+		expect(document.querySelectorAll('link[rel="stylesheet"]')).toHaveLength(2);
+		expect(window.BX.setJSList).toHaveBeenCalledWith(['/bitrix/js/tasks/task-card.bundle.js']);
+		expect(window.BX.setCSSList).toHaveBeenCalledWith(['/bitrix/js/tasks/task-card.bundle.css']);
+		expect(fetchMock).toHaveBeenCalledTimes(1);
 	});
 
 	test('при 404 не запускает зависимый скрипт', async () => {

@@ -70,7 +70,8 @@ try {
 	assert.deepEqual(modern.calls.core, ['sidepanel']);
 	assert(!modern.calls.scripts);
 	const withTaskFullCard = runScenario('modern-task-full-card', true, undefined, true, true);
-	assert.deepEqual(withTaskFullCard.calls.modern, ['main.core', 'main.popup', 'main.date', 'tasks.v2.application.task-full-card']);
+	assert.deepEqual(withTaskFullCard.calls.modern, ['main.core', 'main.sidepanel', 'tasks.v2.application.task-full-card']);
+	assert(!withTaskFullCard.calls.core);
 	assert(withTaskFullCard.output.includes('data-task-full-card="1"'));
 	assert(!modern.output.includes('data-task-full-card'));
 	const forced = runScenario('forced-legacy', true, "array('profile'=>'legacy', 'extensions'=>array('popup'), 'scripts'=>array())");

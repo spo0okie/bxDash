@@ -23,14 +23,23 @@ function openTaskSidePanel(bx, item, refreshItem) {
 		events: {
 			onClose: event => card?.onClose(event),
 			onCloseComplete: () => {
-				card?.onCloseComplete();
-				refreshItem();
+				try {
+					card?.onCloseComplete();
+					refreshItem();
+				} catch (error) {
+					// Исключение из обработчика прерывает удаление панели и её подложки в Bitrix.
+					notify.error(notify.describe(error), { title: `Ошибка после закрытия задачи ${id}` });
+				}
 			},
 		},
 	};
 	if (typeof TaskFullCard === 'function') {
 		// Сервер уже подключил карточку вместе с ресурсами. В iframe Bitrix вернул бы только запускающий скрипт.
 		options.contentCallback = async slider => {
+			// SidePanel вызывает contentCallback синхронно, до того как выставит isOpen().
+			await Promise.resolve();
+			if (!slider.isOpen()) return;
+
 			try {
 				card = new TaskFullCard({ taskId: Number(id), url: viewUrl, focusVisible: false });
 				await card.mount(slider);

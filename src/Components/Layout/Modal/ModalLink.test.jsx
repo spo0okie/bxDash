@@ -46,8 +46,20 @@ test('старая карточка открывается в SidePanel при �
 });
 
 test('TaskFullCard монтируется в панели и закрывается без перехода на список задач', async () => {
-	const open = jest.fn();
-	const card = { mount: jest.fn().mockResolvedValue(undefined), onClose: jest.fn(), onCloseComplete: jest.fn() };
+	let isOpen = false;
+	const slider = { isOpen: () => isOpen };
+	let content;
+	const open = jest.fn((url, options) => {
+		// Bitrix запрашивает содержимое в том же стеке, до выставления признака открытой панели.
+		content = options.contentCallback(slider);
+		isOpen = true;
+		return true;
+	});
+	const card = {
+		mount: jest.fn(async currentSlider => { expect(currentSlider.isOpen()).toBe(true); }),
+		onClose: jest.fn(),
+		onCloseComplete: jest.fn(),
+	};
 	const TaskFullCard = jest.fn().mockImplementation(() => card);
 	const loadExtension = jest.fn(() => new Promise(() => {}));
 	window.BX = { SidePanel: { Instance: { open } }, Runtime: { loadExtension } };
@@ -65,9 +77,7 @@ test('TaskFullCard монтируется в панели и закрывает�
 	expect(url).toBe(TASK_URL);
 	expect(options.allowChangeHistory).toBe(false);
 	expect(layout.setModal).not.toHaveBeenCalled();
-	// SidePanel вызывает contentCallback для своей DOM-панели и передаёт событие закрытия карточке.
-	const slider = {};
-	await options.contentCallback(slider);
+	await content;
 	expect(TaskFullCard).toHaveBeenCalledWith({ taskId: 42, url: TASK_URL, focusVisible: false });
 	expect(card.mount).toHaveBeenCalledWith(slider);
 	const event = {};
@@ -78,6 +88,21 @@ test('TaskFullCard монтируется в панели и закрывает�
 	expect(card.onCloseComplete).toHaveBeenCalledTimes(1);
 	expect(item.reload).toHaveBeenCalledTimes(1);
 	expect(item.broadcastUpdate).toHaveBeenCalledTimes(1);
+});
+
+test('ошибка очистки карточки не прерывает закрытие панели в Bitrix', async () => {
+	const open = jest.fn();
+	const card = { mount: jest.fn(), onCloseComplete: jest.fn(() => { throw new Error('Сбой очистки'); }) };
+	const TaskFullCard = jest.fn().mockImplementation(() => card);
+	const reportError = jest.spyOn(notify, 'error').mockImplementation(() => {});
+	window.BX = { SidePanel: { Instance: { open } }, Tasks: { V2: { Application: { TaskFullCard } } } };
+	const { link } = setup();
+	fireEvent.mouseUp(link, { button: 0 });
+	await waitFor(() => expect(open).toHaveBeenCalledTimes(1));
+	const [[, options]] = open.mock.calls;
+	await options.contentCallback({ isOpen: () => true });
+	expect(() => options.events.onCloseComplete()).not.toThrow();
+	expect(reportError).toHaveBeenCalledWith('Сбой очистки', { title: 'Ошибка после закрытия задачи 42' });
 });
 
 test('при ошибке подключения ресурсов показывает причину и не открывает пустую панель', async () => {
