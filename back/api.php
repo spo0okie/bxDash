@@ -16,16 +16,34 @@ CModule::IncludeModule("search");
 CModule::IncludeModule("forum");
 
 require_once "app/router.php";
+
+// Запоминаем пояс PHP после загрузки Bitrix, до подключения настроек bxDash.
+$bitrixServerTimezone = date_default_timezone_get();
+$timezoneCheckTime = time();
+$bitrixServerOffset = date('P', $timezoneCheckTime);
 require_once "conf.php";
 
 if (!defined('BXDASH_TIMEZONE') || !is_string(BXDASH_TIMEZONE) || BXDASH_TIMEZONE === '') {
-	router::haltJson('Задайте BXDASH_TIMEZONE в back/conf.php', 500);
+	router::haltJson(sprintf(
+		'Задайте BXDASH_TIMEZONE в back/conf.php. PHP портала использует %s (%s).',
+		$bitrixServerTimezone, $bitrixServerOffset
+	), 500);
 }
 
-// Пояс API должен совпадать с поясом хранения дат данного портала.
-$bitrixServerOffset = date('P');
-if (!@date_default_timezone_set(BXDASH_TIMEZONE) || date('P') !== $bitrixServerOffset) {
-	router::haltJson('BXDASH_TIMEZONE должен совпадать с серверным часовым поясом Bitrix', 500);
+if (!@date_default_timezone_set(BXDASH_TIMEZONE)) {
+	router::haltJson(sprintf(
+		'PHP не распознаёт BXDASH_TIMEZONE «%s» в back/conf.php. PHP портала использует %s (%s).',
+		BXDASH_TIMEZONE, $bitrixServerTimezone, $bitrixServerOffset
+	), 500);
+}
+
+// Сравниваем смещения на один момент, чтобы проверка допускала эквивалентные имена поясов.
+$bxDashOffset = date('P', $timezoneCheckTime);
+if ($bxDashOffset !== $bitrixServerOffset) {
+	router::haltJson(sprintf(
+		'В back/conf.php задан BXDASH_TIMEZONE %s (%s), а PHP портала использует %s (%s). Укажите BXDASH_TIMEZONE = %s.',
+		BXDASH_TIMEZONE, $bxDashOffset, $bitrixServerTimezone, $bitrixServerOffset, $bitrixServerTimezone
+	), 500);
 }
 // Пояс дат API не зависит от профиля и куки пользователя.
 CTimeZone::Disable();
