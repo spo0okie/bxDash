@@ -5,6 +5,7 @@ div.AppHeader {
     background: var(--surface-app-bar);
     font-weight: var(--font-weight-bold);
     text-shadow: var(--surface-app-bar-text-shadow);
+    color: var(--text-primary);
     min-height: 0 !important;
     width: 100%;
     padding: 0;

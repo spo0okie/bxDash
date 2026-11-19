@@ -18,7 +18,7 @@ li.userTask span.planCountdown {
 	font-variant-numeric: tabular-nums;
 	letter-spacing: 0.04em;
 	color: var(--sem-danger);
-	opacity: 0.8;
+	opacity: 0.5;
 	pointer-events: none;
 	user-select: none;
 	white-space: nowrap;

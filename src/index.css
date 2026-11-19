@@ -5,10 +5,10 @@ html, div#root {
   display: block;
   font-family: var(--font-family-base);
   font-size: var(--font-size-base) ;
+  color: var(--text-primary);
 }
 
 body {
-  color: var(--text-primary);
   background-color: var(--surface-page);
   padding: 47px 0 0 !important;
   display: block !important;
