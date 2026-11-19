@@ -12,7 +12,6 @@ class controller_task {
 	const MSG_NO_TO='NO_TO_SET';
 	const MSG_NO_USERS='NO_USER_LIST_SET';
 	const MSG_NO_TASK_ID='NO_TASK_ID_SET';
-	static $arViewedDates=[];
 
 	static public $fieldsMap = [
 		'ID',
@@ -64,7 +63,6 @@ class controller_task {
 
 	static public function initTaskData($arTask) {
 		global $globalTzOffset;
-		static::$arViewedDates[$arTask['ID']] = $arTask['VIEWED_DATE'] ? $arTask['VIEWED_DATE'] : $arTask['CREATED_DATE'];
 
 		// GetList не возвращает все роли: дополняем соисполнителей и наблюдателей из участников.
 		$arTask['ACCOMPLICES'] = array();
@@ -84,10 +82,53 @@ class controller_task {
 		return $arTask;
 	}
 
+	/** Заполняет счётчик для каждой задачи текущей выборки. */
 	static public function initTaskUpdates(&$tasks) {
-		$arUpdatesCount = CTasks::GetUpdatesCount(static::$arViewedDates);
-		foreach ($arUpdatesCount as $i => $count)
-			$tasks[$i]['UPDATES_COUNT']=(integer)$count;
+		if (empty($tasks)) return;
+
+		$chatCounts = static::loadTaskChatCounts(array_keys($tasks));
+		$viewedDates = array();
+		foreach ($tasks as $id => &$task) {
+			// Даже нулевой счётчик нового чата имеет приоритет перед старыми комментариями.
+			$task['UPDATES_COUNT'] = isset($chatCounts[$id]) ? $chatCounts[$id] : 0;
+			if (!isset($chatCounts[$id])) {
+				$viewedDates[$id] = !empty($task['VIEWED_DATE']) ? $task['VIEWED_DATE'] : $task['CREATED_DATE'];
+			}
+		}
+		unset($task);
+
+		if (empty($viewedDates)) return;
+		foreach (CTasks::GetUpdatesCount($viewedDates) as $id => $count) {
+			if (isset($viewedDates[$id])) $tasks[$id]['UPDATES_COUNT'] = (int)$count;
+		}
+	}
+
+	/** Пакетно загружает счётчики новых чатов задач от имени пользователя портала. */
+	static private function loadTaskChatCounts(array $taskIds) {
+		global $USER;
+		$userId = (int)$USER->GetID();
+		if ($userId <= 0 || !\CModule::IncludeModule('im')
+			|| !class_exists('Bitrix\Im\Model\ChatTable')
+			|| !method_exists('Bitrix\Im\V2\Message\CounterService', 'getForEachChat')) return array();
+
+		// ENTITY_ID в IM строковый. Ищем чаты только для уже проверенных на доступ задач.
+		$rows = \Bitrix\Im\Model\ChatTable::getList(array(
+			'select' => array('ID', 'ENTITY_ID'),
+			'filter' => array('=ENTITY_TYPE' => 'TASKS_TASK', '@ENTITY_ID' => array_map('strval', $taskIds)),
+		));
+		$taskByChat = array();
+		while ($row = $rows->fetch()) {
+			$taskByChat[(int)$row['ID']] = (int)$row['ENTITY_ID'];
+		}
+		if (empty($taskByChat)) return array();
+
+		$service = new \Bitrix\Im\V2\Message\CounterService($userId);
+		$counters = $service->getForEachChat(array_keys($taskByChat));
+		$counts = array();
+		foreach ($taskByChat as $chatId => $taskId) {
+			$counts[$taskId] = isset($counters[$chatId]) ? (int)$counters[$chatId] : 0;
+		}
+		return $counts;
 	}
 
 
